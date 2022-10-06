@@ -148,17 +148,7 @@ public class ValidateResource {
             .map(rule -> {
                 var ret = new ValidateOkRuleViolationsDto();
                 ret.setRule(rule.getNumber());
-
-                var message = new StringBuilder();
-
-                if (rule.getErrorMessage() != null) {
-                    message.append(rule.getErrorMessage());
-                }
-                else {
-                    log.debug("not covered despite constructors that set to null");
-                }
-
-                ret.setViolation(message.toString());
+                ret.setViolation(rule.getErrorMessage());
                 return ret;
             })
             .collect(Collectors.toList()));
