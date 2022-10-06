@@ -17,33 +17,30 @@ package nl.knaw.dans.validatedansbag.core.engine;
 
 import nl.knaw.dans.validatedansbag.core.rules.BagValidatorRule;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
 public class NumberedRule {
     private final String number;
     private final BagValidatorRule rule;
-    private List<String> dependencies;
+    private final List<String> dependencies;
     private DepositType depositType;
     private ValidationContext validationContext;
 
     private NumberedRule(String number, BagValidatorRule rule, List<String> dependencies, DepositType depositType, ValidationContext validationContext) {
         this.number = Objects.requireNonNull(number, "Number must not be null");
         this.rule = Objects.requireNonNull(rule, "Rule must not be null");
-        this.dependencies = dependencies;
+        this.dependencies = Collections.unmodifiableList(dependencies);
         this.depositType = depositType;
         this.validationContext = Objects.requireNonNullElse(validationContext, ValidationContext.ALWAYS);
-    }
-
-    public static NumberedRuleBuilder numberedRule(String number, BagValidatorRule rule, String... dependencies) {
-        return new NumberedRuleBuilder(number, rule, dependencies);
     }
 
     public ValidationContext getValidationContext() {
         return validationContext;
     }
 
-    public void setValidationContext(ValidationContext validationContext) {
+    private void setValidationContext(ValidationContext validationContext) {
         this.validationContext = validationContext;
     }
 
@@ -51,7 +48,7 @@ public class NumberedRule {
         return depositType;
     }
 
-    public void setDepositType(DepositType depositType) {
+    private void setDepositType(DepositType depositType) {
         this.depositType = depositType;
     }
 
@@ -67,10 +64,6 @@ public class NumberedRule {
         return dependencies;
     }
 
-    private void setDependencies(List<String> dependencies) {
-        this.dependencies = dependencies;
-    }
-
     @Override
     public String toString() {
         return "NumberedRule{" +
@@ -82,19 +75,19 @@ public class NumberedRule {
             '}';
     }
 
-    public static class NumberedRuleBuilder {
+    public static class Builder {
         private final NumberedRule numberedRule;
 
-        public NumberedRuleBuilder(String number, BagValidatorRule rule, String... dependencies) {
+        public Builder(String number, BagValidatorRule rule, String... dependencies) {
             this.numberedRule = new NumberedRule(number, rule, List.of(dependencies), null, ValidationContext.ALWAYS);
         }
 
-        public NumberedRuleBuilder withDepositType(DepositType depositType) {
+        public Builder withDepositType(DepositType depositType) {
             this.numberedRule.setDepositType(depositType);
             return this;
         }
 
-        public NumberedRuleBuilder withValidationContext(ValidationContext validationContext) {
+        public Builder withValidationContext(ValidationContext validationContext) {
             this.numberedRule.setValidationContext(validationContext);
             return this;
         }
