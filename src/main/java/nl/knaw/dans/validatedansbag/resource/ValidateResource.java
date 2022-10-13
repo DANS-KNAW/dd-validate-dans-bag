@@ -29,6 +29,7 @@ import nl.knaw.dans.validatedansbag.core.service.RuleEngineService;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.xml.sax.SAXException;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
@@ -89,6 +90,10 @@ public class ValidateResource {
         catch (BagNotFoundException e) {
             log.error("Bag not found", e);
             throw new BadRequestException("Request could not be processed: " + e.getMessage(), e);
+        }
+        catch (SAXException e) {
+            log.error("A dependency on xmlFileConformsToSchema is missing", e);
+            throw new BadRequestException("Syntax error in an XML file: " + e.getMessage(), e);
         }
         catch (Exception e) {
             log.error("Internal server error", e);
