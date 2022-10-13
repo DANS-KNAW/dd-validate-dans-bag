@@ -92,7 +92,7 @@ public class ValidateResource {
         }
         catch (Exception e) {
             log.error("Internal server error", e);
-            throw new InternalServerErrorException("Internal server error: " + e.getMessage(), e);
+            throw new InternalServerErrorException();
         }
     }
 
@@ -114,7 +114,7 @@ public class ValidateResource {
         }
         catch (Exception e) {
             log.error("Internal server error", e);
-            throw new InternalServerErrorException("Internal server error: " + e.getMessage(), e);
+            throw new InternalServerErrorException();
         }
     }
 

@@ -27,6 +27,7 @@ import nl.knaw.dans.validatedansbag.core.engine.DepositType;
 import nl.knaw.dans.validatedansbag.core.engine.ValidationLevel;
 import nl.knaw.dans.validatedansbag.core.service.FileService;
 import nl.knaw.dans.validatedansbag.core.service.RuleEngineService;
+import org.apache.commons.io.IOUtils;
 import org.glassfish.jersey.media.multipart.FormDataMultiPart;
 import org.glassfish.jersey.media.multipart.MultiPartFeature;
 import org.junit.jupiter.api.BeforeEach;
@@ -44,6 +45,7 @@ import java.nio.file.Path;
 import java.util.Optional;
 import java.util.zip.ZipError;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -128,6 +130,8 @@ class ValidateResourceTest {
             .request()
             .post(Entity.entity(multipart, multipart.getMediaType()), Response.class)) {
 
+            assertEquals("{\"code\":500,\"message\":\"HTTP 500 Internal Server Error\"}", IOUtils.toString((ByteArrayInputStream)response.getEntity(), UTF_8.name()));
+            assertEquals("Internal Server Error",response.getStatusInfo().getReasonPhrase());
             assertEquals(500, response.getStatus());
         }
 
