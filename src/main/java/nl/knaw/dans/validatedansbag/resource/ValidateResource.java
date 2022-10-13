@@ -117,6 +117,10 @@ public class ValidateResource {
             log.error("Bag not found", e);
             throw new BadRequestException("Request could not be processed: " + e.getMessage(), e);
         }
+        catch (SAXException e) {
+            log.error("A dependency on xmlFileConformsToSchema is missing", e);
+            throw new BadRequestException("Syntax error in an XML file: " + e.getMessage(), e);
+        }
         catch (Exception e) {
             log.error("Internal server error", e);
             throw new InternalServerErrorException();
