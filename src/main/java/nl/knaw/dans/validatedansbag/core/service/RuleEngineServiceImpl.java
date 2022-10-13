@@ -48,10 +48,10 @@ public class RuleEngineServiceImpl implements RuleEngineService {
 
         // validity
         this.defaultRules = new NumberedRule[] {
-            new NumberedRule.Builder("1.1.1", bagRules.bagIsValid()).build(),
+            new NumberedRule("1.1.1", bagRules.bagIsValid()),
 
             // bag-info.txt
-            new NumberedRule.Builder("1.2.1", bagRules.bagInfoExistsAndIsWellFormed()).build(),
+            new NumberedRule("1.2.1", bagRules.bagInfoExistsAndIsWellFormed()),
             new NumberedRule("1.2.2(a)", bagRules.bagInfoContainsExactlyOneOf("Created"), "1.2.1"),
             new NumberedRule("1.2.2(b)", bagRules.bagInfoCreatedElementIsIso8601Date(), "1.2.2(a)"),
             new NumberedRule("1.2.3", bagRules.bagInfoContainsAtMostOneOf("Data-Station-User-Account"), "1.2.1"),
@@ -69,7 +69,7 @@ public class RuleEngineServiceImpl implements RuleEngineService {
             new NumberedRule("2.2(b)", bagRules.containsFile(metadataPath.resolve("files.xml")), "2.1"),
 
             // Both 2.4 rules also cover 2.2(c), 2.3 and 2.4
-            new NumberedRule.Builder("2.4", bagRules.containsNothingElseThan(metadataPath, new String[] {
+            new NumberedRule("2.4", bagRules.containsNothingElseThan(metadataPath, new String[] {
                 "dataset.xml",
                 "files.xml",
                 "provenance.xml",
@@ -85,12 +85,12 @@ public class RuleEngineServiceImpl implements RuleEngineService {
                 "license.html",
                 "license.txt",
                 "license.pdf"
-            }), "2.1").withDepositType(DepositType.MIGRATION).build(),
+            }), DepositType.MIGRATION, "2.1"),
 
-            new NumberedRule.Builder("2.4", bagRules.containsNothingElseThan(metadataPath, new String[] {
+            new NumberedRule("2.4", bagRules.containsNothingElseThan(metadataPath, new String[] {
                 "dataset.xml",
                 "files.xml"
-            }), "2.1").withDepositType(DepositType.DEPOSIT).build(),
+            }), DepositType.DEPOSIT, "2.1"),
 
             new NumberedRule("2.5", bagRules.hasOnlyValidFileNames(), "2.1"),
 
@@ -112,44 +112,32 @@ public class RuleEngineServiceImpl implements RuleEngineService {
             new NumberedRule("3.1.8", bagRules.archisIdentifiersHaveAtMost10Characters(), "3.1.1"),
             new NumberedRule("3.1.9", bagRules.allUrlsAreValid(), "3.1.1"),
 
-            new NumberedRule.Builder("3.1.10(a)", bagRules.ddmMustHaveRightsHolderDeposit(), "3.1.1").withDepositType(DepositType.DEPOSIT).build(),
-            new NumberedRule.Builder("3.1.10(b)", bagRules.ddmMustHaveRightsHolderDeposit(), "3.1.1").withDepositType(DepositType.MIGRATION).build(),
-            new NumberedRule.Builder("3.1.11", bagRules.ddmMustNotHaveRightsHolderRole(), "3.1.1").withDepositType(DepositType.DEPOSIT).build(),
+            new NumberedRule("3.1.10(a)", bagRules.ddmMustHaveRightsHolderDeposit(), DepositType.DEPOSIT, "3.1.1"),
+            new NumberedRule("3.1.10(b)", bagRules.ddmMustHaveRightsHolderDeposit(), DepositType.MIGRATION, "3.1.1"),
+            new NumberedRule("3.1.11", bagRules.ddmMustNotHaveRightsHolderRole(), DepositType.DEPOSIT, "3.1.1"),
 
             new NumberedRule("3.2.1", xmlRules.xmlFileConformsToSchema(metadataFilesPath, "files.xml"), "3.1.1"),
             new NumberedRule("3.2.2", filesXmlRules.filesXmlFilePathAttributesContainLocalBagPathAndNonPayloadFilesAreNotDescribed(), "2.2(b)"),
             new NumberedRule("3.2.3", filesXmlRules.filesXmlNoDuplicateFilesAndEveryPayloadFileIsDescribed(), "2.2(b)"),
 
             // agreements.xml
-            new NumberedRule.Builder("3.3.1", xmlRules.xmlFileIfExistsConformsToSchema(Path.of("metadata/depositor-info/agreements.xml"), "agreements.xml"))
-                .withDepositType(DepositType.MIGRATION).build(),
+            new NumberedRule("3.3.1", xmlRules.xmlFileIfExistsConformsToSchema(Path.of("metadata/depositor-info/agreements.xml"), "agreements.xml"), DepositType.MIGRATION),
 
             // amd.xml
-            new NumberedRule.Builder("3.3.2", xmlRules.xmlFileIfExistsConformsToSchema(Path.of("metadata/amd.xml"), "amd.xml")).withDepositType(DepositType.MIGRATION).build(),
+            new NumberedRule("3.3.2", xmlRules.xmlFileIfExistsConformsToSchema(Path.of("metadata/amd.xml"), "amd.xml"),DepositType.MIGRATION),
 
             // emd.xml
-            new NumberedRule.Builder("3.3.3", xmlRules.xmlFileIfExistsConformsToSchema(Path.of("metadata/emd.xml"), "emd.xml")).withDepositType(DepositType.MIGRATION).build(),
+            new NumberedRule("3.3.3", xmlRules.xmlFileIfExistsConformsToSchema(Path.of("metadata/emd.xml"), "emd.xml"), DepositType.MIGRATION),
 
             // provenance.xml
-            new NumberedRule.Builder("3.3.4", xmlRules.xmlFileIfExistsConformsToSchema(Path.of("metadata/provenance.xml"), "provenance.xml")).withDepositType(DepositType.MIGRATION).build(),
+            new NumberedRule("3.3.4", xmlRules.xmlFileIfExistsConformsToSchema(Path.of("metadata/provenance.xml"), "provenance.xml"), DepositType.MIGRATION),
 
-            new NumberedRule.Builder("4.1", bagRules.bagInfoContainsExactlyOneOf("Data-Station-User-Account"), "1.2.1")
-                .withValidationContext(ValidationContext.WITH_DATA_STATION_CONTEXT).build(),
-
-            new NumberedRule.Builder("4.2", datastationRules.userIsAuthorizedToCreateDataset(), "4.1")
-                .withValidationContext(ValidationContext.WITH_DATA_STATION_CONTEXT).build(),
-
-            new NumberedRule.Builder("4.3", bagRules.organizationalIdentifierPrefixIsValid(), "4.1", "1.2.5(a)")
-                .withValidationContext(ValidationContext.WITH_DATA_STATION_CONTEXT).build(),
-
-            new NumberedRule.Builder("4.4(a)", datastationRules.bagExistsInDatastation(), "4.1")
-                .withValidationContext(ValidationContext.WITH_DATA_STATION_CONTEXT).build(),
-
-            new NumberedRule.Builder("4.4(b)", datastationRules.organizationalIdentifierExistsInDataset(), "4.1", "4.4(a)")
-                .withValidationContext(ValidationContext.WITH_DATA_STATION_CONTEXT).build(),
-
-            new NumberedRule.Builder("4.4(c)", datastationRules.userIsAuthorizedToUpdateDataset(), "4.1", "4.4(a)")
-                .withValidationContext(ValidationContext.WITH_DATA_STATION_CONTEXT).build()
+            new NumberedRule("4.1", bagRules.bagInfoContainsExactlyOneOf("Data-Station-User-Account"), ValidationContext.WITH_DATA_STATION_CONTEXT, "1.2.1"),
+            new NumberedRule("4.2", datastationRules.userIsAuthorizedToCreateDataset(), ValidationContext.WITH_DATA_STATION_CONTEXT, "4.1"),
+            new NumberedRule("4.3", bagRules.organizationalIdentifierPrefixIsValid(), ValidationContext.WITH_DATA_STATION_CONTEXT, "4.1", "1.2.5(a)"),
+            new NumberedRule("4.4(a)", datastationRules.bagExistsInDatastation(), ValidationContext.WITH_DATA_STATION_CONTEXT, "4.1"),
+            new NumberedRule("4.4(b)", datastationRules.organizationalIdentifierExistsInDataset(), ValidationContext.WITH_DATA_STATION_CONTEXT, "4.1", "4.4(a)"),
+            new NumberedRule("4.4(c)", datastationRules.userIsAuthorizedToUpdateDataset(), ValidationContext.WITH_DATA_STATION_CONTEXT, "4.1", "4.4(a)"),
         };
 
         this.validateRuleConfiguration();

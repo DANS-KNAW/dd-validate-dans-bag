@@ -56,8 +56,8 @@ class RuleEngineImplTest {
         Mockito.when(fakeRule.validate(Mockito.any())).thenReturn(result);
         var rules = new NumberedRule[] {
             new NumberedRule("1.1", fakeRule),
-            new NumberedRule.Builder("1.2", fakeRuleSkipped).build(),
-            new NumberedRule.Builder("1.3", fakeRule, "1.2").build(),
+            new NumberedRule("1.2", fakeRuleSkipped),
+            new NumberedRule("1.3", fakeRule, "1.2"),
             new NumberedRule("1.4", fakeRule),
         };
 
@@ -80,8 +80,8 @@ class RuleEngineImplTest {
         Mockito.when(fakeRule.validate(Mockito.any())).thenReturn(result);
         var rules = new NumberedRule[] {
             new NumberedRule("1.1", fakeRule),
-            new NumberedRule.Builder("1.2", fakeRuleFailed).build(),
-            new NumberedRule.Builder("1.3", fakeRule, "1.2").build(),
+            new NumberedRule("1.2", fakeRuleFailed),
+            new NumberedRule("1.3", fakeRule, "1.2"),
             new NumberedRule("1.4", fakeRule),
         };
 
@@ -104,9 +104,9 @@ class RuleEngineImplTest {
 
         var rules = new NumberedRule[] {
             new NumberedRule("1.1", fakeRule),
-            new NumberedRule.Builder("1.2", fakeRule).withDepositType(DepositType.DEPOSIT).build(),
-            new NumberedRule.Builder("1.2", fakeRule).withDepositType(DepositType.MIGRATION).build(),
-            new NumberedRule.Builder("1.3", fakeRule, "1.2").build(),
+            new NumberedRule("1.2", fakeRule, DepositType.DEPOSIT),
+            new NumberedRule("1.2", fakeRule, DepositType.MIGRATION),
+            new NumberedRule("1.3", fakeRule, "1.2"),
             new NumberedRule("1.4", fakeRule),
         };
 
@@ -124,9 +124,9 @@ class RuleEngineImplTest {
         Mockito.when(fakeRule.validate(Mockito.any())).thenReturn(result);
         var rules = new NumberedRule[] {
             new NumberedRule("1.1", fakeRule),
-            new NumberedRule.Builder("1.2", fakeRule).withDepositType(DepositType.DEPOSIT).build(),
-            new NumberedRule.Builder("1.2", fakeRule).withDepositType(DepositType.DEPOSIT).build(),
-            new NumberedRule.Builder("1.3", fakeRule, "1.2").build(),
+            new NumberedRule("1.2", fakeRule, DepositType.DEPOSIT),
+            new NumberedRule("1.2", fakeRule, DepositType.DEPOSIT),
+            new NumberedRule("1.3", fakeRule, "1.2"),
             new NumberedRule("1.4", fakeRule),
         };
 
@@ -144,7 +144,7 @@ class RuleEngineImplTest {
         Mockito.when(fakeRule.validate(Mockito.any())).thenReturn(result);
         var rules = new NumberedRule[] {
             new NumberedRule("1.1", fakeRule),
-            new NumberedRule.Builder("1.3", fakeRule, "1.2").build(),
+            new NumberedRule("1.3", fakeRule, "1.2"),
             new NumberedRule("1.4", fakeRule),
         };
 
@@ -162,8 +162,8 @@ class RuleEngineImplTest {
         Mockito.when(fakeRule.validate(Mockito.any())).thenReturn(result);
         var rules = new NumberedRule[] {
             new NumberedRule("1.1", fakeRule),
-            new NumberedRule.Builder("1.2", fakeRule).withDepositType(DepositType.DEPOSIT).build(),
-            new NumberedRule.Builder("1.3", fakeRule, "1.2").build(),
+            new NumberedRule("1.2", fakeRule, DepositType.DEPOSIT),
+            new NumberedRule("1.3", fakeRule, "1.2"),
             new NumberedRule("1.4", fakeRule),
         };
 
@@ -182,8 +182,8 @@ class RuleEngineImplTest {
         var rules = new NumberedRule[] {
             new NumberedRule("1.1", fakeRule),
             new NumberedRule("1.2", fakeRule),
-            new NumberedRule.Builder("1.2", fakeRule).withDepositType(DepositType.MIGRATION).build(),
-            new NumberedRule.Builder("1.3", fakeRule, "1.2").build(),
+            new NumberedRule("1.2", fakeRule, DepositType.MIGRATION),
+            new NumberedRule("1.3", fakeRule, "1.2"),
             new NumberedRule("1.4", fakeRule),
         };
 
@@ -202,8 +202,8 @@ class RuleEngineImplTest {
         var rules = new NumberedRule[] {
             new NumberedRule("1.1", fakeRule),
             new NumberedRule("1.2", fakeRule),
-            new NumberedRule.Builder("1.3", fakeRule, "1.2").withDepositType(DepositType.DEPOSIT).build(),
-            new NumberedRule.Builder("1.3", fakeRule, "1.2").withDepositType(DepositType.MIGRATION).build(),
+            new NumberedRule("1.3", fakeRule, DepositType.DEPOSIT, "1.2"),
+            new NumberedRule("1.3", fakeRule, DepositType.MIGRATION, "1.2"),
             new NumberedRule("1.4", fakeRule),
         };
 
@@ -222,11 +222,11 @@ class RuleEngineImplTest {
         var rules = new NumberedRule[] {
             new NumberedRule("1.1", fakeRule),
             new NumberedRule("1.2", fakeRule),
-            new NumberedRule.Builder("1.3", fakeRule, "1.2").withDepositType(DepositType.DEPOSIT).build(),
-            new NumberedRule.Builder("1.3", fakeRule, "1.2").withDepositType(DepositType.MIGRATION).build(),
+            new NumberedRule("1.3", fakeRule, DepositType.DEPOSIT, "1.2"),
+            new NumberedRule("1.3", fakeRule, DepositType.MIGRATION, "1.2"),
             new NumberedRule("1.4", fakeRule),
-            new NumberedRule.Builder("1.6", fakeRule, "1.3").withDepositType(DepositType.DEPOSIT).build(),
-            new NumberedRule.Builder("1.6", fakeRule, "1.3").withDepositType(DepositType.MIGRATION).build(),
+            new NumberedRule("1.6", fakeRule, DepositType.DEPOSIT, "1.3"),
+            new NumberedRule("1.6", fakeRule, DepositType.MIGRATION, "1.3"),
         };
 
         var engine = new RuleEngineImpl();
@@ -249,8 +249,8 @@ class RuleEngineImplTest {
         var rules = new NumberedRule[] {
             new NumberedRule("1.1", fakeRule),
             new NumberedRule("1.2", fakeRule),
-            new NumberedRule.Builder("1.3", fakeErrorRule, "1.2").withDepositType(DepositType.DEPOSIT).build(),
-            new NumberedRule.Builder("1.3", fakeErrorRule, "1.2").withDepositType(DepositType.MIGRATION).build()
+            new NumberedRule("1.3", fakeErrorRule, DepositType.DEPOSIT, "1.2"),
+            new NumberedRule("1.3", fakeErrorRule, DepositType.MIGRATION, "1.2")
         };
 
         var engine = new RuleEngineImpl();

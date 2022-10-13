@@ -29,17 +29,21 @@ public class NumberedRule {
     private ValidationContext validationContext;
 
     public NumberedRule(String number, BagValidatorRule rule, String... dependencies) {
-        this.number = Objects.requireNonNull(number, "Number must not be null");
-        this.rule = Objects.requireNonNull(rule, "Rule must not be null");
-        this.dependencies = Collections.unmodifiableList(List.of(dependencies));
-        this.depositType = depositType;
-        this.validationContext = Objects.requireNonNullElse(validationContext, ValidationContext.ALWAYS);
+        this(number, rule, null, ValidationContext.ALWAYS, dependencies);
     }
 
-    private NumberedRule(String number, BagValidatorRule rule, List<String> dependencies, DepositType depositType, ValidationContext validationContext) {
+    public NumberedRule(String number, BagValidatorRule rule, DepositType depositType, String... dependencies) {
+        this(number, rule, depositType, ValidationContext.ALWAYS, dependencies);
+    }
+
+    public NumberedRule(String number, BagValidatorRule rule, ValidationContext validationContext, String... dependencies) {
+        this(number, rule, null, validationContext, dependencies);
+    }
+
+    private NumberedRule(String number, BagValidatorRule rule, DepositType depositType, ValidationContext validationContext, String... dependencies) {
         this.number = Objects.requireNonNull(number, "Number must not be null");
         this.rule = Objects.requireNonNull(rule, "Rule must not be null");
-        this.dependencies = Collections.unmodifiableList(dependencies);
+        this.dependencies = List.of(dependencies);
         this.depositType = depositType;
         this.validationContext = Objects.requireNonNullElse(validationContext, ValidationContext.ALWAYS);
     }
@@ -48,16 +52,8 @@ public class NumberedRule {
         return validationContext;
     }
 
-    private void setValidationContext(ValidationContext validationContext) {
-        this.validationContext = validationContext;
-    }
-
     public DepositType getDepositType() {
         return depositType;
-    }
-
-    private void setDepositType(DepositType depositType) {
-        this.depositType = depositType;
     }
 
     public String getNumber() {
@@ -82,27 +78,4 @@ public class NumberedRule {
             ", validationContext=" + validationContext +
             '}';
     }
-
-    public static class Builder {
-        private final NumberedRule numberedRule;
-
-        public Builder(String number, BagValidatorRule rule, String... dependencies) {
-            this.numberedRule = new NumberedRule(number, rule, List.of(dependencies), null, ValidationContext.ALWAYS);
-        }
-
-        public Builder withDepositType(DepositType depositType) {
-            this.numberedRule.setDepositType(depositType);
-            return this;
-        }
-
-        public Builder withValidationContext(ValidationContext validationContext) {
-            this.numberedRule.setValidationContext(validationContext);
-            return this;
-        }
-
-        public NumberedRule build() {
-            return numberedRule;
-        }
-    }
-
 }
