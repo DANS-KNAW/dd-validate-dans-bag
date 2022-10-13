@@ -57,7 +57,13 @@ public class FilesXmlRulesImpl implements FilesXmlRules {
         // 2.6.2 is already checked
         // Directories and non-payload files MUST NOT be described by a file element.
         return (path) -> {
-            var missingInFilesXml = filesXmlDescribesOnlyPayloadFiles(path);
+            Set<Path> missingInFilesXml = null;
+            try {
+                missingInFilesXml = filesXmlDescribesOnlyPayloadFiles(path);
+            }
+            catch (SAXException | IOException | XPathExpressionException e) {
+                return RuleResult.error(String.format("files.xml: is not valid XML: {%s}", e.getMessage()));
+            }
 
             if (missingInFilesXml.size() > 0) {
                 var paths = missingInFilesXml.stream().map(Path::toString).collect(Collectors.joining(", "));
