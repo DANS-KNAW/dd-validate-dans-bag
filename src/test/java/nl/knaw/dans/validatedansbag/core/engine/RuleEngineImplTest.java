@@ -35,10 +35,10 @@ class RuleEngineImplTest {
         Mockito.when(fakeRule.validate(Mockito.any())).thenReturn(result);
 
         var rules = new NumberedRule[] {
-            new NumberedRule.Builder("1.1", fakeRule).build(),
-            new NumberedRule.Builder("1.2", fakeRule).build(),
-            new NumberedRule.Builder("1.3", fakeRule).build(),
-            new NumberedRule.Builder("1.4", fakeRule).build(),
+            new NumberedRule("1.1", fakeRule),
+            new NumberedRule("1.2", fakeRule),
+            new NumberedRule("1.3", fakeRule),
+            new NumberedRule("1.4", fakeRule),
         };
 
         var engine = new RuleEngineImpl();
@@ -55,10 +55,10 @@ class RuleEngineImplTest {
         var result = new RuleResult(RuleResult.Status.SUCCESS, List.of());
         Mockito.when(fakeRule.validate(Mockito.any())).thenReturn(result);
         var rules = new NumberedRule[] {
-            new NumberedRule.Builder("1.1", fakeRule).build(),
+            new NumberedRule("1.1", fakeRule),
             new NumberedRule.Builder("1.2", fakeRuleSkipped).build(),
             new NumberedRule.Builder("1.3", fakeRule, "1.2").build(),
-            new NumberedRule.Builder("1.4", fakeRule).build(),
+            new NumberedRule("1.4", fakeRule),
         };
 
         var failedResult = new RuleResult(RuleResult.Status.ERROR, List.of());
@@ -79,10 +79,10 @@ class RuleEngineImplTest {
         var result = new RuleResult(RuleResult.Status.SUCCESS, List.of());
         Mockito.when(fakeRule.validate(Mockito.any())).thenReturn(result);
         var rules = new NumberedRule[] {
-            new NumberedRule.Builder("1.1", fakeRule).build(),
+            new NumberedRule("1.1", fakeRule),
             new NumberedRule.Builder("1.2", fakeRuleFailed).build(),
             new NumberedRule.Builder("1.3", fakeRule, "1.2").build(),
-            new NumberedRule.Builder("1.4", fakeRule).build(),
+            new NumberedRule("1.4", fakeRule),
         };
 
         var failedResult = new RuleResult(RuleResult.Status.ERROR, List.of());
@@ -103,11 +103,11 @@ class RuleEngineImplTest {
         Mockito.when(fakeRule.validate(Mockito.any())).thenReturn(result);
 
         var rules = new NumberedRule[] {
-            new NumberedRule.Builder("1.1", fakeRule).build(),
+            new NumberedRule("1.1", fakeRule),
             new NumberedRule.Builder("1.2", fakeRule).withDepositType(DepositType.DEPOSIT).build(),
             new NumberedRule.Builder("1.2", fakeRule).withDepositType(DepositType.MIGRATION).build(),
             new NumberedRule.Builder("1.3", fakeRule, "1.2").build(),
-            new NumberedRule.Builder("1.4", fakeRule).build(),
+            new NumberedRule("1.4", fakeRule),
         };
 
         var engine = new RuleEngineImpl();
@@ -123,11 +123,11 @@ class RuleEngineImplTest {
         var result = new RuleResult(RuleResult.Status.SUCCESS, List.of());
         Mockito.when(fakeRule.validate(Mockito.any())).thenReturn(result);
         var rules = new NumberedRule[] {
-            new NumberedRule.Builder("1.1", fakeRule).build(),
+            new NumberedRule("1.1", fakeRule),
             new NumberedRule.Builder("1.2", fakeRule).withDepositType(DepositType.DEPOSIT).build(),
             new NumberedRule.Builder("1.2", fakeRule).withDepositType(DepositType.DEPOSIT).build(),
             new NumberedRule.Builder("1.3", fakeRule, "1.2").build(),
-            new NumberedRule.Builder("1.4", fakeRule).build(),
+            new NumberedRule("1.4", fakeRule),
         };
 
         var engine = new RuleEngineImpl();
@@ -143,9 +143,9 @@ class RuleEngineImplTest {
         var result = new RuleResult(RuleResult.Status.SUCCESS, List.of());
         Mockito.when(fakeRule.validate(Mockito.any())).thenReturn(result);
         var rules = new NumberedRule[] {
-            new NumberedRule.Builder("1.1", fakeRule).build(),
+            new NumberedRule("1.1", fakeRule),
             new NumberedRule.Builder("1.3", fakeRule, "1.2").build(),
-            new NumberedRule.Builder("1.4", fakeRule).build(),
+            new NumberedRule("1.4", fakeRule),
         };
 
         var engine = new RuleEngineImpl();
@@ -161,10 +161,10 @@ class RuleEngineImplTest {
         var result = new RuleResult(RuleResult.Status.SUCCESS, List.of());
         Mockito.when(fakeRule.validate(Mockito.any())).thenReturn(result);
         var rules = new NumberedRule[] {
-            new NumberedRule.Builder("1.1", fakeRule).build(),
+            new NumberedRule("1.1", fakeRule),
             new NumberedRule.Builder("1.2", fakeRule).withDepositType(DepositType.DEPOSIT).build(),
             new NumberedRule.Builder("1.3", fakeRule, "1.2").build(),
-            new NumberedRule.Builder("1.4", fakeRule).build(),
+            new NumberedRule("1.4", fakeRule),
         };
 
         var engine = new RuleEngineImpl();
@@ -180,11 +180,11 @@ class RuleEngineImplTest {
         var result = new RuleResult(RuleResult.Status.SUCCESS, List.of());
         Mockito.when(fakeRule.validate(Mockito.any())).thenReturn(result);
         var rules = new NumberedRule[] {
-            new NumberedRule.Builder("1.1", fakeRule).build(),
-            new NumberedRule.Builder("1.2", fakeRule).build(),
+            new NumberedRule("1.1", fakeRule),
+            new NumberedRule("1.2", fakeRule),
             new NumberedRule.Builder("1.2", fakeRule).withDepositType(DepositType.MIGRATION).build(),
             new NumberedRule.Builder("1.3", fakeRule, "1.2").build(),
-            new NumberedRule.Builder("1.4", fakeRule).build(),
+            new NumberedRule("1.4", fakeRule),
         };
 
         var engine = new RuleEngineImpl();
@@ -200,11 +200,11 @@ class RuleEngineImplTest {
         var result = new RuleResult(RuleResult.Status.SUCCESS, List.of());
         Mockito.when(fakeRule.validate(Mockito.any())).thenReturn(result);
         var rules = new NumberedRule[] {
-            new NumberedRule.Builder("1.1", fakeRule).build(),
-            new NumberedRule.Builder("1.2", fakeRule).build(),
+            new NumberedRule("1.1", fakeRule),
+            new NumberedRule("1.2", fakeRule),
             new NumberedRule.Builder("1.3", fakeRule, "1.2").withDepositType(DepositType.DEPOSIT).build(),
             new NumberedRule.Builder("1.3", fakeRule, "1.2").withDepositType(DepositType.MIGRATION).build(),
-            new NumberedRule.Builder("1.4", fakeRule).build(),
+            new NumberedRule("1.4", fakeRule),
         };
 
         var engine = new RuleEngineImpl();
@@ -220,11 +220,11 @@ class RuleEngineImplTest {
         var result = new RuleResult(RuleResult.Status.SUCCESS, List.of());
         Mockito.when(fakeRule.validate(Mockito.any())).thenReturn(result);
         var rules = new NumberedRule[] {
-            new NumberedRule.Builder("1.1", fakeRule).build(),
-            new NumberedRule.Builder("1.2", fakeRule).build(),
+            new NumberedRule("1.1", fakeRule),
+            new NumberedRule("1.2", fakeRule),
             new NumberedRule.Builder("1.3", fakeRule, "1.2").withDepositType(DepositType.DEPOSIT).build(),
             new NumberedRule.Builder("1.3", fakeRule, "1.2").withDepositType(DepositType.MIGRATION).build(),
-            new NumberedRule.Builder("1.4", fakeRule).build(),
+            new NumberedRule("1.4", fakeRule),
             new NumberedRule.Builder("1.6", fakeRule, "1.3").withDepositType(DepositType.DEPOSIT).build(),
             new NumberedRule.Builder("1.6", fakeRule, "1.3").withDepositType(DepositType.MIGRATION).build(),
         };
@@ -247,8 +247,8 @@ class RuleEngineImplTest {
         Mockito.when(fakeRule.validate(Mockito.any())).thenReturn(goodResult);
 
         var rules = new NumberedRule[] {
-            new NumberedRule.Builder("1.1", fakeRule).build(),
-            new NumberedRule.Builder("1.2", fakeRule).build(),
+            new NumberedRule("1.1", fakeRule),
+            new NumberedRule("1.2", fakeRule),
             new NumberedRule.Builder("1.3", fakeErrorRule, "1.2").withDepositType(DepositType.DEPOSIT).build(),
             new NumberedRule.Builder("1.3", fakeErrorRule, "1.2").withDepositType(DepositType.MIGRATION).build()
         };

@@ -28,6 +28,14 @@ public class NumberedRule {
     private DepositType depositType;
     private ValidationContext validationContext;
 
+    public NumberedRule(String number, BagValidatorRule rule, String... dependencies) {
+        this.number = Objects.requireNonNull(number, "Number must not be null");
+        this.rule = Objects.requireNonNull(rule, "Rule must not be null");
+        this.dependencies = Collections.unmodifiableList(List.of(dependencies));
+        this.depositType = depositType;
+        this.validationContext = Objects.requireNonNullElse(validationContext, ValidationContext.ALWAYS);
+    }
+
     private NumberedRule(String number, BagValidatorRule rule, List<String> dependencies, DepositType depositType, ValidationContext validationContext) {
         this.number = Objects.requireNonNull(number, "Number must not be null");
         this.rule = Objects.requireNonNull(rule, "Rule must not be null");
