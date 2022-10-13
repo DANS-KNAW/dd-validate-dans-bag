@@ -42,6 +42,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import java.io.InputStream;
+import java.util.List;
 import java.util.stream.Collectors;
 
 @Path("/validate")
@@ -91,10 +92,6 @@ public class ValidateResource {
             log.error("Bag not found", e);
             throw new BadRequestException("Request could not be processed: " + e.getMessage(), e);
         }
-        catch (SAXException e) {
-            log.error("A dependency on xmlFileConformsToSchema is missing", e);
-            throw new BadRequestException("Syntax error in an XML file: " + e.getMessage(), e);
-        }
         catch (Exception e) {
             log.error("Internal server error", e);
             throw new InternalServerErrorException();
@@ -117,10 +114,6 @@ public class ValidateResource {
             log.error("Bag not found", e);
             throw new BadRequestException("Request could not be processed: " + e.getMessage(), e);
         }
-        catch (SAXException e) {
-            log.error("A dependency on xmlFileConformsToSchema is missing", e);
-            throw new BadRequestException("Syntax error in an XML file: " + e.getMessage(), e);
-        }
         catch (Exception e) {
             log.error("Internal server error", e);
             throw new InternalServerErrorException();
@@ -142,8 +135,16 @@ public class ValidateResource {
     }
 
     ValidateOkDto validatePath(java.nio.file.Path bagDir, DepositType depositType, ValidationLevel validationLevel) throws Exception {
-        var results = ruleEngineService.validateBag(bagDir, depositType, validationLevel);
-        var isValid = results.stream().noneMatch(r -> r.getStatus().equals(RuleValidationResult.RuleValidationResultStatus.FAILURE));
+
+        List<RuleValidationResult> results = null;
+        try {
+            results = ruleEngineService.validateBag(bagDir, depositType, validationLevel);
+        }
+        catch (SAXException e) {
+            log.error("A dependency on xmlFileConformsToSchema is missing", e);
+        }
+
+        var isValid = results != null && results.stream().noneMatch(r -> r.getStatus().equals(RuleValidationResult.RuleValidationResultStatus.FAILURE));
 
         var result = new ValidateOkDto();
         result.setBagLocation(null);
@@ -152,7 +153,13 @@ public class ValidateResource {
         result.setProfileVersion("1.0.0");
         result.setInformationPackageType(toInfoPackageType(depositType));
         result.setLevel(toLevel(validationLevel));
-        result.setRuleViolations(results.stream()
+        if (results == null) {
+            ValidateOkRuleViolationsDto e1 = new ValidateOkRuleViolationsDto();
+            e1.setViolation("Some xml file has an invalid syntax"); // TODO need the SAXException (actually also which file)
+            result.setRuleViolations(List.of(e1));
+        }
+        else
+            result.setRuleViolations(results.stream()
             .filter(r -> r.getStatus().equals(RuleValidationResult.RuleValidationResultStatus.FAILURE))
             .map(rule -> {
                 var ret = new ValidateOkRuleViolationsDto();

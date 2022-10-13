@@ -139,8 +139,10 @@ class ValidateResourceIntegrationTest {
             .request()
             .post(Entity.entity(multipart, multipart.getMediaType()), Response.class)
         ) {
-            assertEquals(400, response.getStatus());
-            assertEquals("{\"code\":400,\"message\":\"Syntax error in an XML file: Something is broken\"}", response.readEntity(String.class));
+            assertEquals(200, response.getStatus());
+            String body = response.readEntity(String.class);
+            assertTrue(body.contains("\"Is compliant\":false"));
+            assertTrue(body.contains("{\"rule\":null,\"violation\":\"Some xml file has an invalid syntax\"}"));
         }
     }
 
