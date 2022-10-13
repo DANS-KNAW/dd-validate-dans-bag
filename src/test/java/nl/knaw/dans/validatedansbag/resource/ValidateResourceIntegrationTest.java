@@ -45,6 +45,7 @@ import javax.ws.rs.BadRequestException;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.io.IOException;
 import java.net.URL;
 import java.util.List;
 import java.util.Objects;
@@ -122,6 +123,30 @@ class ValidateResourceIntegrationTest {
 
     @Test
     void validateFormDataWithSomeException() throws Exception {
+        var bagDir = getResourceUrl("bags/valid-bag").getFile();
+
+        var data = new ValidateCommandDto();
+        data.setBagLocation(bagDir);
+        data.setPackageType(PackageTypeEnum.DEPOSIT);
+        data.setLevel(LevelEnum.WITH_DATA_STATION_CONTEXT);
+        var multipart = new FormDataMultiPart()
+            .field("command", data, MediaType.APPLICATION_JSON_TYPE);
+
+        Mockito.when(xmlSchemaValidator.validateDocument(Mockito.any(), Mockito.anyString()))
+            .thenThrow(new IOException("Something is broken"));
+
+        try (var response = EXT.target("/validate")
+            .register(MultiPartFeature.class)
+            .request()
+            .post(Entity.entity(multipart, multipart.getMediaType()), Response.class)
+        ) {
+            assertEquals(500, response.getStatus());
+            assertEquals("{\"code\":500,\"message\":\"HTTP 500 Internal Server Error\"}", response.readEntity(String.class));
+        }
+    }
+
+    @Test
+    void validateFormDataWithInvalidXml() throws Exception {
         var bagDir = getResourceUrl("bags/valid-bag").getFile();
 
         var data = new ValidateCommandDto();
