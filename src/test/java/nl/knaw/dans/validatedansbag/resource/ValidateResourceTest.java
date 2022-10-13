@@ -130,7 +130,7 @@ class ValidateResourceTest {
             .request()
             .post(Entity.entity(multipart, multipart.getMediaType()), Response.class)) {
 
-            assertEquals("{\"code\":500,\"message\":\"HTTP 500 Internal Server Error\"}", IOUtils.toString((ByteArrayInputStream)response.getEntity(), UTF_8.name()));
+            assertEquals("{\"code\":500,\"message\":\"HTTP 500 Internal Server Error\"}", response.readEntity(String.class));
             assertEquals("Internal Server Error",response.getStatusInfo().getReasonPhrase());
             assertEquals(500, response.getStatus());
         }
@@ -225,7 +225,7 @@ class ValidateResourceTest {
             .post(zip, Response.class)
         ) {
             assertEquals(500, response.getStatus());
-            assertTrue(response.readEntity(String.class).contains("Error deleting directory"));
+            assertEquals("{\"code\":500,\"message\":\"HTTP 500 Internal Server Error\"}", response.readEntity(String.class));
         }
     }
 
