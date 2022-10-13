@@ -15,23 +15,12 @@
  */
 package nl.knaw.dans.validatedansbag.core.rules;
 
-import gov.loc.repository.bagit.exceptions.MaliciousPathException;
-import gov.loc.repository.bagit.exceptions.UnparsableVersionException;
-import gov.loc.repository.bagit.exceptions.UnsupportedAlgorithmException;
-import nl.knaw.dans.lib.dataverse.DataverseException;
-import nl.knaw.dans.validatedansbag.core.BagNotFoundException;
 import nl.knaw.dans.validatedansbag.core.engine.RuleResult;
-import org.xml.sax.SAXException;
 
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.xpath.XPathExpressionException;
-import java.io.IOException;
 import java.nio.file.Path;
 
 @FunctionalInterface
 public interface BagValidatorRule {
-    RuleResult validate(Path path)
-        throws ParserConfigurationException, XPathExpressionException, IOException, SAXException, MaliciousPathException, UnparsableVersionException, UnsupportedAlgorithmException,
-        InterruptedException, BagNotFoundException, DataverseException;
+    RuleResult validate(Path path) throws Exception;
 
 }

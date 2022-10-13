@@ -57,16 +57,7 @@ public class XmlRulesImpl implements XmlRules {
         return (path) -> {
             var fileName = path.resolve(file);
             log.debug("Validating {} against schema {}", fileName, schema);
-            List<String> errors = null;
-            try {
-                errors = validateXmlFile(fileName, schema);
-            }
-            catch (SAXException e) {
-                var msg = String.format("%s does not conform to %s: \n%s",
-                    file, schema, String.join("\n", e.getMessage()));
-
-                return RuleResult.error(msg);
-            }
+            var errors = validateXmlFile(fileName, schema);
 
             if (errors.size() > 0) {
                 var msg = String.format("%s does not conform to %s: \n%s",

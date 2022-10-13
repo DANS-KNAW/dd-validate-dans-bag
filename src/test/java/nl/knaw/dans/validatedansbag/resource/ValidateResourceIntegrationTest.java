@@ -45,8 +45,6 @@ import javax.ws.rs.BadRequestException;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import javax.xml.parsers.ParserConfigurationException;
-import java.io.IOException;
 import java.net.URL;
 import java.util.List;
 import java.util.Objects;
@@ -134,31 +132,6 @@ class ValidateResourceIntegrationTest {
             .field("command", data, MediaType.APPLICATION_JSON_TYPE);
 
         Mockito.when(xmlSchemaValidator.validateDocument(Mockito.any(), Mockito.anyString()))
-            .thenThrow(new IOException("Something is broken"));
-
-        try (var response = EXT.target("/validate")
-            .register(MultiPartFeature.class)
-            .request()
-            .post(Entity.entity(multipart, multipart.getMediaType()), Response.class)
-        ) {
-            assertEquals(500, response.getStatus());
-            assertEquals("{\"code\":500,\"message\":\"HTTP 500 Internal Server Error\"}", response.readEntity(String.class));
-        }
-    }
-
-
-    @Test
-    void validateFormDataXmlSyntaxError() throws Exception {
-        var bagDir = getResourceUrl("bags/valid-bag").getFile();
-
-        var data = new ValidateCommandDto();
-        data.setBagLocation(bagDir);
-        data.setPackageType(PackageTypeEnum.DEPOSIT);
-        data.setLevel(LevelEnum.WITH_DATA_STATION_CONTEXT);
-        var multipart = new FormDataMultiPart()
-            .field("command", data, MediaType.APPLICATION_JSON_TYPE);
-
-        Mockito.when(xmlSchemaValidator.validateDocument(Mockito.any(), Mockito.anyString()))
             .thenThrow(new SAXException("Something is broken"));
 
         try (var response = EXT.target("/validate")
@@ -166,10 +139,7 @@ class ValidateResourceIntegrationTest {
             .request()
             .post(Entity.entity(multipart, multipart.getMediaType()), Response.class)
         ) {
-            String actual = response.readEntity(String.class);
-            assertTrue(actual.contains("\"Is compliant\":false"), "response body does not contain: Is compliant: false");
-            assertTrue(actual.contains("Something is broken"), "response body does not contain: Something is broken");
-            assertEquals(200, response.getStatus());
+            assertEquals(500, response.getStatus());
         }
     }
 
