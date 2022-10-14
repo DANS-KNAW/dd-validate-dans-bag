@@ -30,6 +30,7 @@ import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXException;
+import org.xml.sax.SAXParseException;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
@@ -41,6 +42,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
+import java.io.File;
 import java.io.InputStream;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -137,13 +139,13 @@ public class ValidateResource {
     ValidateOkDto validatePath(java.nio.file.Path bagDir, DepositType depositType, ValidationLevel validationLevel) throws Exception {
 
         List<RuleValidationResult> results = null;
-        SAXException thrown = null;
+        String violationMessage = null;
         try {
             results = ruleEngineService.validateBag(bagDir, depositType, validationLevel);
         }
-        catch (SAXException e) {
-            log.error("A (dependency on) xmlFileConformsToSchema is missing, can't tell the client which XML file was invalid.", e);
-            thrown = e;
+        catch (SAXParseException e) {
+            violationMessage = String.format("%s - line: %d; column: %d msg: %s", new File(e.getSystemId()).getName(), e.getLineNumber(), e.getColumnNumber(), e.getMessage());
+            log.error("An xmlFileConformsToSchema is missing or a dependency on such rule", e);
         }
 
         var isValid = results != null && results.stream().noneMatch(r -> r.getStatus().equals(RuleValidationResult.RuleValidationResultStatus.FAILURE));
@@ -157,7 +159,7 @@ public class ValidateResource {
         result.setLevel(toLevel(validationLevel));
         if (results == null) {
             ValidateOkRuleViolationsDto violation = new ValidateOkRuleViolationsDto();
-            violation.setViolation("Some xml file has an invalid syntax: " + (thrown == null ? "" : thrown.getMessage()));
+            violation.setViolation(violationMessage);
             violation.setRule("not known");
             result.setRuleViolations(List.of(violation));
         }

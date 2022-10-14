@@ -99,7 +99,7 @@ public class RuleEngineServiceImpl implements RuleEngineService {
             new NumberedRule("2.6.2", bagRules.isOriginalFilepathsFileComplete(), "2.6.1"),
 
             // metadata/dataset.xml
-            new NumberedRule("3.1.1", xmlRules.xmlFileConformsToSchema(datasetPath, "dataset.xml"), "2.2(a)"),
+            new NumberedRule("3.1.1", xmlRules.xmlFileConformsToSchema(datasetPath, "dataset.xml"), "1.1.1", "2.2(a)"),
             new NumberedRule("3.1.2", bagRules.ddmMayContainDctermsLicenseFromList(), "3.1.1"),
             new NumberedRule("3.1.3", bagRules.ddmDoiIdentifiersAreValid(), "3.1.1"),
 
@@ -116,9 +116,9 @@ public class RuleEngineServiceImpl implements RuleEngineService {
             new NumberedRule("3.1.10(b)", bagRules.ddmMustHaveRightsHolderDeposit(), DepositType.MIGRATION, "3.1.1"),
             new NumberedRule("3.1.11", bagRules.ddmMustNotHaveRightsHolderRole(), DepositType.DEPOSIT, "3.1.1"),
 
-            new NumberedRule("3.2.1", xmlRules.xmlFileConformsToSchema(metadataFilesPath, "files.xml"), "2.2(b)"),
-            new NumberedRule("3.2.2", filesXmlRules.filesXmlFilePathAttributesContainLocalBagPathAndNonPayloadFilesAreNotDescribed(), "3.2.1"),
-            new NumberedRule("3.2.3", filesXmlRules.filesXmlNoDuplicateFilesAndEveryPayloadFileIsDescribed(), "3.2.1"),
+            new NumberedRule("3.2.1", xmlRules.xmlFileConformsToSchema(metadataFilesPath, "files.xml"), "3.1.1"),
+            new NumberedRule("3.2.2", filesXmlRules.filesXmlFilePathAttributesContainLocalBagPathAndNonPayloadFilesAreNotDescribed(), "2.2(b)"),
+            new NumberedRule("3.2.3", filesXmlRules.filesXmlNoDuplicateFilesAndEveryPayloadFileIsDescribed(), "2.2(b)"),
 
             // agreements.xml
             new NumberedRule("3.3.1", xmlRules.xmlFileIfExistsConformsToSchema(Path.of("metadata/depositor-info/agreements.xml"), "agreements.xml"), DepositType.MIGRATION),
