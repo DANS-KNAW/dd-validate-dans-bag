@@ -25,6 +25,7 @@ import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
 import javax.xml.parsers.ParserConfigurationException;
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
@@ -68,7 +69,10 @@ public class XmlRulesImpl implements XmlRules {
                     return RuleResult.error(msg);
                 }
             } catch (SAXParseException e) {
-                return RuleResult.error(e.getMessage(), e);
+                if (e.getSystemId() == null)
+                    return RuleResult.error(e.getMessage(), e);
+                else
+                    return RuleResult.error(String.format("%s - line: %d; column: %d msg: %s", new File(e.getSystemId()).getName(), e.getLineNumber(), e.getColumnNumber(), e.getMessage()), e);
             }
 
             return RuleResult.ok();

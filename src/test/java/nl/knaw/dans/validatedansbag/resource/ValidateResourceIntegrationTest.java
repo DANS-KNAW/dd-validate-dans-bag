@@ -173,7 +173,7 @@ class ValidateResourceIntegrationTest {
             assertEquals(200, response.getStatus());
             var body = response.readEntity(ValidateOkDto.class);
             assertFalse(body.getIsCompliant());
-            assertEquals(Set.of("not known"), getViolatedRuleNumbers(body));
+            assertEquals(Set.of("3.2.1"), getViolatedRuleNumbers(body));
             assertEquals("files.xml - line: 9; column: 7 msg: The element type \"file\" must be terminated by the matching end-tag \"</file>\".", body.getRuleViolations().get(0).getViolation());
         }
     }
