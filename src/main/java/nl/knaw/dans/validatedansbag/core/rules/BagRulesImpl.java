@@ -116,7 +116,7 @@ public class BagRulesImpl implements BagRules {
             catch (InvalidBagitFileFormatException | MissingPayloadManifestException | MissingPayloadDirectoryException | FileNotInPayloadDirectoryException | MissingBagitFileException |
                    CorruptChecksumException | VerificationException | NoSuchFileException | UnparsableVersionException | FileNotInManifestException | MaliciousPathException e) {
                 return RuleResult.error(String.format(
-                    "Bag is not valid: %s", e.getMessage()
+                    "Bag is not valid: %s", e.getMessage().replace(path.toString() + "/", "")
                 ), e);
             }
         };

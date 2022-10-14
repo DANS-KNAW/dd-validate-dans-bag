@@ -188,7 +188,7 @@ class ValidateResourceIntegrationTest {
         var data = new ValidateCommandDto();
         data.setBagLocation(bagDir);
         data.setPackageType(PackageTypeEnum.DEPOSIT);
-        data.setLevel(LevelEnum.WITH_DATA_STATION_CONTEXT);
+        data.setLevel(LevelEnum.STAND_ALONE);
         var multipart = new FormDataMultiPart()
             .field("command", data, MediaType.APPLICATION_JSON_TYPE);
 
@@ -201,8 +201,8 @@ class ValidateResourceIntegrationTest {
             assertEquals(200, response.getStatus());
             var body = response.readEntity(ValidateOkDto.class);
             assertFalse(body.getIsCompliant());
-            assertEquals(Set.of("4.1", "1.1.1"), getViolatedRuleNumbers(body));
-            assertTrue(body.getRuleViolations().get(0).getViolation().endsWith("target/test/ValidateResourceIntegrationTest/bagWithFileNotInManifest/data/extra-file.txt] is in the payload directory but isn't listed in any manifest!"));
+            assertEquals(Set.of("1.1.1"), getViolatedRuleNumbers(body));
+            assertEquals("Bag is not valid: File [data/extra-file.txt] is in the payload directory but isn't listed in any manifest!", body.getRuleViolations().get(0).getViolation());
         }
     }
 
