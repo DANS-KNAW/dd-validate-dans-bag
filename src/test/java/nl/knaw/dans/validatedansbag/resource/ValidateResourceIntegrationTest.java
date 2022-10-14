@@ -154,33 +154,6 @@ class ValidateResourceIntegrationTest {
     }
 
     @Test
-    void validateFormDataWithInvalidXml() throws Exception {
-        var bagDir = getResourceUrl("bags/valid-bag").getFile();
-
-        var data = new ValidateCommandDto();
-        data.setBagLocation(bagDir);
-        data.setPackageType(PackageTypeEnum.DEPOSIT);
-        data.setLevel(LevelEnum.WITH_DATA_STATION_CONTEXT);
-        var multipart = new FormDataMultiPart()
-            .field("command", data, MediaType.APPLICATION_JSON_TYPE);
-
-        Mockito.when(xmlSchemaValidator.validateDocument(Mockito.any(), Mockito.anyString()))
-            .thenThrow(new SAXException("Something is broken"));
-
-        try (var response = EXT.target("/validate")
-            .register(MultiPartFeature.class)
-            .request()
-            .post(Entity.entity(multipart, multipart.getMediaType()), Response.class)
-        ) {
-            assertEquals(200, response.getStatus());
-            String body = response.readEntity(String.class);
-            assertTrue(body.contains("\"Is compliant\":false"));
-            assertTrue(body.contains("\"rule\":\"not known\",\"violation\""));
-            assertTrue(body.contains("Some xml file has an invalid syntax: Something is broken"));
-        }
-    }
-
-    @Test
     void validateFormDataWithInvalidFilesXml() throws Exception {
         var bagDir = getResourceUrl("bags/invalid-files-xml-bag").getFile();
 
@@ -200,7 +173,7 @@ class ValidateResourceIntegrationTest {
             assertEquals(200, response.getStatus());
             String body = response.readEntity(String.class);
             assertTrue(body.contains("\"Is compliant\":false"));
-            assertTrue(body.contains("Some xml file has an invalid syntax: The element type \\\"file\\\" must be terminated by the matching end-tag \\\"</file>\\\"."));
+            assertTrue(body.contains("\"Rule violations\":[{\"rule\":\"3.2.1\",\"violation\":\"The element type \\\"file\\\" must be terminated by the matching end-tag \\\"</file>\\\".\"}]"));
         }
     }
 
