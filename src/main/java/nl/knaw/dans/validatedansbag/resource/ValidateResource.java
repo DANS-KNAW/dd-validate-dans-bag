@@ -137,11 +137,13 @@ public class ValidateResource {
     ValidateOkDto validatePath(java.nio.file.Path bagDir, DepositType depositType, ValidationLevel validationLevel) throws Exception {
 
         List<RuleValidationResult> results = null;
+        SAXException thrown = null;
         try {
             results = ruleEngineService.validateBag(bagDir, depositType, validationLevel);
         }
         catch (SAXException e) {
-            log.error("A dependency on xmlFileConformsToSchema is missing", e);
+            log.error("A (dependency on) xmlFileConformsToSchema is missing, can't tell the client which XML file was invalid.", e);
+            thrown = e;
         }
 
         var isValid = results != null && results.stream().noneMatch(r -> r.getStatus().equals(RuleValidationResult.RuleValidationResultStatus.FAILURE));
@@ -154,9 +156,10 @@ public class ValidateResource {
         result.setInformationPackageType(toInfoPackageType(depositType));
         result.setLevel(toLevel(validationLevel));
         if (results == null) {
-            ValidateOkRuleViolationsDto e1 = new ValidateOkRuleViolationsDto();
-            e1.setViolation("Some xml file has an invalid syntax"); // TODO need the SAXException (actually also which file)
-            result.setRuleViolations(List.of(e1));
+            ValidateOkRuleViolationsDto violation = new ValidateOkRuleViolationsDto();
+            violation.setViolation("Some xml file has an invalid syntax: " + (thrown == null ? "" : thrown.getMessage()));
+            violation.setRule("not known");
+            result.setRuleViolations(List.of(violation));
         }
         else
             result.setRuleViolations(results.stream()

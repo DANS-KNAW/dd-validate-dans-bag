@@ -33,6 +33,7 @@ import nl.knaw.dans.validatedansbag.core.rules.TestLicenseConfig;
 import nl.knaw.dans.validatedansbag.core.service.DataverseService;
 import nl.knaw.dans.validatedansbag.core.service.FileServiceImpl;
 import nl.knaw.dans.validatedansbag.core.service.XmlSchemaValidator;
+import org.apache.commons.io.FileUtils;
 import org.glassfish.jersey.media.multipart.FormDataMultiPart;
 import org.glassfish.jersey.media.multipart.MultiPartFeature;
 import org.junit.jupiter.api.BeforeEach;
@@ -45,6 +46,7 @@ import javax.ws.rs.BadRequestException;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.List;
@@ -52,6 +54,9 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.apache.commons.io.FileUtils.copyDirectory;
+import static org.apache.commons.io.FileUtils.write;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -92,8 +97,11 @@ class ValidateResourceIntegrationTest {
         return Objects.requireNonNull(getClass().getClassLoader().getResource(name));
     }
 
+    private String testDir = "target/test/" + this.getClass().getSimpleName();
+
     @BeforeEach
-    void setup() {
+    void setup() throws IOException {
+        FileUtils.cleanDirectory(new File(testDir));
         Mockito.reset(dataverseService);
         Mockito.reset(xmlSchemaValidator);
     }
@@ -167,7 +175,36 @@ class ValidateResourceIntegrationTest {
             assertEquals(200, response.getStatus());
             String body = response.readEntity(String.class);
             assertTrue(body.contains("\"Is compliant\":false"));
-            assertTrue(body.contains("{\"rule\":null,\"violation\":\"Some xml file has an invalid syntax\"}"));
+            assertTrue(body.contains("\"rule\":\"not known\",\"violation\""));
+            assertTrue(body.contains("Some xml file has an invalid syntax: Something is broken"));
+        }
+    }
+
+    @Test
+    void validateFormDataWithFileNotInManifest() throws Exception {
+        var destDir = new File(testDir + "/bagWithFileNotInManifest");
+        copyDirectory(new File ("src/test/resources/bags/valid-bag"), destDir);
+        var bagDir = destDir.getAbsoluteFile().toString();
+        write(new File(bagDir + "/data/extra-file.txt"),"blablabla", UTF_8);
+
+        var data = new ValidateCommandDto();
+        data.setBagLocation(bagDir);
+        data.setPackageType(PackageTypeEnum.DEPOSIT);
+        data.setLevel(LevelEnum.WITH_DATA_STATION_CONTEXT);
+        var multipart = new FormDataMultiPart()
+            .field("command", data, MediaType.APPLICATION_JSON_TYPE);
+
+
+        try (var response = EXT.target("/validate")
+            .register(MultiPartFeature.class)
+            .request()
+            .post(Entity.entity(multipart, multipart.getMediaType()), Response.class)
+        ) {
+            assertEquals(200, response.getStatus());
+            String body = response.readEntity(String.class);
+            assertTrue(body.contains("\"Is compliant\":false"));
+            assertTrue(body.contains("1.1.1"));
+            assertTrue(body.contains("/data/extra-file.txt] is in the payload directory but isn't listed in any manifest!"));
         }
     }
 

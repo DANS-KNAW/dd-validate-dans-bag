@@ -16,12 +16,18 @@
 package nl.knaw.dans.validatedansbag.core.rules;
 
 import gov.loc.repository.bagit.exceptions.CorruptChecksumException;
+import gov.loc.repository.bagit.exceptions.FileNotInManifestException;
 import gov.loc.repository.bagit.exceptions.FileNotInPayloadDirectoryException;
+import gov.loc.repository.bagit.exceptions.InvalidBagMetadataException;
 import gov.loc.repository.bagit.exceptions.InvalidBagitFileFormatException;
+import gov.loc.repository.bagit.exceptions.InvalidPayloadOxumException;
+import gov.loc.repository.bagit.exceptions.MaliciousPathException;
 import gov.loc.repository.bagit.exceptions.MissingBagitFileException;
 import gov.loc.repository.bagit.exceptions.MissingPayloadDirectoryException;
 import gov.loc.repository.bagit.exceptions.MissingPayloadManifestException;
+import gov.loc.repository.bagit.exceptions.PayloadOxumDoesNotExistException;
 import gov.loc.repository.bagit.exceptions.UnparsableVersionException;
+import gov.loc.repository.bagit.exceptions.UnsupportedAlgorithmException;
 import gov.loc.repository.bagit.exceptions.VerificationException;
 import gov.loc.repository.bagit.hash.StandardSupportedAlgorithms;
 import nl.knaw.dans.validatedansbag.core.BagNotFoundException;
@@ -108,8 +114,7 @@ public class BagRulesImpl implements BagRules {
             }
             // only catch exceptions that have to do with the bag verification; other exceptions such as IOException should be propagated to the rule engine
             catch (InvalidBagitFileFormatException | MissingPayloadManifestException | MissingPayloadDirectoryException | FileNotInPayloadDirectoryException | MissingBagitFileException |
-                   CorruptChecksumException | VerificationException | NoSuchFileException | UnparsableVersionException e) {
-
+                   CorruptChecksumException | VerificationException | NoSuchFileException | UnparsableVersionException | FileNotInManifestException | MaliciousPathException e) {
                 return RuleResult.error(String.format(
                     "Bag is not valid: %s", e.getMessage()
                 ), e);
