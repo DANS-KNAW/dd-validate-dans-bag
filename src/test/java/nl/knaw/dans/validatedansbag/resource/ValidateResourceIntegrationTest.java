@@ -40,7 +40,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
-import org.xml.sax.SAXException;
 
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.client.Entity;
@@ -60,6 +59,7 @@ import static org.apache.commons.io.FileUtils.write;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @ExtendWith(DropwizardExtensionsSupport.class)
@@ -171,9 +171,10 @@ class ValidateResourceIntegrationTest {
             .post(Entity.entity(multipart, multipart.getMediaType()), Response.class)
         ) {
             assertEquals(200, response.getStatus());
-            String body = response.readEntity(String.class);
-            assertTrue(body.contains("\"Is compliant\":false"));
-            assertTrue(body.contains("\"Rule violations\":[{\"rule\":\"3.2.1\",\"violation\":\"The element type \\\"file\\\" must be terminated by the matching end-tag \\\"</file>\\\".\"}]"));
+            var body = response.readEntity(ValidateOkDto.class);
+            assertFalse(body.getIsCompliant());
+            assertEquals(Set.of("3.2.1"), getViolatedRuleNumbers(body));
+            assertEquals("The element type \"file\" must be terminated by the matching end-tag \"</file>\".", body.getRuleViolations().get(0).getViolation());
         }
     }
 
@@ -198,10 +199,10 @@ class ValidateResourceIntegrationTest {
             .post(Entity.entity(multipart, multipart.getMediaType()), Response.class)
         ) {
             assertEquals(200, response.getStatus());
-            String body = response.readEntity(String.class);
-            assertTrue(body.contains("\"Is compliant\":false"));
-            assertTrue(body.contains("1.1.1"));
-            assertTrue(body.contains("/data/extra-file.txt] is in the payload directory but isn't listed in any manifest!"));
+            var body = response.readEntity(ValidateOkDto.class);
+            assertFalse(body.getIsCompliant());
+            assertEquals(Set.of("4.1", "1.1.1"), getViolatedRuleNumbers(body));
+            assertTrue(body.getRuleViolations().get(0).getViolation().endsWith("target/test/ValidateResourceIntegrationTest/bagWithFileNotInManifest/data/extra-file.txt] is in the payload directory but isn't listed in any manifest!"));
         }
     }
 
