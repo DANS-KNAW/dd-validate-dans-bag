@@ -101,7 +101,7 @@ class ValidateResourceIntegrationTest {
 
     @BeforeEach
     void setup() throws IOException {
-        FileUtils.cleanDirectory(new File(testDir));
+        FileUtils.deleteDirectory(new File(testDir));
         Mockito.reset(dataverseService);
         Mockito.reset(xmlSchemaValidator);
     }
@@ -177,6 +177,30 @@ class ValidateResourceIntegrationTest {
             assertTrue(body.contains("\"Is compliant\":false"));
             assertTrue(body.contains("\"rule\":\"not known\",\"violation\""));
             assertTrue(body.contains("Some xml file has an invalid syntax: Something is broken"));
+        }
+    }
+
+    @Test
+    void validateFormDataWithInvalidFilesXml() throws Exception {
+        var bagDir = getResourceUrl("bags/invalid-files-xml-bag").getFile();
+
+        var data = new ValidateCommandDto();
+        data.setBagLocation(bagDir);
+        data.setPackageType(PackageTypeEnum.MIGRATION);
+        data.setLevel(LevelEnum.STAND_ALONE);
+        var multipart = new FormDataMultiPart()
+            .field("command", data, MediaType.APPLICATION_JSON_TYPE);
+
+
+        try (var response = EXT.target("/validate")
+            .register(MultiPartFeature.class)
+            .request()
+            .post(Entity.entity(multipart, multipart.getMediaType()), Response.class)
+        ) {
+            assertEquals(200, response.getStatus());
+            String body = response.readEntity(String.class);
+            assertTrue(body.contains("\"Is compliant\":false"));
+            assertTrue(body.contains("Some xml file has an invalid syntax: The element type \\\"file\\\" must be terminated by the matching end-tag \\\"</file>\\\"."));
         }
     }
 
