@@ -15,10 +15,20 @@
  */
 package nl.knaw.dans.validatedansbag.core.rules;
 
+import org.xml.sax.SAXParseException;
+
+import java.io.File;
 import java.nio.file.Path;
 
 public interface XmlRules {
     BagValidatorRule xmlFileConformsToSchema(Path file, String schema);
 
     BagValidatorRule xmlFileIfExistsConformsToSchema(Path file, String schema);
+
+    public static String toRuleMsg (SAXParseException e) {
+        if (e.getSystemId() == null)
+            return e.getMessage();
+        else
+            return String.format("%s - line: %d; column: %d msg: %s", new File(e.getSystemId()).getName(), e.getLineNumber(), e.getColumnNumber(), e.getMessage());
+    }
 }

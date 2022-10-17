@@ -22,18 +22,21 @@ import nl.knaw.dans.openapi.api.ValidateCommandDto.LevelEnum;
 import nl.knaw.dans.openapi.api.ValidateCommandDto.PackageTypeEnum;
 import nl.knaw.dans.openapi.api.ValidateOkDto;
 import nl.knaw.dans.openapi.api.ValidateOkDto.InformationPackageTypeEnum;
+import nl.knaw.dans.openapi.api.ValidateOkRuleViolationsDto;
 import nl.knaw.dans.validatedansbag.core.BagNotFoundException;
 import nl.knaw.dans.validatedansbag.core.engine.DepositType;
 import nl.knaw.dans.validatedansbag.core.engine.ValidationLevel;
 import nl.knaw.dans.validatedansbag.core.service.FileService;
 import nl.knaw.dans.validatedansbag.core.service.RuleEngineService;
-import org.apache.commons.io.IOUtils;
 import org.glassfish.jersey.media.multipart.FormDataMultiPart;
 import org.glassfish.jersey.media.multipart.MultiPartFeature;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
+import org.xml.sax.Locator;
+import org.xml.sax.SAXParseException;
+import org.xml.sax.helpers.LocatorImpl;
 
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.MediaType;
@@ -42,11 +45,12 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.Optional;
 import java.util.zip.ZipError;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @ExtendWith(DropwizardExtensionsSupport.class)
@@ -76,7 +80,7 @@ class ValidateResourceTest {
         EXT.target("/validate")
             .register(MultiPartFeature.class)
             .request()
-            .post(Entity.entity(multipart, multipart.getMediaType()), String.class);
+            .post(Entity.entity(multipart, multipart.getMediaType()), Response.class);
 
         Mockito.verifyNoInteractions(fileService);//.extractZipFile(Mockito.any(Path.class));
     }
@@ -100,7 +104,7 @@ class ValidateResourceTest {
         EXT.target("/validate")
             .register(MultiPartFeature.class)
             .request()
-            .post(Entity.entity(multipart, multipart.getMediaType()), String.class);
+            .post(Entity.entity(multipart, multipart.getMediaType()), Response.class);
 
         Mockito.verify(fileService).extractZipFile(Mockito.any(InputStream.class));//.extractZipFile(Mockito.any(Path.class));
     }
@@ -150,7 +154,7 @@ class ValidateResourceTest {
 
         EXT.target("/validate")
             .request()
-            .post(zip, String.class);
+            .post(zip, Response.class);
 
         Mockito.verify(fileService).extractZipFile(Mockito.any(InputStream.class));//.extractZipFile(Mockito.any(Path.class));
     }
@@ -173,6 +177,87 @@ class ValidateResourceTest {
             .post(Entity.entity(multipart, multipart.getMediaType()), Response.class)
         ) {
             assertEquals(400, response.getStatus());
+        }
+    }
+
+    @Test
+    void validateMultipartFileWithMissingDependencyOnSchemaValidation1() throws Exception {
+        var data = new ValidateCommandDto();
+        data.setBagLocation("some/path");
+        data.setPackageType(PackageTypeEnum.DEPOSIT);
+
+        var multipart = new FormDataMultiPart()
+            .field("command", data, MediaType.APPLICATION_JSON_TYPE);
+
+        Mockito
+            .when(ruleEngineService.validateBag(Mockito.any(), Mockito.any(), Mockito.any()))
+            .thenThrow(new SAXParseException("some syntax problem", new Locator() {
+
+                @Override
+                public String getPublicId() {
+                    return null;
+                }
+
+                @Override
+                public String getSystemId() {
+                    return "/path/to/bag/metadata/dataset.xml";
+                }
+
+                @Override
+                public int getLineNumber() {
+                    return 0;
+                }
+
+                @Override
+                public int getColumnNumber() {
+                    return 0;
+                }
+            }));
+        ;
+
+        try (var response = EXT.target("/validate")
+            .register(MultiPartFeature.class)
+            .request()
+            .post(Entity.entity(multipart, multipart.getMediaType()), Response.class)
+        ) {
+            assertEquals(200, response.getStatus());
+            ValidateOkDto actual = response.readEntity(ValidateOkDto.class);
+            assertFalse(actual.getIsCompliant());
+            ValidateOkRuleViolationsDto expected = new ValidateOkRuleViolationsDto();
+            expected.setRule("not known");
+            expected.setViolation("dataset.xml - line: 0; column: 0 msg: some syntax problem");
+            assertEquals(List.of(expected), actual.getRuleViolations());
+
+        }
+    }
+
+    @Test
+    void validateMultipartFileWithMissingDependencyOnSchemaValidation2() throws Exception {
+        var data = new ValidateCommandDto();
+        data.setBagLocation("some/path");
+        data.setPackageType(PackageTypeEnum.DEPOSIT);
+
+        var multipart = new FormDataMultiPart()
+            .field("command", data, MediaType.APPLICATION_JSON_TYPE);
+
+        Mockito
+            .when(ruleEngineService.validateBag(Mockito.any(), Mockito.any(), Mockito.any()))
+            .thenThrow(new SAXParseException("some syntax problem", new LocatorImpl()));
+        ;
+
+        try (var response = EXT.target("/validate")
+            .register(MultiPartFeature.class)
+            .request()
+            .post(Entity.entity(multipart, multipart.getMediaType()), Response.class)
+        ) {
+            assertEquals(200, response.getStatus());
+            ValidateOkDto actual = response.readEntity(ValidateOkDto.class);
+            assertFalse(actual.getIsCompliant());
+            ValidateOkRuleViolationsDto expected = new ValidateOkRuleViolationsDto();
+            expected.setRule("not known");
+            expected.setViolation("some syntax problem");
+            assertEquals(List.of(expected), actual.getRuleViolations());
+
         }
     }
 

@@ -22,8 +22,10 @@ import nl.knaw.dans.openapi.api.ValidateOkDto.LevelEnum;
 import nl.knaw.dans.openapi.api.ValidateOkRuleViolationsDto;
 import nl.knaw.dans.validatedansbag.core.BagNotFoundException;
 import nl.knaw.dans.validatedansbag.core.engine.DepositType;
+import nl.knaw.dans.validatedansbag.core.engine.RuleResult;
 import nl.knaw.dans.validatedansbag.core.engine.RuleValidationResult;
 import nl.knaw.dans.validatedansbag.core.engine.ValidationLevel;
+import nl.knaw.dans.validatedansbag.core.rules.XmlRules;
 import nl.knaw.dans.validatedansbag.core.service.FileService;
 import nl.knaw.dans.validatedansbag.core.service.RuleEngineService;
 import org.glassfish.jersey.media.multipart.FormDataParam;
@@ -144,7 +146,7 @@ public class ValidateResource {
             results = ruleEngineService.validateBag(bagDir, depositType, validationLevel);
         }
         catch (SAXParseException e) {
-            violationMessage = String.format("%s - line: %d; column: %d msg: %s", new File(e.getSystemId()).getName(), e.getLineNumber(), e.getColumnNumber(), e.getMessage());
+            violationMessage = XmlRules.toRuleMsg(e);
             log.error("An xmlFileConformsToSchema is missing or a dependency on such rule", e);
         }
 
