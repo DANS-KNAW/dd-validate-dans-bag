@@ -381,6 +381,7 @@ class ValidateResourceIntegrationTest {
             .post(Entity.entity(multipart, multipart.getMediaType()), Response.class)
         ) {
             assertEquals(400, response.getStatus());
+            assertEquals("Request could not be processed: Bag on path '/some/non/existing/filename' could not be found or read", response.readEntity(BadRequestException.class).getMessage());
         }
     }
 

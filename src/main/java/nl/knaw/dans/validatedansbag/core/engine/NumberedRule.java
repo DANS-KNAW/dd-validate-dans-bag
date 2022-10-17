@@ -17,7 +17,6 @@ package nl.knaw.dans.validatedansbag.core.engine;
 
 import nl.knaw.dans.validatedansbag.core.rules.BagValidatorRule;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
