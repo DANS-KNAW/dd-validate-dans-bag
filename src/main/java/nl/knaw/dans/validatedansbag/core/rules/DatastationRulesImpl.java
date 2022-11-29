@@ -16,6 +16,7 @@
 package nl.knaw.dans.validatedansbag.core.rules;
 
 import nl.knaw.dans.lib.dataverse.DataverseException;
+import nl.knaw.dans.lib.dataverse.DataverseResponse;
 import nl.knaw.dans.lib.dataverse.model.RoleAssignmentReadOnly;
 import nl.knaw.dans.lib.dataverse.model.dataset.DatasetLatestVersion;
 import nl.knaw.dans.lib.dataverse.model.dataset.PrimitiveSingleValueField;
@@ -128,7 +129,8 @@ public class DatastationRulesImpl implements DatastationRules {
             var userAccount = bagItMetadataReader.getSingleField(path, "Data-Station-User-Account");
 
             if (userAccount != null) {
-                var result = Optional.ofNullable(dataverseService.getDataverseRoleAssignments("root"))
+                DataverseResponse<List<RoleAssignmentReadOnly>> roleAssignments = dataverseService.getDataverseRoleAssignments("root");
+                var result = Optional.ofNullable(roleAssignments)
                     .map(d -> {
                         try {
                             return d.getData();
@@ -231,7 +233,8 @@ public class DatastationRulesImpl implements DatastationRules {
 
         if (result.isPresent()) {
             var globalId = result.get().getGlobalId();
-            return Optional.ofNullable(dataverseService.getDataset(globalId).getData());
+            var dataset = dataverseService.getDataset(globalId);
+            return Optional.ofNullable(dataset.getData());
         }
 
         return Optional.empty();
