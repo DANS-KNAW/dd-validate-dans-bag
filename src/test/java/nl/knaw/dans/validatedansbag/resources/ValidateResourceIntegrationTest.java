@@ -13,19 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package nl.knaw.dans.validatedansbag.resource;
+package nl.knaw.dans.validatedansbag.resources;
 
 import io.dropwizard.testing.junit5.DropwizardExtensionsSupport;
 import io.dropwizard.testing.junit5.ResourceExtension;
 import nl.knaw.dans.lib.dataverse.model.RoleAssignmentReadOnly;
 import nl.knaw.dans.lib.dataverse.model.dataset.DatasetLatestVersion;
 import nl.knaw.dans.lib.dataverse.model.search.SearchResult;
-import nl.knaw.dans.openapi.api.ValidateCommandDto;
+import nl.knaw.dans.validatedansbag.api.ValidateCommandDto;
 import nl.knaw.dans.openapi.api.ValidateCommandDto.LevelEnum;
 import nl.knaw.dans.openapi.api.ValidateCommandDto.PackageTypeEnum;
-import nl.knaw.dans.openapi.api.ValidateOkDto;
+import nl.knaw.dans.validatedansbag.api.ValidateOkDto;
 import nl.knaw.dans.openapi.api.ValidateOkDto.InformationPackageTypeEnum;
-import nl.knaw.dans.openapi.api.ValidateOkRuleViolationsDto;
+import nl.knaw.dans.validatedansbag.api.ValidateOkRuleViolationsDto;
 import nl.knaw.dans.validatedansbag.DdValidateDansBagApplication;
 import nl.knaw.dans.validatedansbag.core.config.OtherIdPrefix;
 import nl.knaw.dans.validatedansbag.core.config.SwordDepositorRoles;
@@ -350,7 +350,6 @@ class ValidateResourceIntegrationTest {
     @Test
     void validateZipFileAndGetTextResponse() throws Exception {
         var bagDir = getResourceUrl("zips/invalid-sha1.zip");
-
         var response = EXT.target("/validate")
             .queryParam("level", LevelEnum.WITH_DATA_STATION_CONTEXT.toString())
             .request()

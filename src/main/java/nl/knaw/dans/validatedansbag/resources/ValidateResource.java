@@ -13,13 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package nl.knaw.dans.validatedansbag.resource;
+package nl.knaw.dans.validatedansbag.resources;
 
-import nl.knaw.dans.openapi.api.ValidateCommandDto;
-import nl.knaw.dans.openapi.api.ValidateOkDto;
+import nl.knaw.dans.validatedansbag.api.ValidateCommandDto;
+import nl.knaw.dans.validatedansbag.api.ValidateOkDto;
 import nl.knaw.dans.openapi.api.ValidateOkDto.InformationPackageTypeEnum;
 import nl.knaw.dans.openapi.api.ValidateOkDto.LevelEnum;
-import nl.knaw.dans.openapi.api.ValidateOkRuleViolationsDto;
+import nl.knaw.dans.validatedansbag.api.ValidateOkRuleViolationsDto;
 import nl.knaw.dans.validatedansbag.core.BagNotFoundException;
 import nl.knaw.dans.validatedansbag.core.engine.DepositType;
 import nl.knaw.dans.validatedansbag.core.engine.RuleValidationResult;
@@ -103,13 +103,9 @@ public class ValidateResource {
     @Consumes({ "application/zip" })
     @Produces({ MediaType.APPLICATION_JSON, MediaType.TEXT_PLAIN })
     public ValidateOkDto validateZip(InputStream inputStream, @QueryParam("level") ValidationLevel level) {
-        if (level == null) {
-            level = ValidationLevel.STAND_ALONE;
-        }
-
         try {
-            log.info("Received request to validate zip file");
-            return validateInputStream(inputStream, DepositType.DEPOSIT, level);
+            log.info("Received request to validate zip file with level = {}", level);
+            return validateInputStream(inputStream, DepositType.DEPOSIT, level == null ? ValidationLevel.WITH_DATA_STATION_CONTEXT : level);
         }
         catch (BagNotFoundException e) {
             log.error("Bag not found", e);

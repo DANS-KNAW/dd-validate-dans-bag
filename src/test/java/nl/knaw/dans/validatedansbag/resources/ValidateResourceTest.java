@@ -13,11 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package nl.knaw.dans.validatedansbag.resource;
+package nl.knaw.dans.validatedansbag.resources;
 
 import io.dropwizard.testing.junit5.DropwizardExtensionsSupport;
 import io.dropwizard.testing.junit5.ResourceExtension;
-import nl.knaw.dans.openapi.api.ValidateCommandDto;
+import nl.knaw.dans.validatedansbag.api.ValidateCommandDto;
 import nl.knaw.dans.openapi.api.ValidateCommandDto.LevelEnum;
 import nl.knaw.dans.openapi.api.ValidateCommandDto.PackageTypeEnum;
 import nl.knaw.dans.openapi.api.ValidateOkDto;
