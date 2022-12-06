@@ -76,7 +76,7 @@ class XmlSchemaValidatorImplTest {
                     return schemaFactory.newSchema(new StreamSource(resource));
                 }
             }
-        }).when(validator).getValidatorForFilename(Mockito.anyString());
+        }).when(validator).getValidatorForFilename(Mockito.any());
 
         return validator;
     }
