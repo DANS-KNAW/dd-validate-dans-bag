@@ -49,38 +49,18 @@ public class XmlSchemaValidatorImpl implements XmlSchemaValidator {
 
         try {
             this.loadSchemaInstances();
-        } catch (Throwable e) {
+        }
+        catch (Throwable e) {
             log.error("Unable to load XML schema's on startup", e);
         }
     }
 
-    Schema getValidatorForFilename(String filename) throws MalformedURLException, SAXException {
-        log.debug("Looking up validator schema for file {}", filename);
-        var schemaInstance = filenameToSchemaInstance.get(filename);
-        log.debug("Found validator schema {}", schemaInstance);
-
-        if (schemaInstance == null) {
-            var schemaLocation = filenameToSchemaLocation.get(filename);
-
-            if (schemaLocation != null) {
-                schemaInstance = schemaFactory.newSchema(new URL(schemaLocation.toASCIIString()));
-                log.debug("Caching schema instance for {}", schemaLocation);
-                filenameToSchemaInstance.put(filename, schemaInstance);
-            }
-            else {
-                throw new IllegalStateException(String.format("Requested XML schema for filename %s but this filename is unknown", filename));
-            }
-        }
-
-        return schemaInstance;
-    }
-
     @Override
     public List<SAXParseException> validateDocument(Node node, String schema) throws IOException, SAXException {
-        var schemaInstance = getValidatorForFilename(schema);
+        var schemaInstance = getSchemaInstanceFor(schema);
 
         if (schemaInstance == null) {
-            throw new NullPointerException(String.format("No validator found for key %s", schema));
+            throw new IllegalStateException(String.format("No schema instance found for key %s", schema));
         }
 
         var validator = schemaInstance.newValidator();
@@ -111,7 +91,7 @@ public class XmlSchemaValidatorImpl implements XmlSchemaValidator {
     }
 
     @Override
-    public void loadSchemaInstances() throws Exception {
+    public void loadSchemaInstances() {
         for (var filename : filenameToSchemaLocation.keySet()) {
             log.trace("Start loading of schema instance for {}", filename);
             if (filenameToSchemaInstance.get(filename) != null) {
@@ -121,7 +101,7 @@ public class XmlSchemaValidatorImpl implements XmlSchemaValidator {
 
             try {
                 log.info("Loading validator for {}...", filename);
-                getValidatorForFilename(filename);
+                getSchemaInstanceFor(filename);
                 log.info("Validator for {} loaded.", filename);
             }
             catch (MalformedURLException | SAXException e) {
@@ -130,5 +110,28 @@ public class XmlSchemaValidatorImpl implements XmlSchemaValidator {
                 throw new RuntimeException(String.format("Unable to load XSD '%s'", url), e);
             }
         }
+    }
+
+    private Schema getSchemaInstanceFor(String filename) throws MalformedURLException, SAXException {
+        log.debug("Looking up validator schema for file {}", filename);
+        var schemaInstance = filenameToSchemaInstance.get(filename);
+        log.debug("Found validator schema {}", schemaInstance);
+
+        if (schemaInstance == null) {
+            log.debug("Schema instance not yet loaded. Looking for schema location...");
+            var schemaLocation = filenameToSchemaLocation.get(filename);
+
+            if (schemaLocation != null) {
+                log.debug("Found schema location: {}", schemaLocation);
+                schemaInstance = schemaFactory.newSchema(new URL(schemaLocation.toASCIIString()));
+                log.debug("Caching schema instance for {}", schemaLocation);
+                filenameToSchemaInstance.put(filename, schemaInstance);
+            }
+            else {
+                throw new IllegalStateException(String.format("Requested XML schema for filename %s but not schema location is configured for this filename", filename));
+            }
+        }
+
+        return schemaInstance;
     }
 }
