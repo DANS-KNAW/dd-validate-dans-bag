@@ -622,7 +622,7 @@ class DatastationRulesImplTest {
     @Test
     void embargoPeriodIsTooLong() throws Exception {
         int embargoPeriodInMonths = 4;
-        DateTime dateTime = new DateTime(DateTime.now().plusMonths(embargoPeriodInMonths + 2));
+        DateTime dateTime = new DateTime(DateTime.now().plusMonths(embargoPeriodInMonths).plusDays(1));
         final String xml = "<ddm:DDM\n"
             + "        xmlns:dc=\"http://purl.org/dc/elements/1.1/\"\n"
             + "        xmlns:dcx-dai=\"http://easy.dans.knaw.nl/schemas/dcx/dai/\"\n"
@@ -652,14 +652,14 @@ class DatastationRulesImplTest {
         Mockito.when(dataverseService.getMaxEmbargoDurationInMonths())
             .thenReturn(maxEmbargoDurationResult);
 
-        var result = checker.embargoPeriodIsNotTooLong().validate(Path.of("bagdir"));
+        var result = checker.embargoPeriodWithinLimits().validate(Path.of("bagdir"));
         assertEquals(RuleResult.Status.ERROR, result.getStatus());
     }
 
     @Test
     void embargoPeriodIsNotTooLong() throws Exception {
         int embargoPeriodInMonths = 4;
-        DateTime dateTime = new DateTime(DateTime.now().plusMonths(embargoPeriodInMonths - 2));
+        DateTime dateTime = new DateTime(DateTime.now().plusMonths(embargoPeriodInMonths));
         final String xml = "<ddm:DDM\n"
             + "        xmlns:dc=\"http://purl.org/dc/elements/1.1/\"\n"
             + "        xmlns:dcx-dai=\"http://easy.dans.knaw.nl/schemas/dcx/dai/\"\n"
@@ -689,14 +689,13 @@ class DatastationRulesImplTest {
         Mockito.when(dataverseService.getMaxEmbargoDurationInMonths())
             .thenReturn(maxEmbargoDurationResult);
 
-        var result = checker.embargoPeriodIsNotTooLong().validate(Path.of("bagdir"));
+        var result = checker.embargoPeriodWithinLimits().validate(Path.of("bagdir"));
         assertEquals(RuleResult.Status.SUCCESS, result.getStatus());
     }
 
     @Test
-    void embargoInThePast() throws Exception {
+    void embargoDateWithoutDayPartIsAccepted() throws Exception {
         int embargoPeriodInMonths = 4;
-        DateTime dateTime = new DateTime(DateTime.now().plusMonths(embargoPeriodInMonths - 2));
         final String xml = "<ddm:DDM\n"
             + "        xmlns:dc=\"http://purl.org/dc/elements/1.1/\"\n"
             + "        xmlns:dcx-dai=\"http://easy.dans.knaw.nl/schemas/dcx/dai/\"\n"
@@ -718,14 +717,14 @@ class DatastationRulesImplTest {
         var embargoResultJson = "{\n"
             + "  \"status\": \"OK\",\n"
             + "  \"data\": {\n"
-            + "    \"message\": \"24\"\n"
+            + "    \"message\": \""+embargoPeriodInMonths+"\"\n"
             + "  }\n"
             + "}";
         var maxEmbargoDurationResult = new MockedDataverseResponse<DataMessage>(embargoResultJson, DataMessage.class);
         Mockito.when(dataverseService.getMaxEmbargoDurationInMonths())
             .thenReturn(maxEmbargoDurationResult);
 
-        var result = checker.embargoPeriodIsNotTooLong().validate(Path.of("bagdir"));
+        var result = checker.embargoPeriodWithinLimits().validate(Path.of("bagdir"));
         assertEquals(RuleResult.Status.SUCCESS, result.getStatus());
     }
 }

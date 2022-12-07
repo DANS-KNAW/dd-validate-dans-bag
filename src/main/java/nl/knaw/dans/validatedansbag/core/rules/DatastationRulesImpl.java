@@ -230,7 +230,7 @@ public class DatastationRulesImpl implements DatastationRules {
     }
 
     @Override
-    public BagValidatorRule embargoPeriodIsNotTooLong() {
+    public BagValidatorRule embargoPeriodWithinLimits() {
         return (path) -> {
             var months = Integer.parseInt(dataverseService.getMaxEmbargoDurationInMonths().getData().getMessage());
             var document = xmlReader.readXmlFile(path.resolve("metadata/dataset.xml"));
