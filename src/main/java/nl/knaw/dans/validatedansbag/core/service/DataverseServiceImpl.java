@@ -20,6 +20,7 @@ import nl.knaw.dans.lib.dataverse.DataverseClientConfig;
 import nl.knaw.dans.lib.dataverse.DataverseException;
 import nl.knaw.dans.lib.dataverse.DataverseResponse;
 import nl.knaw.dans.lib.dataverse.SearchOptions;
+import nl.knaw.dans.lib.dataverse.model.DataMessage;
 import nl.knaw.dans.lib.dataverse.model.RoleAssignmentReadOnly;
 import nl.knaw.dans.lib.dataverse.model.dataset.DatasetLatestVersion;
 import nl.knaw.dans.lib.dataverse.model.search.SearchItemType;
@@ -99,5 +100,10 @@ public class DataverseServiceImpl implements DataverseService {
         var client = this.getDataverseClient();
         log.trace("Checking dataverse connection");
         client.checkConnection();
+    }
+
+    public DataverseResponse<DataMessage> getMaxEmbargoDurationInMonths(){
+        var client = this.getDataverseClient();
+        return 24;
     }
 }

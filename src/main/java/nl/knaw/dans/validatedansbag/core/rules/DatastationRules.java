@@ -24,4 +24,6 @@ public interface DatastationRules {
     BagValidatorRule organizationalIdentifierExistsInDataset();
 
     BagValidatorRule userIsAuthorizedToUpdateDataset();
+
+    BagValidatorRule embargoPeriodIsNotTooLongerThan(int months);
 }
