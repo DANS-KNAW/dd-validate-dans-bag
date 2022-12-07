@@ -740,4 +740,35 @@ class DatastationRulesImplTest {
         var result = checker.embargoPeriodIsNotTooLong().validate(Path.of("bagdir"));
         assertEquals(RuleResult.Status.SUCCESS, result.getStatus());
     }
+
+    @Test
+    void embargoInThePast() throws Exception {
+        int embargoPeriodInMonths = 4;
+        DateTime dateTime = new DateTime(DateTime.now().plusMonths(embargoPeriodInMonths - 2));
+        final String xml = "<ddm:DDM\n"
+            + "        xmlns:dc=\"http://purl.org/dc/elements/1.1/\"\n"
+            + "        xmlns:dcx-dai=\"http://easy.dans.knaw.nl/schemas/dcx/dai/\"\n"
+            + "        xmlns:ddm=\"http://easy.dans.knaw.nl/schemas/md/ddm/\"\n"
+            + "        xmlns:dcterms=\"http://purl.org/dc/terms/\"\n"
+            + "        xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n"
+            + "        xmlns:id-type=\"http://easy.dans.knaw.nl/schemas/vocab/identifier-type/\">\n"
+            + "    <ddm:profile>\n"
+            + "        <ddm:available>2013-12</ddm:available>\n"
+            + "    </ddm:profile>\n"
+            + "</ddm:DDM>";
+
+        var document = parseXmlString(xml);
+        var reader = Mockito.spy(new XmlReaderImpl());
+
+        Mockito.doReturn(document).when(reader).readXmlFile(Mockito.any());
+
+        var dv = createDataverseServiceSpy();
+        var checker = new DatastationRulesImpl(bagItMetadataReader, dv, swordDepositorRoles, reader);
+
+        Mockito.when(httpClient.execute(Mockito.any()))
+            .thenReturn(createStringResponse(getMaxEmbargoInMonths(embargoPeriodInMonths)));
+
+        var result = checker.embargoPeriodIsNotTooLong().validate(Path.of("bagdir"));
+        assertEquals(RuleResult.Status.SUCCESS, result.getStatus());
+    }
 }

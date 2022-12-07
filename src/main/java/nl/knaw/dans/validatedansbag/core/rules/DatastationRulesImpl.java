@@ -237,11 +237,10 @@ public class DatastationRulesImpl implements DatastationRules {
             var expr = "//ddm:profile/ddm:available";
 
             var nodes = xmlReader.xpathToStream(document, expr).collect(Collectors.toList());
-            System.out.println(nodes.size());
             if (nodes.isEmpty())
                 return RuleResult.ok();
 
-            DateTime embargoDate = DateTimeFormat.forPattern("yyyy-MM-dd").parseDateTime(nodes.get(0).getTextContent());
+            DateTime embargoDate = DateTime.parse(nodes.get(0).getTextContent());
             if(embargoDate.isBefore(new DateTime(DateTime.now().plusMonths(months))))
                 return RuleResult.ok();
             else
