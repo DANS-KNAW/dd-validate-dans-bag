@@ -17,6 +17,7 @@ package nl.knaw.dans.validatedansbag.resources;
 
 import io.dropwizard.testing.junit5.DropwizardExtensionsSupport;
 import io.dropwizard.testing.junit5.ResourceExtension;
+import nl.knaw.dans.lib.dataverse.model.DataMessage;
 import nl.knaw.dans.lib.dataverse.model.RoleAssignmentReadOnly;
 import nl.knaw.dans.lib.dataverse.model.dataset.DatasetLatestVersion;
 import nl.knaw.dans.lib.dataverse.model.search.SearchResult;
@@ -205,14 +206,25 @@ class ValidateResourceIntegrationTest {
             + "  ]\n"
             + "}";
 
+        var embargoResultJson = "{\n"
+            + "  \"status\": \"OK\",\n"
+            + "  \"data\": {\n"
+            + "    \"message\": \"24\"\n"
+            + "  }\n"
+            + "}";
+
         var swordTokenResult = new MockedDataverseResponse<SearchResult>(searchResultsJson, SearchResult.class);
         var dataverseRoleAssignmentsResult = new MockedDataverseResponse<List<RoleAssignmentReadOnly>>(dataverseRoleAssignmentsJson, List.class, RoleAssignmentReadOnly.class);
+        var maxEmbargoDurationResult = new MockedDataverseResponse<DataMessage>(embargoResultJson, DataMessage.class);
 
         Mockito.when(dataverseService.searchBySwordToken(Mockito.anyString()))
             .thenReturn(swordTokenResult);
 
         Mockito.when(dataverseService.getDataverseRoleAssignments(Mockito.anyString()))
             .thenReturn(dataverseRoleAssignmentsResult);
+
+        Mockito.when(dataverseService.getMaxEmbargoDurationInMonths())
+            .thenReturn(maxEmbargoDurationResult);
 
         var response = EXT.target("/validate")
             .register(MultiPartFeature.class)

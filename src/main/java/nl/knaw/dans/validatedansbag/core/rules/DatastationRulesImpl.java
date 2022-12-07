@@ -16,6 +16,8 @@
 package nl.knaw.dans.validatedansbag.core.rules;
 
 import nl.knaw.dans.lib.dataverse.DataverseException;
+import nl.knaw.dans.lib.dataverse.DataverseResponse;
+import nl.knaw.dans.lib.dataverse.model.DataMessage;
 import nl.knaw.dans.lib.dataverse.model.RoleAssignmentReadOnly;
 import nl.knaw.dans.lib.dataverse.model.dataset.DatasetLatestVersion;
 import nl.knaw.dans.lib.dataverse.model.dataset.PrimitiveSingleValueField;
@@ -228,8 +230,9 @@ public class DatastationRulesImpl implements DatastationRules {
     }
 
     @Override
-    public BagValidatorRule embargoPeriodIsNotTooLongerThan(int months) {
+    public BagValidatorRule embargoPeriodIsNotTooLong() {
         return (path) -> {
+            var months = Integer.parseInt(dataverseService.getMaxEmbargoDurationInMonths().getData().getMessage());
             var document = xmlReader.readXmlFile(path.resolve("metadata/dataset.xml"));
             var expr = "//ddm:profile/ddm:available";
 

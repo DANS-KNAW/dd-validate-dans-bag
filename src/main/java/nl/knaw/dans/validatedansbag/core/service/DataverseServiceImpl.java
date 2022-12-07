@@ -102,8 +102,8 @@ public class DataverseServiceImpl implements DataverseService {
         client.checkConnection();
     }
 
-    public DataverseResponse<DataMessage> getMaxEmbargoDurationInMonths(){
+    public DataverseResponse<DataMessage> getMaxEmbargoDurationInMonths() throws IOException, DataverseException {
         var client = this.getDataverseClient();
-        return 24;
+        return client.admin().getDatabaseSetting(":MaxEmbargoDurationInMonths");
     }
 }

@@ -37,7 +37,7 @@ public interface DataverseService {
 
     DataverseResponse<List<RoleAssignmentReadOnly>> getDataverseRoleAssignments(String itemId) throws IOException, DataverseException;
 
-    DataverseResponse<DataMessage> getMaxEmbargoDurationInMonths();
+    DataverseResponse<DataMessage> getMaxEmbargoDurationInMonths() throws IOException, DataverseException;
 
     void checkConnection() throws IOException, DataverseException;
 }

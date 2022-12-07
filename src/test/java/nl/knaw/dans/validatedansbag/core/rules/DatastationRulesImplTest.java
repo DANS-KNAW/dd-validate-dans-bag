@@ -622,6 +622,14 @@ class DatastationRulesImplTest {
             + "}";
     }
 
+    String getMaxEmbargoInMonths(int months) {
+        return "{\n"
+            + "  \"status\": \"OK\",\n"
+            + "  \"data\": {\n"
+            + "    \"message\": \""+months+"\"\n"
+            + "  }\n"
+            + "}";
+    }
     String getLatestVersion(String persistentId, String dansOtherId) {
 
         if (persistentId == null) {
@@ -675,7 +683,6 @@ class DatastationRulesImplTest {
     void embargoPeriodIsTooLong() throws Exception {
         int embargoPeriodInMonths = 4;
         DateTime dateTime = new DateTime(DateTime.now().plusMonths(embargoPeriodInMonths + 2));
-        System.out.println(dateTime + " " + DateTimeFormat.forPattern("yyyy-MM-dd").print(dateTime));
         final String xml = "<ddm:DDM\n"
             + "        xmlns:dc=\"http://purl.org/dc/elements/1.1/\"\n"
             + "        xmlns:dcx-dai=\"http://easy.dans.knaw.nl/schemas/dcx/dai/\"\n"
@@ -696,9 +703,11 @@ class DatastationRulesImplTest {
         var dv = createDataverseServiceSpy();
         var checker = new DatastationRulesImpl(bagItMetadataReader, dv, swordDepositorRoles, reader);
 
-        var result = checker.embargoPeriodIsNotTooLongerThan(embargoPeriodInMonths).validate(Path.of("bagdir"));
-        assertEquals(RuleResult.Status.ERROR, result.getStatus());
+        Mockito.when(httpClient.execute(Mockito.any()))
+            .thenReturn(createStringResponse(getMaxEmbargoInMonths(embargoPeriodInMonths)));
 
+        var result = checker.embargoPeriodIsNotTooLong().validate(Path.of("bagdir"));
+        assertEquals(RuleResult.Status.ERROR, result.getStatus());
     }
 
     @Test
@@ -725,8 +734,10 @@ class DatastationRulesImplTest {
         var dv = createDataverseServiceSpy();
         var checker = new DatastationRulesImpl(bagItMetadataReader, dv, swordDepositorRoles, reader);
 
-        var result = checker.embargoPeriodIsNotTooLongerThan(embargoPeriodInMonths).validate(Path.of("bagdir"));
-        assertEquals(RuleResult.Status.SUCCESS, result.getStatus());
+        Mockito.when(httpClient.execute(Mockito.any()))
+            .thenReturn(createStringResponse(getMaxEmbargoInMonths(embargoPeriodInMonths)));
 
+        var result = checker.embargoPeriodIsNotTooLong().validate(Path.of("bagdir"));
+        assertEquals(RuleResult.Status.SUCCESS, result.getStatus());
     }
 }

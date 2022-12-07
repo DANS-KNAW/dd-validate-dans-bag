@@ -25,5 +25,5 @@ public interface DatastationRules {
 
     BagValidatorRule userIsAuthorizedToUpdateDataset();
 
-    BagValidatorRule embargoPeriodIsNotTooLongerThan(int months);
+    BagValidatorRule embargoPeriodIsNotTooLong();
 }
