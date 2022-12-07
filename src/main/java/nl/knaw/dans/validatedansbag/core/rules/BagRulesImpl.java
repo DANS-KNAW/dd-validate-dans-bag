@@ -427,7 +427,7 @@ public class BagRulesImpl implements BagRules {
     }
 
     @Override
-    public BagValidatorRule ddmMayContainDctermsLicenseFromList() {
+    public BagValidatorRule ddmMustContainOneDctermsLicenseFromList() {
         return (path) -> {
             var document = xmlReader.readXmlFile(path.resolve("metadata/dataset.xml"));
             var expr = "//ddm:dcmiMetadata/dcterms:license[@xsi:type]";

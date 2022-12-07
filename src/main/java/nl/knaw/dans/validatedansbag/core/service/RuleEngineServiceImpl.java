@@ -100,7 +100,7 @@ public class RuleEngineServiceImpl implements RuleEngineService {
 
             // metadata/dataset.xml
             new NumberedRule("3.1.1", xmlRules.xmlFileConformsToSchema(datasetPath, "dataset.xml"), List.of("1.1.1", "2.2(a)")),
-            new NumberedRule("3.1.2", bagRules.ddmMayContainDctermsLicenseFromList(), List.of("3.1.1")),
+            new NumberedRule("3.1.2", bagRules.ddmMustContainOneDctermsLicenseFromList(), List.of("3.1.1")),
             new NumberedRule("3.1.3", bagRules.ddmDoiIdentifiersAreValid(), List.of("3.1.1")),
 
             new NumberedRule("3.1.4(a)", bagRules.ddmDaisAreValid(), List.of("3.1.1")),
@@ -138,6 +138,7 @@ public class RuleEngineServiceImpl implements RuleEngineService {
             new NumberedRule("4.4(a)", datastationRules.bagExistsInDatastation(), ValidationContext.WITH_DATA_STATION_CONTEXT, List.of("4.1")),
             new NumberedRule("4.4(b)", datastationRules.organizationalIdentifierExistsInDataset(), ValidationContext.WITH_DATA_STATION_CONTEXT, List.of("4.1", "4.4(a)")),
             new NumberedRule("4.4(c)", datastationRules.userIsAuthorizedToUpdateDataset(), ValidationContext.WITH_DATA_STATION_CONTEXT, List.of("4.1", "4.4(a)")),
+            //NumberedRule 4.5 is checked in the implementation of NumberedRule 3.1.2
             new NumberedRule("4.6", datastationRules.embargoPeriodWithinLimits(), ValidationContext.WITH_DATA_STATION_CONTEXT),
         };
 
