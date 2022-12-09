@@ -20,6 +20,7 @@ import nl.knaw.dans.lib.dataverse.DataverseClientConfig;
 import nl.knaw.dans.lib.dataverse.DataverseException;
 import nl.knaw.dans.lib.dataverse.DataverseResponse;
 import nl.knaw.dans.lib.dataverse.SearchOptions;
+import nl.knaw.dans.lib.dataverse.model.DataMessage;
 import nl.knaw.dans.lib.dataverse.model.RoleAssignmentReadOnly;
 import nl.knaw.dans.lib.dataverse.model.dataset.DatasetLatestVersion;
 import nl.knaw.dans.lib.dataverse.model.search.SearchItemType;
@@ -35,30 +36,23 @@ import java.util.List;
 public class DataverseServiceImpl implements DataverseService {
     private static final Logger log = LoggerFactory.getLogger(DataverseServiceImpl.class);
 
-    private final DataverseConfig dataverseConfig;
-    private DataverseClient dataverseClient;
+    private final DataverseClient dataverseClient;
 
-    public DataverseServiceImpl(DataverseConfig dataverseConfig) {
-        this.dataverseConfig = dataverseConfig;
+    public DataverseServiceImpl(DataverseClient dataverseClient) {
+        this.dataverseClient = dataverseClient;
     }
 
     public DataverseClient getDataverseClient() {
-        if (this.dataverseClient == null) {
-            var config = new DataverseClientConfig(URI.create(dataverseConfig.getBaseUrl()), dataverseConfig.getApiToken());
-            this.dataverseClient = new DataverseClient(config);
-        }
-
         return dataverseClient;
     }
 
     DataverseResponse<SearchResult> searchDataset(String query) throws IOException, DataverseException {
-        var client = this.getDataverseClient();
         var options = new SearchOptions();
         options.setTypes(List.of(SearchItemType.dataset));
 
         log.trace("Searching dataverse with query {}", query);
 
-        return client.search().find(query);
+        return dataverseClient.search().find(query);
     }
 
     @Override
@@ -75,29 +69,30 @@ public class DataverseServiceImpl implements DataverseService {
 
     @Override
     public DataverseResponse<List<RoleAssignmentReadOnly>> getDatasetRoleAssignments(String identifier) throws IOException, DataverseException {
-        var client = this.getDataverseClient();
         log.trace("Getting dataset role assigmnents from dataverse for dataset {}", identifier);
-        return client.dataset(identifier).listRoleAssignments();
+        return dataverseClient.dataset(identifier).listRoleAssignments();
     }
 
     @Override
     public DataverseResponse<DatasetLatestVersion> getDataset(String globalId) throws IOException, DataverseException {
-        var client = this.getDataverseClient();
         log.trace("Getting dataset from dataverse with id {}", globalId);
-        return client.dataset(globalId).getLatestVersion();
+        return dataverseClient.dataset(globalId).getLatestVersion();
     }
 
     @Override
     public DataverseResponse<List<RoleAssignmentReadOnly>> getDataverseRoleAssignments(String itemId) throws IOException, DataverseException {
-        var client = this.getDataverseClient();
         log.trace("Getting dataset role assignments from dataverse for dataset with id {}", itemId);
-        return client.dataverse("root").listRoleAssignments();
+        return dataverseClient.dataverse("root").listRoleAssignments();
     }
 
     @Override
     public void checkConnection() throws IOException, DataverseException {
-        var client = this.getDataverseClient();
         log.trace("Checking dataverse connection");
-        client.checkConnection();
+        dataverseClient.checkConnection();
+    }
+
+    public DataverseResponse<DataMessage> getMaxEmbargoDurationInMonths() throws IOException, DataverseException {
+        var client = this.getDataverseClient();
+        return client.admin().getDatabaseSetting(":MaxEmbargoDurationInMonths");
     }
 }
