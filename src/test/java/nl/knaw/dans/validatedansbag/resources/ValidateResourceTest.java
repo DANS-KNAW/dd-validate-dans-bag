@@ -214,7 +214,6 @@ class ValidateResourceTest {
                     return 0;
                 }
             }));
-        ;
 
         try (var response = EXT.target("/validate")
             .register(MultiPartFeature.class)
@@ -244,7 +243,6 @@ class ValidateResourceTest {
         Mockito
             .when(ruleEngineService.validateBag(Mockito.any(), Mockito.any(), Mockito.any()))
             .thenThrow(new SAXParseException("some syntax problem", new LocatorImpl()));
-        ;
 
         try (var response = EXT.target("/validate")
             .register(MultiPartFeature.class)
@@ -311,7 +309,7 @@ class ValidateResourceTest {
             .post(zip, Response.class)
         ) {
             assertEquals(500, response.getStatus());
-            assertEquals(new ErrorMessage("HTTP 500 Internal Server Error"), response.readEntity(ErrorMessage.class));
+            assertEquals(new ErrorMessage(500, "HTTP 500 Internal Server Error", null), response.readEntity(ErrorMessage.class));
         }
     }
 
