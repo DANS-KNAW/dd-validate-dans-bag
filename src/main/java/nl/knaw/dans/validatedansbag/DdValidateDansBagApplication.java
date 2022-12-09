@@ -81,7 +81,7 @@ public class DdValidateDansBagApplication extends Application<DdValidateDansBagC
         var licenseConfig = configuration.getValidationConfig().getLicenseConfig();
         var swordDepositorRoles = configuration.getValidationConfig().getSwordDepositorRoles();
 
-        RuleEngineServiceImpl ruleEngineService = createRuleEngineService(fileService, xmlSchemaValidator, dataverseService, otherIdPrefixes, licenseConfig,
+        var ruleEngineService = createRuleEngineService(fileService, xmlSchemaValidator, dataverseService, otherIdPrefixes, licenseConfig,
             swordDepositorRoles);
 
         environment.jersey().register(new IllegalArgumentExceptionMapper());

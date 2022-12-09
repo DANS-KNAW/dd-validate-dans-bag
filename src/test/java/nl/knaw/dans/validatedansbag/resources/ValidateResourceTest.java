@@ -15,6 +15,7 @@
  */
 package nl.knaw.dans.validatedansbag.resources;
 
+import io.dropwizard.jersey.errors.ErrorMessage;
 import io.dropwizard.testing.junit5.DropwizardExtensionsSupport;
 import io.dropwizard.testing.junit5.ResourceExtension;
 import nl.knaw.dans.validatedansbag.api.ValidateCommandDto;
@@ -310,7 +311,7 @@ class ValidateResourceTest {
             .post(zip, Response.class)
         ) {
             assertEquals(500, response.getStatus());
-            assertEquals("{\"code\":500,\"message\":\"HTTP 500 Internal Server Error\"}", response.readEntity(String.class));
+            assertEquals(new ErrorMessage("HTTP 500 Internal Server Error"), response.readEntity(ErrorMessage.class));
         }
     }
 
