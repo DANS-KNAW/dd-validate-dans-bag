@@ -820,7 +820,7 @@ class BagRulesImplTest {
     }
 
     @Test
-    void pointsHaveAtLeastTwoNumericValuesWithinBounds() throws Exception {
+    void pointsShouldHaveAtLeastTwoNumericValuesWithinBounds() throws Exception {
         var xml = "<ddm:DDM\n"
             + "        xmlns:dc=\"http://purl.org/dc/elements/1.1/\"\n"
             + "        xmlns:dcx-dai=\"http://easy.dans.knaw.nl/schemas/dcx/dai/\"\n"
@@ -885,6 +885,37 @@ class BagRulesImplTest {
                 "lowerCorner is outside RD bounds: -7000 288999", // y too small
                 "upperCorner is outside RD bounds: 300000 629001", // y too large
                 "lowerCorner has less than two coordinates: -7000"));
+    }
+
+    @Test
+    void pointIsValid() throws Exception {
+        var xml = "<ddm:DDM\n"
+            + "        xmlns:dc=\"http://purl.org/dc/elements/1.1/\"\n"
+            + "        xmlns:dcx-dai=\"http://easy.dans.knaw.nl/schemas/dcx/dai/\"\n"
+            + "        xmlns:ddm=\"http://schemas.dans.knaw.nl/dataset/ddm-v2/\"\n"
+            + "        xmlns:dct=\"http://purl.org/dc/terms/\"\n"
+            + "        xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n"
+            + "        xmlns:dcx-gml=\"http://easy.dans.knaw.nl/schemas/dcx/gml/\"\n"
+            + "        xmlns:id-type=\"http://easy.dans.knaw.nl/schemas/vocab/identifier-type/\">\n"
+            + "    <ddm:dcmiMetadata>\n"
+            + "            <dct:spatial xsi:type='dcx-gml:SimpleGMLType'>"
+            + "                <Point xmlns='http://www.opengis.net/gml'>"
+            + "                    <pos>1 2</pos>"
+            + "                </Point>"
+            + "            </dct:spatial>"
+            + "    </ddm:dcmiMetadata>"
+            + "</ddm:DDM>";
+
+        var document = parseXmlString(xml);
+        var reader = Mockito.spy(new XmlReaderImpl());
+
+        Mockito.doReturn(document).when(reader).readXmlFile(Mockito.any());
+
+        var checker = getBagRulesWithXmlReader(reader);
+
+        var result = checker.pointsHaveAtLeastTwoValues().validate(Path.of("bagdir"));
+        assertThat(result.getException()).isNull();
+        assertThat(result.getStatus()).isEqualTo(Status.SUCCESS);
     }
 
     @Test
