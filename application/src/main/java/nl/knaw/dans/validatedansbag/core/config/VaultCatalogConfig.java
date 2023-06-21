@@ -13,31 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package nl.knaw.dans.validatedansbag.core.config;
 
-package nl.knaw.dans.validatedansbag;
-
-import io.dropwizard.Configuration;
 import lombok.Getter;
 import lombok.Setter;
-import nl.knaw.dans.lib.util.DataverseClientFactory;
-import nl.knaw.dans.validatedansbag.core.config.ValidationConfig;
-import nl.knaw.dans.validatedansbag.core.config.VaultCatalogConfig;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
+import java.net.URI;
 
 @Getter
 @Setter
-public class DdValidateDansBagConfiguration extends Configuration {
-
-    @Valid
-    private DataverseClientFactory dataverse;
-
-    @Valid
-    private VaultCatalogConfig vaultCatalog;
-
-
-    @Valid
+public class VaultCatalogConfig {
     @NotNull
-    private ValidationConfig validation;
+    @Valid
+    private URI baseUrl;
 }

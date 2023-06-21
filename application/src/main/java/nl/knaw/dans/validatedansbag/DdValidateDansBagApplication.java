@@ -80,12 +80,12 @@ public class DdValidateDansBagApplication extends Application<DdValidateDansBagC
         var originalFilepathsService = new OriginalFilepathsServiceImpl(fileService);
         var filesXmlService = new FilesXmlServiceImpl(xmlReader);
 
-        var xmlSchemaValidator = new XmlSchemaValidatorImpl(configuration.getValidationConfig().getXmlSchemas().buildMap());
+        var xmlSchemaValidator = new XmlSchemaValidatorImpl(configuration.getValidation().getXmlSchemas().buildMap());
 
         var dataverseService = new DataverseServiceImpl(configuration.getDataverse().build());
         var licenseValidator = new LicenseValidatorImpl(dataverseService);
 
-        var organizationIdentifierPrefixValidator = new OrganizationIdentifierPrefixValidatorImpl(configuration.getValidationConfig().getOtherIdPrefixes());
+        var organizationIdentifierPrefixValidator = new OrganizationIdentifierPrefixValidatorImpl(configuration.getValidation().getOtherIdPrefixes());
 
         // set up the different rule implementations
         var bagRules = new BagRulesImpl(fileService, bagItMetadataReader, xmlReader, originalFilepathsService, daiDigestCalculator, polygonListValidator, licenseValidator,
