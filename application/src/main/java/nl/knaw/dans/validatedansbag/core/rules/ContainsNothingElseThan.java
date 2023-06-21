@@ -18,14 +18,45 @@ package nl.knaw.dans.validatedansbag.core.rules;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import nl.knaw.dans.validatedansbag.core.engine.RuleResult;
+import nl.knaw.dans.validatedansbag.core.service.FileService;
 
 import java.nio.file.Path;
+import java.util.Arrays;
+import java.util.stream.Collectors;
 
 @Slf4j
 @AllArgsConstructor
 public class ContainsNothingElseThan implements BagValidatorRule {
+    private final String dir;
+    private final String[] paths;
+    private final FileService fileService;
     @Override
     public RuleResult validate(Path path) throws Exception {
-        return null;
+        var basePath = path.resolve(dir);
+        var allowed = Arrays.stream(paths)
+                .map(Path::of)
+                .collect(Collectors.toSet());
+
+        var allItems = fileService.getAllFilesAndDirectories(basePath)
+                .stream()
+                .filter(p -> !basePath.equals(p))
+                .map(basePath::relativize)
+                .filter(p -> !allowed.contains(p))
+                // filter out the parent path
+                .collect(Collectors.toSet());
+
+        log.debug("Found items that are not allowed in path {}: {} (allowed files are {})",
+                basePath, allItems, allowed);
+
+        if (allItems.size() > 0) {
+            var filenames = allItems.stream().map(Path::toString).collect(Collectors.joining(", "));
+
+            return RuleResult.error(String.format(
+                    "Directory %s contains files or directories that are not allowed: %s",
+                    dir, filenames
+            ));
+        }
+
+        return RuleResult.ok();
     }
 }

@@ -241,82 +241,71 @@ class BagRulesImplTest {
 
     @Test
     void bagInfoIsVersionOfIsValidUrnUuid() throws Exception {
-        var checker = getBagRules();
-
         Mockito.when(bagItMetadataReader.getField(Mockito.any(), Mockito.eq("Is-Version-Of")))
                 .thenReturn(List.of("urn:uuid:76cfdebf-e43d-4c56-a886-e8375c745429"));
 
-        var result = checker.bagInfoIsVersionOfIsValidUrnUuid().validate(Path.of("bagdir"));
+        var result = new BagInfoIsVersionOfIsValidUrnUuid(bagItMetadataReader).validate(Path.of("bagdir"));
         assertEquals(RuleResult.Status.SUCCESS, result.getStatus());
     }
 
     @Test
     void bagInfoIsVersionOfIsNotValidUrnUuid() throws Exception {
-        var checker = getBagRules();
-
+        // TODO: refactor to proper parameterized test
         Mockito.when(bagItMetadataReader.getField(Mockito.any(), Mockito.eq("Is-Version-Of")))
                 .thenReturn(List.of("http://google.com"))
                 .thenReturn(List.of("urn:uuid:1234"))
                 .thenReturn(List.of("urn:notuuid:1234"));
 
-        assertEquals(RuleResult.Status.ERROR, checker.bagInfoIsVersionOfIsValidUrnUuid().validate(Path.of("bagdir")).getStatus());
-        assertEquals(RuleResult.Status.ERROR, checker.bagInfoIsVersionOfIsValidUrnUuid().validate(Path.of("bagdir")).getStatus());
-        assertEquals(RuleResult.Status.ERROR, checker.bagInfoIsVersionOfIsValidUrnUuid().validate(Path.of("bagdir")).getStatus());
+        assertEquals(RuleResult.Status.ERROR, new BagInfoIsVersionOfIsValidUrnUuid(bagItMetadataReader).validate(Path.of("bagdir")).getStatus());
+        assertEquals(RuleResult.Status.ERROR, new BagInfoIsVersionOfIsValidUrnUuid(bagItMetadataReader).validate(Path.of("bagdir")).getStatus());
+        assertEquals(RuleResult.Status.ERROR, new BagInfoIsVersionOfIsValidUrnUuid(bagItMetadataReader).validate(Path.of("bagdir")).getStatus());
     }
 
     @Test
     void bagInfoContainsAtMostOneButItReturnsTwo() throws Exception {
-        var checker = getBagRules();
-
         Mockito.when(bagItMetadataReader.getField(Mockito.any(), Mockito.eq("Key")))
                 .thenReturn(List.of("value", "secondvalue"));
 
-        var result = checker.bagInfoContainsAtMostOneOf("Key").validate(Path.of("bagdir"));
+        var result = new BagInfoContainsAtMostOneOf("Key", bagItMetadataReader).validate(Path.of("bagdir"));
         assertEquals(RuleResult.Status.ERROR, result.getStatus());
     }
 
     @Test
     void bagInfoContainsAtMostOneOfButInRealityItIsZero() throws Exception {
-        var checker = getBagRules();
-
         Mockito.when(bagItMetadataReader.getField(Mockito.any(), Mockito.eq("Key")))
                 .thenReturn(new ArrayList<>());
 
-        var result = checker.bagInfoContainsAtMostOneOf("Key").validate(Path.of("bagdir"));
+        var result = new BagInfoContainsAtMostOneOf("Key", bagItMetadataReader).validate(Path.of("bagdir"));
         assertEquals(RuleResult.Status.SKIP_DEPENDENCIES, result.getStatus());
     }
 
     @Test
     void containsNothingElseThan() throws Exception {
-        var checker = getBagRules();
         var basePath = Path.of("bagdir/metadata");
 
         Mockito.when(fileService.getAllFilesAndDirectories(Mockito.eq(basePath)))
                 .thenReturn(List.of(basePath.resolve("1.txt"), basePath.resolve("2.txt")));
 
-        var result = checker.containsNothingElseThan(Path.of("metadata"), new String[]{
+        var result = new ContainsNothingElseThan("metadata", new String[]{
                 "1.txt",
                 "2.txt",
                 "3.txt"
-        }).validate(Path.of("bagdir"));
+        }, fileService).validate(Path.of("bagdir"));
         assertEquals(RuleResult.Status.SUCCESS, result.getStatus());
     }
 
     @Test
     void containsNothingElseThanButThereAreInvalidFiles() throws Exception {
-        var checker = getBagRules();
-
         var basePath = Path.of("bagdir/metadata");
 
         Mockito.when(fileService.getAllFilesAndDirectories(Mockito.eq(basePath)))
                 .thenReturn(List.of(basePath.resolve("1.txt"), basePath.resolve("2.txt"), basePath.resolve("oh no.txt")));
 
-        var result = checker.containsNothingElseThan(Path.of("metadata"), new String[]{
-                "1.txt"
-                ,
+        var result = new ContainsNothingElseThan("metadata", new String[]{
+                "1.txt",
                 "2.txt",
                 "3.txt"
-        }).validate(Path.of("bagdir"));
+        }, fileService).validate(Path.of("bagdir"));
         assertEquals(RuleResult.Status.ERROR, result.getStatus());
     }
 
