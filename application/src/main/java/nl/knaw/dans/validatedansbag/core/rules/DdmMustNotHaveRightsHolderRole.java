@@ -13,15 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package nl.knaw.dans.validatedansbag.core.validator;
+package nl.knaw.dans.validatedansbag.core.rules;
 
-import nl.knaw.dans.lib.dataverse.DataverseException;
+import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import nl.knaw.dans.validatedansbag.core.engine.RuleResult;
 
-import java.io.IOException;
+import java.nio.file.Path;
 
-public interface LicenseValidator {
-
-    boolean isValidUri(String license);
-
-    boolean isValidLicense(String license) throws IOException, DataverseException;
+@AllArgsConstructor
+@Slf4j
+public class DdmMustNotHaveRightsHolderRole implements BagValidatorRule {
+    @Override
+    public RuleResult validate(Path path) throws Exception {
+        return null;
+    }
 }

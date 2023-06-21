@@ -157,7 +157,7 @@ public class DatastationRulesImpl implements DatastationRules {
             var expr = String.format("/ddm:DDM/ddm:dcmiMetadata/dcterms:license[@xsi:type='%s:URI']", prefix);
 
             var validNodes = xmlReader.xpathToStream(document, expr)
-                .filter(item -> licenseValidator.isValidLicenseURI(item.getTextContent()))
+                .filter(item -> licenseValidator.isValidUri(item.getTextContent()))
                 .collect(Collectors.toList());
 
             log.debug("Nodes found with valid URI's: {}", validNodes.size());

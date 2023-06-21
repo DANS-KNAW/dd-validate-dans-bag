@@ -27,10 +27,7 @@ import io.dropwizard.setup.Environment;
 import nl.knaw.dans.validatedansbag.core.auth.SwordAuthenticator;
 import nl.knaw.dans.validatedansbag.core.auth.SwordUser;
 import nl.knaw.dans.validatedansbag.core.engine.RuleEngineImpl;
-import nl.knaw.dans.validatedansbag.core.rules.BagRulesImpl;
-import nl.knaw.dans.validatedansbag.core.rules.DatastationRulesImpl;
-import nl.knaw.dans.validatedansbag.core.rules.FilesXmlRulesImpl;
-import nl.knaw.dans.validatedansbag.core.rules.XmlRulesImpl;
+import nl.knaw.dans.validatedansbag.core.rules.*;
 import nl.knaw.dans.validatedansbag.core.service.BagItMetadataReaderImpl;
 import nl.knaw.dans.validatedansbag.core.service.DataverseServiceImpl;
 import nl.knaw.dans.validatedansbag.core.service.FileServiceImpl;
@@ -93,10 +90,11 @@ public class DdValidateDansBagApplication extends Application<DdValidateDansBagC
         var filesXmlRules = new FilesXmlRulesImpl(fileService, originalFilepathsService, filesXmlService);
         var xmlRules = new XmlRulesImpl(xmlReader, xmlSchemaValidator, fileService);
         var datastationRules = new DatastationRulesImpl(bagItMetadataReader, dataverseService, xmlReader, licenseValidator);
+        var vaasRules = new VaasRulesImpl(xmlReader);
 
         // set up the engine and the service that has a default set of rules
         var ruleEngine = new RuleEngineImpl();
-        var ruleEngineService = new RuleEngineServiceImpl(ruleEngine, bagRules, xmlRules, filesXmlRules, fileService, datastationRules);
+        var ruleEngineService = new RuleEngineServiceImpl(ruleEngine, bagRules, xmlRules, filesXmlRules, fileService, datastationRules, vaasRules);
 
         environment.jersey().register(new IllegalArgumentExceptionMapper());
         environment.jersey().register(new ValidateResource(ruleEngineService, fileService));

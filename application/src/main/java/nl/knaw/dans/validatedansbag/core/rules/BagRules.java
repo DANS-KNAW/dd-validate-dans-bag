@@ -43,9 +43,7 @@ public interface BagRules {
 
     BagValidatorRule isOriginalFilepathsFileComplete();
 
-    BagValidatorRule ddmMustContainDctermsLicense();
-
-    BagValidatorRule ddmDoiIdentifiersAreValid();
+    BagValidatorRule ddmMustContainExactlyOneDctermsLicenseWithXsiTypeUri();
 
     BagValidatorRule ddmDaisAreValid();
 

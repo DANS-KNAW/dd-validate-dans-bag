@@ -36,6 +36,7 @@ import nl.knaw.dans.validatedansbag.core.validator.OrganizationIdentifierPrefixV
 import nl.knaw.dans.validatedansbag.core.validator.OrganizationIdentifierPrefixValidatorImpl;
 import nl.knaw.dans.validatedansbag.core.validator.PolygonListValidator;
 import nl.knaw.dans.validatedansbag.core.validator.PolygonListValidatorImpl;
+import org.checkerframework.checker.units.qual.A;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -71,7 +72,7 @@ class BagRulesImplTest {
     final FilesXmlService filesXmlService = Mockito.mock(FilesXmlService.class);
 
     final OrganizationIdentifierPrefixValidator organizationIdentifierPrefixValidator = new OrganizationIdentifierPrefixValidatorImpl(
-        List.of("USER1-", "U2:")
+            List.of("USER1-", "U2:")
     );
 
     @AfterEach
@@ -85,19 +86,17 @@ class BagRulesImplTest {
 
     BagRules getBagRules() {
         return new BagRulesImpl(fileService, bagItMetadataReader, xmlReader, originalFilepathsService, identifierValidator, polygonListValidator, licenseValidator,
-            organizationIdentifierPrefixValidator, filesXmlService);
+                organizationIdentifierPrefixValidator, filesXmlService);
     }
 
     BagRules getBagRulesWithXmlReader(XmlReader xmlReader) {
         return new BagRulesImpl(fileService, bagItMetadataReader, xmlReader, originalFilepathsService, identifierValidator, polygonListValidator, licenseValidator,
-            organizationIdentifierPrefixValidator, filesXmlService);
+                organizationIdentifierPrefixValidator, filesXmlService);
     }
 
     @Test
     void testBagIsValid() throws Exception {
-        var checker = getBagRules();
-
-        var result = checker.bagIsValid().validate(Path.of("testpath"));
+        var result = new BagIsValid(bagItMetadataReader).validate(Path.of("testpath"));
         assertEquals(RuleResult.Status.SUCCESS, result.getStatus());
 
         Mockito.verify(bagItMetadataReader).verifyBag(Path.of("testpath"));
@@ -105,23 +104,19 @@ class BagRulesImplTest {
 
     @Test
     void testBagIsNotValidWithExceptionThrown() throws Exception {
-        var checker = getBagRules();
-
         Mockito.doThrow(new InvalidBagitFileFormatException("Invalid file format"))
-            .when(bagItMetadataReader).verifyBag(Mockito.any());
+                .when(bagItMetadataReader).verifyBag(Mockito.any());
 
-        var result = checker.bagIsValid().validate(Path.of("testpath"));
+        var result = new BagIsValid(bagItMetadataReader).validate(Path.of("testpath"));
         assertEquals(RuleResult.Status.ERROR, result.getStatus());
     }
 
     @Test
     void containsDirWorks() throws Exception {
-        var checker = getBagRules();
-
         Mockito.when(fileService.isDirectory(Mockito.any()))
-            .thenReturn(true);
+                .thenReturn(true);
 
-        var result = checker.containsDir(Path.of("testpath")).validate(Path.of("bagdir"));
+        var result = new ContainsDir(Path.of("testpath"), fileService).validate(Path.of("bagdir"));
 
         assertEquals(RuleResult.Status.SUCCESS, result.getStatus());
         Mockito.verify(fileService).isDirectory(Path.of("bagdir/testpath"));
@@ -129,23 +124,19 @@ class BagRulesImplTest {
 
     @Test
     void containsDirThrowsException() throws Exception {
-        var checker = getBagRules();
-
         Mockito.when(fileService.isDirectory(Mockito.any()))
-            .thenReturn(false);
+                .thenReturn(false);
 
-        var result = checker.containsDir(Path.of("testpath")).validate(Path.of("bagdir"));
+        var result = new ContainsDir(Path.of("testpath"), fileService).validate(Path.of("bagdir"));
         assertEquals(RuleResult.Status.ERROR, result.getStatus());
     }
 
     @Test
     void containsFileWorks() throws Exception {
-        var checker = getBagRules();
-
         Mockito.when(fileService.isFile(Mockito.any()))
-            .thenReturn(true);
+                .thenReturn(true);
 
-        var result = checker.containsFile(Path.of("testpath")).validate(Path.of("bagdir"));
+        var result = new ContainsFile(Path.of("testpath"), fileService).validate(Path.of("bagdir"));
         assertEquals(RuleResult.Status.SUCCESS, result.getStatus());
 
         Mockito.verify(fileService).isFile(Path.of("bagdir/testpath"));
@@ -153,118 +144,98 @@ class BagRulesImplTest {
 
     @Test
     void containsFileThrowsException() throws Exception {
-        var checker = getBagRules();
-
         Mockito.when(fileService.isFile(Mockito.any()))
-            .thenReturn(false);
+                .thenReturn(false);
 
-        var result = checker.containsFile(Path.of("testpath")).validate(Path.of("bagdir"));
+        var result = new ContainsFile(Path.of("testpath"), fileService).validate(Path.of("bagdir"));
         assertEquals(RuleResult.Status.ERROR, result.getStatus());
     }
 
     @Test
     void bagInfoExistsAndIsWellFormed() throws Exception {
-        var checker = getBagRules();
-
         Mockito.when(fileService.isFile(Mockito.any()))
-            .thenReturn(true);
+                .thenReturn(true);
 
         Mockito.when(bagItMetadataReader.getBag(Mockito.any()))
-            .thenReturn(Optional.of(new Bag()));
+                .thenReturn(Optional.of(new Bag()));
 
-        var result = checker.bagInfoExistsAndIsWellFormed().validate(Path.of("bagdir"));
+        var result = new BagInfoExistsAndIsWellformed(bagItMetadataReader, fileService).validate(Path.of("bagdir"));
         assertEquals(RuleResult.Status.SUCCESS, result.getStatus());
     }
 
     @Test
     void bagInfoDoesNotExist() throws Exception {
-        var checker = getBagRules();
-
         Mockito.when(fileService.isFile(Mockito.any()))
-            .thenReturn(false);
+                .thenReturn(false);
 
-        var result = checker.bagInfoExistsAndIsWellFormed().validate(Path.of("bagdir"));
+        var result = new BagInfoExistsAndIsWellformed(bagItMetadataReader, fileService).validate(Path.of("bagdir"));
         assertEquals(RuleResult.Status.ERROR, result.getStatus());
     }
 
     @Test
     void bagInfoDoesExistButItCouldNotBeOpened() throws Exception {
-        var checker = getBagRules();
-
         Mockito.when(fileService.isFile(Mockito.any()))
-            .thenReturn(true);
+                .thenReturn(true);
 
         Mockito.when(bagItMetadataReader.getBag(Mockito.any()))
-            .thenReturn(Optional.empty());
+                .thenReturn(Optional.empty());
 
-        var result = checker.bagInfoExistsAndIsWellFormed().validate(Path.of("bagdir"));
+        var result = new BagInfoExistsAndIsWellformed(bagItMetadataReader, fileService).validate(Path.of("bagdir"));
         assertEquals(RuleResult.Status.ERROR, result.getStatus());
     }
 
     @Test
     void bagInfoCreatedElementIsIso8601Date() throws Exception {
-        var checker = getBagRules();
-
         Mockito.when(bagItMetadataReader.getSingleField(Mockito.any(), Mockito.eq("Created")))
-            .thenReturn("2022-01-01T01:23:45.678+00:00");
+                .thenReturn("2022-01-01T01:23:45.678+00:00");
 
-        var result = checker.bagInfoCreatedElementIsIso8601Date().validate(Path.of("bagdir"));
+        var result = new BagInfoCreatedElementIsIso8601Date(bagItMetadataReader).validate(Path.of("bagdir"));
         assertEquals(RuleResult.Status.SUCCESS, result.getStatus());
     }
 
     @Test
     void bagInfoCreatedElementIsNotAValidDate() throws Exception {
-        var checker = getBagRules();
-
         Mockito.when(bagItMetadataReader.getField(Mockito.any(), Mockito.eq("Created")))
-            .thenReturn(List.of("2022-01-01 01:23:45.678"))
-            .thenReturn(List.of("2022-01-01 01:23:45+00:00"));
+                .thenReturn(List.of("2022-01-01 01:23:45.678"))
+                .thenReturn(List.of("2022-01-01 01:23:45+00:00"));
 
-        assertEquals(RuleResult.Status.ERROR, checker.bagInfoCreatedElementIsIso8601Date().validate(Path.of("bagdir")).getStatus());
-        assertEquals(RuleResult.Status.ERROR, checker.bagInfoCreatedElementIsIso8601Date().validate(Path.of("bagdir")).getStatus());
+        var result = new BagInfoCreatedElementIsIso8601Date(bagItMetadataReader).validate(Path.of("bagdir"));
+        assertEquals(RuleResult.Status.ERROR, result.getStatus());
     }
 
     @Test
     void bagInfoContainsExactlyOneOf() throws Exception {
-        var checker = getBagRules();
-
         Mockito.when(bagItMetadataReader.getField(Mockito.any(), Mockito.eq("Key")))
-            .thenReturn(List.of("value"));
+                .thenReturn(List.of("value"));
 
-        var result = checker.bagInfoContainsExactlyOneOf("Key").validate(Path.of("bagdir"));
+        var result = new BagInfoContainsExactlyOneOf("Key", bagItMetadataReader).validate(Path.of("bagdir"));
         assertEquals(RuleResult.Status.SUCCESS, result.getStatus());
     }
 
     @Test
     void bagInfoContainsExactlyOneOfButInRealityItIsTwo() throws Exception {
-        var checker = getBagRules();
-
         Mockito.when(bagItMetadataReader.getField(Mockito.any(), Mockito.eq("Key")))
-            .thenReturn(List.of("value", "secondvalue"));
+                .thenReturn(List.of("value", "secondvalue"));
 
-        var result = checker.bagInfoContainsExactlyOneOf("Key").validate(Path.of("bagdir"));
+        var result = new BagInfoContainsExactlyOneOf("Key", bagItMetadataReader).validate(Path.of("bagdir"));
         assertEquals(RuleResult.Status.ERROR, result.getStatus());
     }
 
     @Test
     void bagInfoContainsExactlyOneOfButInRealityItIsZero() throws Exception {
-        var checker = getBagRules();
-
         Mockito.when(bagItMetadataReader.getField(Mockito.any(), Mockito.eq("Key")))
-            .thenReturn(new ArrayList<>());
+                .thenReturn(new ArrayList<>());
 
-        var result = checker.bagInfoContainsExactlyOneOf("Key").validate(Path.of("bagdir"));
+        var result = new BagInfoContainsExactlyOneOf("Key", bagItMetadataReader).validate(Path.of("bagdir"));
         assertEquals(RuleResult.Status.ERROR, result.getStatus());
     }
 
     @Test
     void bagInfoContainsAtMostOne() throws Exception {
-        var checker = getBagRules();
-
         Mockito.when(bagItMetadataReader.getField(Mockito.any(), Mockito.eq("Key")))
-            .thenReturn(List.of("value"));
+                .thenReturn(List.of("value"));
 
-        var result = checker.bagInfoContainsAtMostOneOf("Key").validate(Path.of("bagdir"));
+        var result = new BagInfoContainsAtMostOneOf("Key", bagItMetadataReader).validate(Path.of("bagdir"));
         assertEquals(RuleResult.Status.SUCCESS, result.getStatus());
     }
 
@@ -273,7 +244,7 @@ class BagRulesImplTest {
         var checker = getBagRules();
 
         Mockito.when(bagItMetadataReader.getField(Mockito.any(), Mockito.eq("Is-Version-Of")))
-            .thenReturn(List.of("urn:uuid:76cfdebf-e43d-4c56-a886-e8375c745429"));
+                .thenReturn(List.of("urn:uuid:76cfdebf-e43d-4c56-a886-e8375c745429"));
 
         var result = checker.bagInfoIsVersionOfIsValidUrnUuid().validate(Path.of("bagdir"));
         assertEquals(RuleResult.Status.SUCCESS, result.getStatus());
@@ -284,9 +255,9 @@ class BagRulesImplTest {
         var checker = getBagRules();
 
         Mockito.when(bagItMetadataReader.getField(Mockito.any(), Mockito.eq("Is-Version-Of")))
-            .thenReturn(List.of("http://google.com"))
-            .thenReturn(List.of("urn:uuid:1234"))
-            .thenReturn(List.of("urn:notuuid:1234"));
+                .thenReturn(List.of("http://google.com"))
+                .thenReturn(List.of("urn:uuid:1234"))
+                .thenReturn(List.of("urn:notuuid:1234"));
 
         assertEquals(RuleResult.Status.ERROR, checker.bagInfoIsVersionOfIsValidUrnUuid().validate(Path.of("bagdir")).getStatus());
         assertEquals(RuleResult.Status.ERROR, checker.bagInfoIsVersionOfIsValidUrnUuid().validate(Path.of("bagdir")).getStatus());
@@ -298,7 +269,7 @@ class BagRulesImplTest {
         var checker = getBagRules();
 
         Mockito.when(bagItMetadataReader.getField(Mockito.any(), Mockito.eq("Key")))
-            .thenReturn(List.of("value", "secondvalue"));
+                .thenReturn(List.of("value", "secondvalue"));
 
         var result = checker.bagInfoContainsAtMostOneOf("Key").validate(Path.of("bagdir"));
         assertEquals(RuleResult.Status.ERROR, result.getStatus());
@@ -309,7 +280,7 @@ class BagRulesImplTest {
         var checker = getBagRules();
 
         Mockito.when(bagItMetadataReader.getField(Mockito.any(), Mockito.eq("Key")))
-            .thenReturn(new ArrayList<>());
+                .thenReturn(new ArrayList<>());
 
         var result = checker.bagInfoContainsAtMostOneOf("Key").validate(Path.of("bagdir"));
         assertEquals(RuleResult.Status.SKIP_DEPENDENCIES, result.getStatus());
@@ -321,12 +292,12 @@ class BagRulesImplTest {
         var basePath = Path.of("bagdir/metadata");
 
         Mockito.when(fileService.getAllFilesAndDirectories(Mockito.eq(basePath)))
-            .thenReturn(List.of(basePath.resolve("1.txt"), basePath.resolve("2.txt")));
+                .thenReturn(List.of(basePath.resolve("1.txt"), basePath.resolve("2.txt")));
 
-        var result = checker.containsNothingElseThan(Path.of("metadata"), new String[] {
-            "1.txt",
-            "2.txt",
-            "3.txt"
+        var result = checker.containsNothingElseThan(Path.of("metadata"), new String[]{
+                "1.txt",
+                "2.txt",
+                "3.txt"
         }).validate(Path.of("bagdir"));
         assertEquals(RuleResult.Status.SUCCESS, result.getStatus());
     }
@@ -338,13 +309,13 @@ class BagRulesImplTest {
         var basePath = Path.of("bagdir/metadata");
 
         Mockito.when(fileService.getAllFilesAndDirectories(Mockito.eq(basePath)))
-            .thenReturn(List.of(basePath.resolve("1.txt"), basePath.resolve("2.txt"), basePath.resolve("oh no.txt")));
+                .thenReturn(List.of(basePath.resolve("1.txt"), basePath.resolve("2.txt"), basePath.resolve("oh no.txt")));
 
-        var result = checker.containsNothingElseThan(Path.of("metadata"), new String[] {
-            "1.txt"
-            ,
-            "2.txt",
-            "3.txt"
+        var result = checker.containsNothingElseThan(Path.of("metadata"), new String[]{
+                "1.txt"
+                ,
+                "2.txt",
+                "3.txt"
         }).validate(Path.of("bagdir"));
         assertEquals(RuleResult.Status.ERROR, result.getStatus());
     }
@@ -354,79 +325,27 @@ class BagRulesImplTest {
     }
 
     @Test
-    void ddmDoiIdentifiersAreValid() throws Exception {
-        final String xml = "<ddm:DDM\n"
-            + "        xmlns:dc=\"http://purl.org/dc/elements/1.1/\"\n"
-            + "        xmlns:dcx-dai=\"http://easy.dans.knaw.nl/schemas/dcx/dai/\"\n"
-            + "        xmlns:ddm=\"http://schemas.dans.knaw.nl/dataset/ddm-v2/\"\n"
-            + "        xmlns:dcterms=\"http://purl.org/dc/terms/\"\n"
-            + "        xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n"
-            + "        xmlns:id-type=\"http://easy.dans.knaw.nl/schemas/vocab/identifier-type/\">\n"
-            + "    <ddm:dcmiMetadata>\n"
-            + "        <dcterms:identifier xsi:type=\"id-type:DOI\">10.1234/fantasy-doi-id</dcterms:identifier>\n"
-            + "        <dcterms:identifier xsi:type=\"id-type:DOI\">10.1234.567/issn-987-654</dcterms:identifier>\n"
-            + "    </ddm:dcmiMetadata>\n"
-            + "</ddm:DDM>";
-
-        var document = parseXmlString(xml);
-        var reader = Mockito.spy(new XmlReaderImpl());
-
-        Mockito.doReturn(document).when(reader).readXmlFile(Mockito.any());
-
-        var checker = getBagRulesWithXmlReader(reader);
-
-        var result = checker.ddmDoiIdentifiersAreValid().validate(Path.of("bagdir"));
-        assertEquals(RuleResult.Status.SUCCESS, result.getStatus());
-    }
-
-    @Test
-    void ddmDoiIdentifiersAreNotValid() throws Exception {
-        final String xml = "<ddm:DDM\n"
-            + "        xmlns:dc=\"http://purl.org/dc/elements/1.1/\"\n"
-            + "        xmlns:dcx-dai=\"http://easy.dans.knaw.nl/schemas/dcx/dai/\"\n"
-            + "        xmlns:ddm=\"http://schemas.dans.knaw.nl/dataset/ddm-v2/\"\n"
-            + "        xmlns:dcterms=\"http://purl.org/dc/terms/\"\n"
-            + "        xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n"
-            + "        xmlns:id-type=\"http://easy.dans.knaw.nl/schemas/vocab/identifier-type/\">\n"
-            + "    <ddm:dcmiMetadata>\n"
-            + "        <dcterms:identifier xsi:type=\"id-type:DOI\">11.1234/fantasy-doi-id</dcterms:identifier>\n"
-            + "        <dcterms:identifier xsi:type=\"id-type:DOI\">11.1234.567/issn-987-654</dcterms:identifier>\n"
-            + "    </ddm:dcmiMetadata>\n"
-            + "</ddm:DDM>";
-
-        var document = parseXmlString(xml);
-        var reader = Mockito.spy(new XmlReaderImpl());
-
-        Mockito.doReturn(document).when(reader).readXmlFile(Mockito.any());
-
-        var checker = getBagRulesWithXmlReader(reader);
-
-        var result = checker.ddmDoiIdentifiersAreValid().validate(Path.of("bagdir"));
-        assertEquals(RuleResult.Status.ERROR, result.getStatus());
-    }
-
-    @Test
     void ddmDaisAreValid() throws Exception {
         final String xml = "<ddm:DDM\n"
-            + "        xmlns:dc=\"http://purl.org/dc/elements/1.1/\"\n"
-            + "        xmlns:dcx-dai=\"http://easy.dans.knaw.nl/schemas/dcx/dai/\"\n"
-            + "        xmlns:ddm=\"http://schemas.dans.knaw.nl/dataset/ddm-v2/\"\n"
-            + "        xmlns:dcterms=\"http://purl.org/dc/terms/\"\n"
-            + "        xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n"
-            + "        xmlns:id-type=\"http://easy.dans.knaw.nl/schemas/vocab/identifier-type/\">\n"
-            + "    <ddm:profile>\n"
-            + "        <dcx-dai:creatorDetails>\n"
-            + "            <dcx-dai:author>\n"
-            + "                <dcx-dai:DAI>123456789</dcx-dai:DAI>\n"
-            + "                <dcx-dai:organization>\n"
-            + "                    <dcx-dai:DAI>info:eu-repo/dai/nl/298814064</dcx-dai:DAI>\n"
-            + "                </dcx-dai:organization>\n"
-            + "                <dcx-dai:ISNI>http://www.isni.org/isni/0000000114559647</dcx-dai:ISNI>\n"
-            + "                <dcx-dai:ORCID>http://orcid.org/0000-0002-1825-0097</dcx-dai:ORCID>\n"
-            + "            </dcx-dai:author>\n"
-            + "        </dcx-dai:creatorDetails>\n"
-            + "    </ddm:profile>\n"
-            + "</ddm:DDM>";
+                + "        xmlns:dc=\"http://purl.org/dc/elements/1.1/\"\n"
+                + "        xmlns:dcx-dai=\"http://easy.dans.knaw.nl/schemas/dcx/dai/\"\n"
+                + "        xmlns:ddm=\"http://schemas.dans.knaw.nl/dataset/ddm-v2/\"\n"
+                + "        xmlns:dcterms=\"http://purl.org/dc/terms/\"\n"
+                + "        xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n"
+                + "        xmlns:id-type=\"http://easy.dans.knaw.nl/schemas/vocab/identifier-type/\">\n"
+                + "    <ddm:profile>\n"
+                + "        <dcx-dai:creatorDetails>\n"
+                + "            <dcx-dai:author>\n"
+                + "                <dcx-dai:DAI>123456789</dcx-dai:DAI>\n"
+                + "                <dcx-dai:organization>\n"
+                + "                    <dcx-dai:DAI>info:eu-repo/dai/nl/298814064</dcx-dai:DAI>\n"
+                + "                </dcx-dai:organization>\n"
+                + "                <dcx-dai:ISNI>http://www.isni.org/isni/0000000114559647</dcx-dai:ISNI>\n"
+                + "                <dcx-dai:ORCID>http://orcid.org/0000-0002-1825-0097</dcx-dai:ORCID>\n"
+                + "            </dcx-dai:author>\n"
+                + "        </dcx-dai:creatorDetails>\n"
+                + "    </ddm:profile>\n"
+                + "</ddm:DDM>";
 
         var document = parseXmlString(xml);
         var reader = Mockito.spy(new XmlReaderImpl());
@@ -443,23 +362,23 @@ class BagRulesImplTest {
     @Test
     void ddmDaisAreInvalid() throws Exception {
         final String xml = "<ddm:DDM\n"
-            + "        xmlns:dc=\"http://purl.org/dc/elements/1.1/\"\n"
-            + "        xmlns:dcx-dai=\"http://easy.dans.knaw.nl/schemas/dcx/dai/\"\n"
-            + "        xmlns:ddm=\"http://schemas.dans.knaw.nl/dataset/ddm-v2/\"\n"
-            + "        xmlns:dcterms=\"http://purl.org/dc/terms/\"\n"
-            + "        xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n"
-            + "        xmlns:id-type=\"http://easy.dans.knaw.nl/schemas/vocab/identifier-type/\">\n"
-            + "    <ddm:profile>\n"
-            + "        <dcx-dai:creatorDetails>\n"
-            + "            <dcx-dai:author>\n"
-            + "                <dcx-dai:DAI>123456788</dcx-dai:DAI>\n"
-            + "                <dcx-dai:organization>\n"
-            + "                    <dcx-dai:DAI>info:eu-repo/dai/nl/298814063</dcx-dai:DAI>\n"
-            + "                </dcx-dai:organization>\n"
-            + "            </dcx-dai:author>\n"
-            + "        </dcx-dai:creatorDetails>\n"
-            + "    </ddm:profile>\n"
-            + "</ddm:DDM>";
+                + "        xmlns:dc=\"http://purl.org/dc/elements/1.1/\"\n"
+                + "        xmlns:dcx-dai=\"http://easy.dans.knaw.nl/schemas/dcx/dai/\"\n"
+                + "        xmlns:ddm=\"http://schemas.dans.knaw.nl/dataset/ddm-v2/\"\n"
+                + "        xmlns:dcterms=\"http://purl.org/dc/terms/\"\n"
+                + "        xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n"
+                + "        xmlns:id-type=\"http://easy.dans.knaw.nl/schemas/vocab/identifier-type/\">\n"
+                + "    <ddm:profile>\n"
+                + "        <dcx-dai:creatorDetails>\n"
+                + "            <dcx-dai:author>\n"
+                + "                <dcx-dai:DAI>123456788</dcx-dai:DAI>\n"
+                + "                <dcx-dai:organization>\n"
+                + "                    <dcx-dai:DAI>info:eu-repo/dai/nl/298814063</dcx-dai:DAI>\n"
+                + "                </dcx-dai:organization>\n"
+                + "            </dcx-dai:author>\n"
+                + "        </dcx-dai:creatorDetails>\n"
+                + "    </ddm:profile>\n"
+                + "</ddm:DDM>";
 
         var document = parseXmlString(xml);
         var reader = Mockito.spy(new XmlReaderImpl());
@@ -475,15 +394,15 @@ class BagRulesImplTest {
     @Test
     void ddmMustContainDctermsLicense_should_return_ERROR_for_zero_licenses() throws Exception {
         final String xml = "<ddm:DDM\n"
-            + "        xmlns:dc=\"http://purl.org/dc/elements/1.1/\"\n"
-            + "        xmlns:dcx-dai=\"http://easy.dans.knaw.nl/schemas/dcx/dai/\"\n"
-            + "        xmlns:ddm=\"http://schemas.dans.knaw.nl/dataset/ddm-v2/\"\n"
-            + "        xmlns:dcterms=\"http://purl.org/dc/terms/\"\n"
-            + "        xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n"
-            + "        xmlns:id-type=\"http://easy.dans.knaw.nl/schemas/vocab/identifier-type/\">\n"
-            + "    <ddm:dcmiMetadata>\n"
-            + "    </ddm:dcmiMetadata>\n"
-            + "</ddm:DDM>";
+                + "        xmlns:dc=\"http://purl.org/dc/elements/1.1/\"\n"
+                + "        xmlns:dcx-dai=\"http://easy.dans.knaw.nl/schemas/dcx/dai/\"\n"
+                + "        xmlns:ddm=\"http://schemas.dans.knaw.nl/dataset/ddm-v2/\"\n"
+                + "        xmlns:dcterms=\"http://purl.org/dc/terms/\"\n"
+                + "        xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n"
+                + "        xmlns:id-type=\"http://easy.dans.knaw.nl/schemas/vocab/identifier-type/\">\n"
+                + "    <ddm:dcmiMetadata>\n"
+                + "    </ddm:dcmiMetadata>\n"
+                + "</ddm:DDM>";
 
         var document = parseXmlString(xml);
         var reader = Mockito.spy(new XmlReaderImpl());
@@ -492,24 +411,24 @@ class BagRulesImplTest {
 
         var checker = getBagRulesWithXmlReader(reader);
 
-        var result = checker.ddmMustContainDctermsLicense().validate(Path.of("bagdir"));
+        var result = checker.ddmMustContainExactlyOneDctermsLicenseWithXsiTypeUri().validate(Path.of("bagdir"));
         assertEquals(RuleResult.Status.ERROR, result.getStatus());
     }
 
     @Test
     void ddmMustContainDctermsLicense_should_return_ERROR_for_multiple_licenses() throws Exception {
         final String xml = "<ddm:DDM\n"
-            + "        xmlns:dc=\"http://purl.org/dc/elements/1.1/\"\n"
-            + "        xmlns:dcx-dai=\"http://easy.dans.knaw.nl/schemas/dcx/dai/\"\n"
-            + "        xmlns:ddm=\"http://schemas.dans.knaw.nl/dataset/ddm-v2/\"\n"
-            + "        xmlns:dcterms=\"http://purl.org/dc/terms/\"\n"
-            + "        xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n"
-            + "        xmlns:id-type=\"http://easy.dans.knaw.nl/schemas/vocab/identifier-type/\">\n"
-            + "    <ddm:dcmiMetadata>\n"
-            + "        <dcterms:license xsi:type=\"dcterms:URI\">http://opensource.org/licenses/MIT</dcterms:license>\n"
-            + "        <dcterms:license xsi:type=\"dcterms:URI\">http://opensource.org/licenses/MIT</dcterms:license>\n"
-            + "    </ddm:dcmiMetadata>\n"
-            + "</ddm:DDM>";
+                + "        xmlns:dc=\"http://purl.org/dc/elements/1.1/\"\n"
+                + "        xmlns:dcx-dai=\"http://easy.dans.knaw.nl/schemas/dcx/dai/\"\n"
+                + "        xmlns:ddm=\"http://schemas.dans.knaw.nl/dataset/ddm-v2/\"\n"
+                + "        xmlns:dcterms=\"http://purl.org/dc/terms/\"\n"
+                + "        xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n"
+                + "        xmlns:id-type=\"http://easy.dans.knaw.nl/schemas/vocab/identifier-type/\">\n"
+                + "    <ddm:dcmiMetadata>\n"
+                + "        <dcterms:license xsi:type=\"dcterms:URI\">http://opensource.org/licenses/MIT</dcterms:license>\n"
+                + "        <dcterms:license xsi:type=\"dcterms:URI\">http://opensource.org/licenses/MIT</dcterms:license>\n"
+                + "    </ddm:dcmiMetadata>\n"
+                + "</ddm:DDM>";
 
         var document = parseXmlString(xml);
         var reader = Mockito.spy(new XmlReaderImpl());
@@ -518,23 +437,23 @@ class BagRulesImplTest {
 
         var checker = getBagRulesWithXmlReader(reader);
 
-        var result = checker.ddmMustContainDctermsLicense().validate(Path.of("bagdir"));
+        var result = checker.ddmMustContainExactlyOneDctermsLicenseWithXsiTypeUri().validate(Path.of("bagdir"));
         assertEquals(RuleResult.Status.ERROR, result.getStatus());
     }
 
     @Test
     void ddmMustContainDctermsLicense_should_return_SUCCESS_for_valid_URI() throws Exception {
         final String xml = "<ddm:DDM\n"
-            + "        xmlns:dc=\"http://purl.org/dc/elements/1.1/\"\n"
-            + "        xmlns:dcx-dai=\"http://easy.dans.knaw.nl/schemas/dcx/dai/\"\n"
-            + "        xmlns:ddm=\"http://schemas.dans.knaw.nl/dataset/ddm-v2/\"\n"
-            + "        xmlns:dcterms=\"http://purl.org/dc/terms/\"\n"
-            + "        xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n"
-            + "        xmlns:id-type=\"http://easy.dans.knaw.nl/schemas/vocab/identifier-type/\">\n"
-            + "    <ddm:dcmiMetadata>\n"
-            + "        <dcterms:license xsi:type=\"dcterms:URI\">http://random.org/licenses/MIT</dcterms:license>\n"
-            + "    </ddm:dcmiMetadata>\n"
-            + "</ddm:DDM>";
+                + "        xmlns:dc=\"http://purl.org/dc/elements/1.1/\"\n"
+                + "        xmlns:dcx-dai=\"http://easy.dans.knaw.nl/schemas/dcx/dai/\"\n"
+                + "        xmlns:ddm=\"http://schemas.dans.knaw.nl/dataset/ddm-v2/\"\n"
+                + "        xmlns:dcterms=\"http://purl.org/dc/terms/\"\n"
+                + "        xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n"
+                + "        xmlns:id-type=\"http://easy.dans.knaw.nl/schemas/vocab/identifier-type/\">\n"
+                + "    <ddm:dcmiMetadata>\n"
+                + "        <dcterms:license xsi:type=\"dcterms:URI\">http://random.org/licenses/MIT</dcterms:license>\n"
+                + "    </ddm:dcmiMetadata>\n"
+                + "</ddm:DDM>";
 
         var document = parseXmlString(xml);
         var reader = Mockito.spy(new XmlReaderImpl());
@@ -543,23 +462,23 @@ class BagRulesImplTest {
 
         var checker = getBagRulesWithXmlReader(reader);
 
-        var result = checker.ddmMustContainDctermsLicense().validate(Path.of("bagdir"));
+        var result = checker.ddmMustContainExactlyOneDctermsLicenseWithXsiTypeUri().validate(Path.of("bagdir"));
         assertEquals(Status.SUCCESS, result.getStatus());
     }
 
     @Test
     void ddmMustContainDctermsLicense_should_return_ERROR_for_nondcterms_uri() throws Exception {
         final String xml = "<ddm:DDM\n"
-            + "        xmlns:dc=\"http://purl.org/dc/elements/1.1/\"\n"
-            + "        xmlns:dcx-dai=\"http://easy.dans.knaw.nl/schemas/dcx/dai/\"\n"
-            + "        xmlns:ddm=\"http://schemas.dans.knaw.nl/dataset/ddm-v2/\"\n"
-            + "        xmlns:dcterms=\"http://purl.org/dc/terms/\"\n"
-            + "        xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n"
-            + "        xmlns:id-type=\"http://easy.dans.knaw.nl/schemas/vocab/identifier-type/\">\n"
-            + "    <ddm:dcmiMetadata>\n"
-            + "        <dcterms:license xsi:type=\"dcterms:SOMETHING_ELSE\">http://random.org/licenses/MIT</dcterms:license>\n"
-            + "    </ddm:dcmiMetadata>\n"
-            + "</ddm:DDM>";
+                + "        xmlns:dc=\"http://purl.org/dc/elements/1.1/\"\n"
+                + "        xmlns:dcx-dai=\"http://easy.dans.knaw.nl/schemas/dcx/dai/\"\n"
+                + "        xmlns:ddm=\"http://schemas.dans.knaw.nl/dataset/ddm-v2/\"\n"
+                + "        xmlns:dcterms=\"http://purl.org/dc/terms/\"\n"
+                + "        xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n"
+                + "        xmlns:id-type=\"http://easy.dans.knaw.nl/schemas/vocab/identifier-type/\">\n"
+                + "    <ddm:dcmiMetadata>\n"
+                + "        <dcterms:license xsi:type=\"dcterms:SOMETHING_ELSE\">http://random.org/licenses/MIT</dcterms:license>\n"
+                + "    </ddm:dcmiMetadata>\n"
+                + "</ddm:DDM>";
 
         var document = parseXmlString(xml);
         var reader = Mockito.spy(new XmlReaderImpl());
@@ -568,23 +487,23 @@ class BagRulesImplTest {
 
         var checker = getBagRulesWithXmlReader(reader);
 
-        var result = checker.ddmMustContainDctermsLicense().validate(Path.of("bagdir"));
+        var result = checker.ddmMustContainExactlyOneDctermsLicenseWithXsiTypeUri().validate(Path.of("bagdir"));
         assertEquals(Status.ERROR, result.getStatus());
     }
 
     @Test
     void ddmMustContainDctermsLicense_should_return_ERROR_for_invalid_uri() throws Exception {
         final String xml = "<ddm:DDM\n"
-            + "        xmlns:dc=\"http://purl.org/dc/elements/1.1/\"\n"
-            + "        xmlns:dcx-dai=\"http://easy.dans.knaw.nl/schemas/dcx/dai/\"\n"
-            + "        xmlns:ddm=\"http://schemas.dans.knaw.nl/dataset/ddm-v2/\"\n"
-            + "        xmlns:dcterms=\"http://purl.org/dc/terms/\"\n"
-            + "        xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n"
-            + "        xmlns:id-type=\"http://easy.dans.knaw.nl/schemas/vocab/identifier-type/\">\n"
-            + "    <ddm:dcmiMetadata>\n"
-            + "        <dcterms:license xsi:type=\"dcterms:URI\">invalid uri</dcterms:license>\n"
-            + "    </ddm:dcmiMetadata>\n"
-            + "</ddm:DDM>";
+                + "        xmlns:dc=\"http://purl.org/dc/elements/1.1/\"\n"
+                + "        xmlns:dcx-dai=\"http://easy.dans.knaw.nl/schemas/dcx/dai/\"\n"
+                + "        xmlns:ddm=\"http://schemas.dans.knaw.nl/dataset/ddm-v2/\"\n"
+                + "        xmlns:dcterms=\"http://purl.org/dc/terms/\"\n"
+                + "        xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n"
+                + "        xmlns:id-type=\"http://easy.dans.knaw.nl/schemas/vocab/identifier-type/\">\n"
+                + "    <ddm:dcmiMetadata>\n"
+                + "        <dcterms:license xsi:type=\"dcterms:URI\">invalid uri</dcterms:license>\n"
+                + "    </ddm:dcmiMetadata>\n"
+                + "</ddm:DDM>";
 
         var document = parseXmlString(xml);
         var reader = Mockito.spy(new XmlReaderImpl());
@@ -592,7 +511,7 @@ class BagRulesImplTest {
         Mockito.doReturn(document).when(reader).readXmlFile(Mockito.any());
 
         var checker = getBagRulesWithXmlReader(reader);
-        var result = checker.ddmMustContainDctermsLicense().validate(Path.of("bagdir"));
+        var result = checker.ddmMustContainExactlyOneDctermsLicenseWithXsiTypeUri().validate(Path.of("bagdir"));
 
         assertEquals(Status.ERROR, result.getStatus());
     }
@@ -600,41 +519,41 @@ class BagRulesImplTest {
     @Test
     void ddmGmlPolygonPosListIsWellFormed() throws Exception {
         var xml = "<ddm:DDM\n"
-            + "        xmlns:dc=\"http://purl.org/dc/elements/1.1/\"\n"
-            + "        xmlns:dcx-dai=\"http://easy.dans.knaw.nl/schemas/dcx/dai/\"\n"
-            + "        xmlns:ddm=\"http://schemas.dans.knaw.nl/dataset/ddm-v2/\"\n"
-            + "        xmlns:dcterms=\"http://purl.org/dc/terms/\"\n"
-            + "        xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n"
-            + "        xmlns:dcx-gml=\"http://easy.dans.knaw.nl/schemas/dcx/gml/\"\n"
-            + "        xmlns:id-type=\"http://easy.dans.knaw.nl/schemas/vocab/identifier-type/\">\n"
-            + "    <ddm:dcmiMetadata>\n"
-            + "          <dcx-gml:spatial>\n"
-            + "            <MultiSurface xmlns=\"http://www.opengis.net/gml\">\n"
-            + "                <name>A random surface with multiple polygons</name>\n"
-            + "                <surfaceMember>\n"
-            + "                    <Polygon>\n"
-            + "                        <description>A triangle between BP, De Horeca Academie en the railway station</description>\n"
-            + "                        <exterior>\n"
-            + "                            <LinearRing>\n"
-            + "                                <posList>52.079710 4.342778 52.079710 4.342778 52.07913 4.34332 52.079710 4.342778</posList>\n"
-            + "                            </LinearRing>\n"
-            + "                        </exterior>\n"
-            + "                    </Polygon>\n"
-            + "\t\t        </surfaceMember>\n"
-            + "                <surfaceMember>\n"
-            + "                    <Polygon>\n"
-            + "                        <description>A triangle between BP, De Horeca Academie en the railway station</description>\n"
-            + "                        <exterior>\n"
-            + "                            <LinearRing>\n"
-            + "                                <posList>52.079710 4.342778 52.079710 4.342778 52.07913 4.34332 52.079710 4.342778</posList>\n"
-            + "                            </LinearRing>\n"
-            + "                        </exterior>\n"
-            + "                    </Polygon>\n"
-            + "\t\t        </surfaceMember>\n"
-            + "            </MultiSurface>\n"
-            + "\t</dcx-gml:spatial>"
-            + "    </ddm:dcmiMetadata>\n"
-            + "</ddm:DDM>";
+                + "        xmlns:dc=\"http://purl.org/dc/elements/1.1/\"\n"
+                + "        xmlns:dcx-dai=\"http://easy.dans.knaw.nl/schemas/dcx/dai/\"\n"
+                + "        xmlns:ddm=\"http://schemas.dans.knaw.nl/dataset/ddm-v2/\"\n"
+                + "        xmlns:dcterms=\"http://purl.org/dc/terms/\"\n"
+                + "        xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n"
+                + "        xmlns:dcx-gml=\"http://easy.dans.knaw.nl/schemas/dcx/gml/\"\n"
+                + "        xmlns:id-type=\"http://easy.dans.knaw.nl/schemas/vocab/identifier-type/\">\n"
+                + "    <ddm:dcmiMetadata>\n"
+                + "          <dcx-gml:spatial>\n"
+                + "            <MultiSurface xmlns=\"http://www.opengis.net/gml\">\n"
+                + "                <name>A random surface with multiple polygons</name>\n"
+                + "                <surfaceMember>\n"
+                + "                    <Polygon>\n"
+                + "                        <description>A triangle between BP, De Horeca Academie en the railway station</description>\n"
+                + "                        <exterior>\n"
+                + "                            <LinearRing>\n"
+                + "                                <posList>52.079710 4.342778 52.079710 4.342778 52.07913 4.34332 52.079710 4.342778</posList>\n"
+                + "                            </LinearRing>\n"
+                + "                        </exterior>\n"
+                + "                    </Polygon>\n"
+                + "\t\t        </surfaceMember>\n"
+                + "                <surfaceMember>\n"
+                + "                    <Polygon>\n"
+                + "                        <description>A triangle between BP, De Horeca Academie en the railway station</description>\n"
+                + "                        <exterior>\n"
+                + "                            <LinearRing>\n"
+                + "                                <posList>52.079710 4.342778 52.079710 4.342778 52.07913 4.34332 52.079710 4.342778</posList>\n"
+                + "                            </LinearRing>\n"
+                + "                        </exterior>\n"
+                + "                    </Polygon>\n"
+                + "\t\t        </surfaceMember>\n"
+                + "            </MultiSurface>\n"
+                + "\t</dcx-gml:spatial>"
+                + "    </ddm:dcmiMetadata>\n"
+                + "</ddm:DDM>";
 
         var document = parseXmlString(xml);
         var reader = Mockito.spy(new XmlReaderImpl());
@@ -650,41 +569,41 @@ class BagRulesImplTest {
     @Test
     void ddmGmlPolygonPosListIsNotWellFormed() throws Exception {
         var xml = "<ddm:DDM\n"
-            + "        xmlns:dc=\"http://purl.org/dc/elements/1.1/\"\n"
-            + "        xmlns:dcx-dai=\"http://easy.dans.knaw.nl/schemas/dcx/dai/\"\n"
-            + "        xmlns:ddm=\"http://schemas.dans.knaw.nl/dataset/ddm-v2/\"\n"
-            + "        xmlns:dcterms=\"http://purl.org/dc/terms/\"\n"
-            + "        xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n"
-            + "        xmlns:dcx-gml=\"http://easy.dans.knaw.nl/schemas/dcx/gml/\"\n"
-            + "        xmlns:id-type=\"http://easy.dans.knaw.nl/schemas/vocab/identifier-type/\">\n"
-            + "    <ddm:dcmiMetadata>\n"
-            + "          <dcx-gml:spatial>\n"
-            + "            <MultiSurface xmlns=\"http://www.opengis.net/gml\">\n"
-            + "                <name>A random surface with multiple polygons</name>\n"
-            + "                <surfaceMember>\n"
-            + "                    <Polygon>\n"
-            + "                        <description>A triangle between BP, De Horeca Academie en the railway station</description>\n"
-            + "                        <exterior>\n"
-            + "                            <LinearRing>\n"
-            + "                                <posList>52.079710 4.342778 52.079710 4.342778 52.079710 4.342778</posList>\n"
-            + "                            </LinearRing>\n"
-            + "                        </exterior>\n"
-            + "                    </Polygon>\n"
-            + "\t\t        </surfaceMember>\n"
-            + "                <surfaceMember>\n"
-            + "                    <Polygon>\n"
-            + "                        <description>A triangle between BP, De Horeca Academie en the railway station</description>\n"
-            + "                        <exterior>\n"
-            + "                            <LinearRing>\n"
-            + "                                <posList>52.079710 4.342778 52.079710 4.342778 52.07913 4.34332 52.079710 4.342778</posList>\n"
-            + "                            </LinearRing>\n"
-            + "                        </exterior>\n"
-            + "                    </Polygon>\n"
-            + "\t\t        </surfaceMember>\n"
-            + "            </MultiSurface>\n"
-            + "\t</dcx-gml:spatial>"
-            + "    </ddm:dcmiMetadata>\n"
-            + "</ddm:DDM>";
+                + "        xmlns:dc=\"http://purl.org/dc/elements/1.1/\"\n"
+                + "        xmlns:dcx-dai=\"http://easy.dans.knaw.nl/schemas/dcx/dai/\"\n"
+                + "        xmlns:ddm=\"http://schemas.dans.knaw.nl/dataset/ddm-v2/\"\n"
+                + "        xmlns:dcterms=\"http://purl.org/dc/terms/\"\n"
+                + "        xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n"
+                + "        xmlns:dcx-gml=\"http://easy.dans.knaw.nl/schemas/dcx/gml/\"\n"
+                + "        xmlns:id-type=\"http://easy.dans.knaw.nl/schemas/vocab/identifier-type/\">\n"
+                + "    <ddm:dcmiMetadata>\n"
+                + "          <dcx-gml:spatial>\n"
+                + "            <MultiSurface xmlns=\"http://www.opengis.net/gml\">\n"
+                + "                <name>A random surface with multiple polygons</name>\n"
+                + "                <surfaceMember>\n"
+                + "                    <Polygon>\n"
+                + "                        <description>A triangle between BP, De Horeca Academie en the railway station</description>\n"
+                + "                        <exterior>\n"
+                + "                            <LinearRing>\n"
+                + "                                <posList>52.079710 4.342778 52.079710 4.342778 52.079710 4.342778</posList>\n"
+                + "                            </LinearRing>\n"
+                + "                        </exterior>\n"
+                + "                    </Polygon>\n"
+                + "\t\t        </surfaceMember>\n"
+                + "                <surfaceMember>\n"
+                + "                    <Polygon>\n"
+                + "                        <description>A triangle between BP, De Horeca Academie en the railway station</description>\n"
+                + "                        <exterior>\n"
+                + "                            <LinearRing>\n"
+                + "                                <posList>52.079710 4.342778 52.079710 4.342778 52.07913 4.34332 52.079710 4.342778</posList>\n"
+                + "                            </LinearRing>\n"
+                + "                        </exterior>\n"
+                + "                    </Polygon>\n"
+                + "\t\t        </surfaceMember>\n"
+                + "            </MultiSurface>\n"
+                + "\t</dcx-gml:spatial>"
+                + "    </ddm:dcmiMetadata>\n"
+                + "</ddm:DDM>";
 
         var document = parseXmlString(xml);
         var reader = Mockito.spy(new XmlReaderImpl());
@@ -700,31 +619,31 @@ class BagRulesImplTest {
     @Test
     void polygonsInSameMultiSurfaceHaveSameSrsName() throws Exception {
         var xml = "<ddm:DDM\n"
-            + "        xmlns:dc=\"http://purl.org/dc/elements/1.1/\"\n"
-            + "        xmlns:dcx-dai=\"http://easy.dans.knaw.nl/schemas/dcx/dai/\"\n"
-            + "        xmlns:ddm=\"http://schemas.dans.knaw.nl/dataset/ddm-v2/\"\n"
-            + "        xmlns:dcterms=\"http://purl.org/dc/terms/\"\n"
-            + "        xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n"
-            + "        xmlns:dcx-gml=\"http://easy.dans.knaw.nl/schemas/dcx/gml/\"\n"
-            + "        xmlns:id-type=\"http://easy.dans.knaw.nl/schemas/vocab/identifier-type/\">\n"
-            + "    <ddm:dcmiMetadata>\n"
-            + "          <dcx-gml:spatial>\n"
-            + "            <MultiSurface xmlns=\"http://www.opengis.net/gml\">\n"
-            + "                <name>A random surface with multiple polygons</name>\n"
-            + "                <surfaceMember>\n"
-            + "                    <Polygon srsName=\"http://google.com\">\n"
-            + "                        <description>A triangle between BP, De Horeca Academie en the railway station</description>\n"
-            + "                    </Polygon>\n"
-            + "\t\t        </surfaceMember>\n"
-            + "                <surfaceMember>\n"
-            + "                    <Polygon srsName=\"http://google.com\">\n"
-            + "                        <description>A triangle between BP, De Horeca Academie en the railway station</description>\n"
-            + "                    </Polygon>\n"
-            + "\t\t        </surfaceMember>\n"
-            + "            </MultiSurface>\n"
-            + "\t</dcx-gml:spatial>"
-            + "    </ddm:dcmiMetadata>\n"
-            + "</ddm:DDM>";
+                + "        xmlns:dc=\"http://purl.org/dc/elements/1.1/\"\n"
+                + "        xmlns:dcx-dai=\"http://easy.dans.knaw.nl/schemas/dcx/dai/\"\n"
+                + "        xmlns:ddm=\"http://schemas.dans.knaw.nl/dataset/ddm-v2/\"\n"
+                + "        xmlns:dcterms=\"http://purl.org/dc/terms/\"\n"
+                + "        xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n"
+                + "        xmlns:dcx-gml=\"http://easy.dans.knaw.nl/schemas/dcx/gml/\"\n"
+                + "        xmlns:id-type=\"http://easy.dans.knaw.nl/schemas/vocab/identifier-type/\">\n"
+                + "    <ddm:dcmiMetadata>\n"
+                + "          <dcx-gml:spatial>\n"
+                + "            <MultiSurface xmlns=\"http://www.opengis.net/gml\">\n"
+                + "                <name>A random surface with multiple polygons</name>\n"
+                + "                <surfaceMember>\n"
+                + "                    <Polygon srsName=\"http://google.com\">\n"
+                + "                        <description>A triangle between BP, De Horeca Academie en the railway station</description>\n"
+                + "                    </Polygon>\n"
+                + "\t\t        </surfaceMember>\n"
+                + "                <surfaceMember>\n"
+                + "                    <Polygon srsName=\"http://google.com\">\n"
+                + "                        <description>A triangle between BP, De Horeca Academie en the railway station</description>\n"
+                + "                    </Polygon>\n"
+                + "\t\t        </surfaceMember>\n"
+                + "            </MultiSurface>\n"
+                + "\t</dcx-gml:spatial>"
+                + "    </ddm:dcmiMetadata>\n"
+                + "</ddm:DDM>";
 
         var document = parseXmlString(xml);
         var reader = Mockito.spy(new XmlReaderImpl());
@@ -740,31 +659,31 @@ class BagRulesImplTest {
     @Test
     void polygonsInSameMultiSurfaceHaveDifferentSrsName() throws Exception {
         var xml = "<ddm:DDM\n"
-            + "        xmlns:dc=\"http://purl.org/dc/elements/1.1/\"\n"
-            + "        xmlns:dcx-dai=\"http://easy.dans.knaw.nl/schemas/dcx/dai/\"\n"
-            + "        xmlns:ddm=\"http://schemas.dans.knaw.nl/dataset/ddm-v2/\"\n"
-            + "        xmlns:dcterms=\"http://purl.org/dc/terms/\"\n"
-            + "        xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n"
-            + "        xmlns:dcx-gml=\"http://easy.dans.knaw.nl/schemas/dcx/gml/\"\n"
-            + "        xmlns:id-type=\"http://easy.dans.knaw.nl/schemas/vocab/identifier-type/\">\n"
-            + "    <ddm:dcmiMetadata>\n"
-            + "          <dcx-gml:spatial>\n"
-            + "            <MultiSurface xmlns=\"http://www.opengis.net/gml\">\n"
-            + "                <name>A random surface with multiple polygons</name>\n"
-            + "                <surfaceMember>\n"
-            + "                    <Polygon srsName=\"http://yahoo.com\">\n"
-            + "                        <description>A triangle between BP, De Horeca Academie en the railway station</description>\n"
-            + "                    </Polygon>\n"
-            + "\t\t        </surfaceMember>\n"
-            + "                <surfaceMember>\n"
-            + "                    <Polygon srsName=\"http://google.com\">\n"
-            + "                        <description>A triangle between BP, De Horeca Academie en the railway station</description>\n"
-            + "                    </Polygon>\n"
-            + "\t\t        </surfaceMember>\n"
-            + "            </MultiSurface>\n"
-            + "\t</dcx-gml:spatial>"
-            + "    </ddm:dcmiMetadata>\n"
-            + "</ddm:DDM>";
+                + "        xmlns:dc=\"http://purl.org/dc/elements/1.1/\"\n"
+                + "        xmlns:dcx-dai=\"http://easy.dans.knaw.nl/schemas/dcx/dai/\"\n"
+                + "        xmlns:ddm=\"http://schemas.dans.knaw.nl/dataset/ddm-v2/\"\n"
+                + "        xmlns:dcterms=\"http://purl.org/dc/terms/\"\n"
+                + "        xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n"
+                + "        xmlns:dcx-gml=\"http://easy.dans.knaw.nl/schemas/dcx/gml/\"\n"
+                + "        xmlns:id-type=\"http://easy.dans.knaw.nl/schemas/vocab/identifier-type/\">\n"
+                + "    <ddm:dcmiMetadata>\n"
+                + "          <dcx-gml:spatial>\n"
+                + "            <MultiSurface xmlns=\"http://www.opengis.net/gml\">\n"
+                + "                <name>A random surface with multiple polygons</name>\n"
+                + "                <surfaceMember>\n"
+                + "                    <Polygon srsName=\"http://yahoo.com\">\n"
+                + "                        <description>A triangle between BP, De Horeca Academie en the railway station</description>\n"
+                + "                    </Polygon>\n"
+                + "\t\t        </surfaceMember>\n"
+                + "                <surfaceMember>\n"
+                + "                    <Polygon srsName=\"http://google.com\">\n"
+                + "                        <description>A triangle between BP, De Horeca Academie en the railway station</description>\n"
+                + "                    </Polygon>\n"
+                + "\t\t        </surfaceMember>\n"
+                + "            </MultiSurface>\n"
+                + "\t</dcx-gml:spatial>"
+                + "    </ddm:dcmiMetadata>\n"
+                + "</ddm:DDM>";
 
         var document = parseXmlString(xml);
         var reader = Mockito.spy(new XmlReaderImpl());
@@ -780,33 +699,33 @@ class BagRulesImplTest {
     @Test
     void polygonsInDifferentMultisurfacesHaveDifferentValuesButDontThrowAnException() throws Exception {
         var xml = "<ddm:DDM\n"
-            + "        xmlns:dc=\"http://purl.org/dc/elements/1.1/\"\n"
-            + "        xmlns:dcx-dai=\"http://easy.dans.knaw.nl/schemas/dcx/dai/\"\n"
-            + "        xmlns:ddm=\"http://schemas.dans.knaw.nl/dataset/ddm-v2/\"\n"
-            + "        xmlns:dcterms=\"http://purl.org/dc/terms/\"\n"
-            + "        xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n"
-            + "        xmlns:dcx-gml=\"http://easy.dans.knaw.nl/schemas/dcx/gml/\"\n"
-            + "        xmlns:id-type=\"http://easy.dans.knaw.nl/schemas/vocab/identifier-type/\">\n"
-            + "    <ddm:dcmiMetadata>\n"
-            + "          <dcx-gml:spatial>\n"
-            + "            <MultiSurface xmlns=\"http://www.opengis.net/gml\">\n"
-            + "                <name>A random surface with multiple polygons</name>\n"
-            + "                <surfaceMember>\n"
-            + "                    <Polygon srsName=\"http://yahoo.com\">\n"
-            + "                        <description>A triangle between BP, De Horeca Academie en the railway station</description>\n"
-            + "                    </Polygon>\n"
-            + "\t\t        </surfaceMember>\n"
-            + "            </MultiSurface>"
-            + "            <MultiSurface xmlns=\"http://www.opengis.net/gml\">\n"
-            + "                <surfaceMember>\n"
-            + "                    <Polygon srsName=\"http://google.com\">\n"
-            + "                        <description>A triangle between BP, De Horeca Academie en the railway station</description>\n"
-            + "                    </Polygon>\n"
-            + "\t\t        </surfaceMember>\n"
-            + "            </MultiSurface>\n"
-            + "\t</dcx-gml:spatial>"
-            + "    </ddm:dcmiMetadata>\n"
-            + "</ddm:DDM>";
+                + "        xmlns:dc=\"http://purl.org/dc/elements/1.1/\"\n"
+                + "        xmlns:dcx-dai=\"http://easy.dans.knaw.nl/schemas/dcx/dai/\"\n"
+                + "        xmlns:ddm=\"http://schemas.dans.knaw.nl/dataset/ddm-v2/\"\n"
+                + "        xmlns:dcterms=\"http://purl.org/dc/terms/\"\n"
+                + "        xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n"
+                + "        xmlns:dcx-gml=\"http://easy.dans.knaw.nl/schemas/dcx/gml/\"\n"
+                + "        xmlns:id-type=\"http://easy.dans.knaw.nl/schemas/vocab/identifier-type/\">\n"
+                + "    <ddm:dcmiMetadata>\n"
+                + "          <dcx-gml:spatial>\n"
+                + "            <MultiSurface xmlns=\"http://www.opengis.net/gml\">\n"
+                + "                <name>A random surface with multiple polygons</name>\n"
+                + "                <surfaceMember>\n"
+                + "                    <Polygon srsName=\"http://yahoo.com\">\n"
+                + "                        <description>A triangle between BP, De Horeca Academie en the railway station</description>\n"
+                + "                    </Polygon>\n"
+                + "\t\t        </surfaceMember>\n"
+                + "            </MultiSurface>"
+                + "            <MultiSurface xmlns=\"http://www.opengis.net/gml\">\n"
+                + "                <surfaceMember>\n"
+                + "                    <Polygon srsName=\"http://google.com\">\n"
+                + "                        <description>A triangle between BP, De Horeca Academie en the railway station</description>\n"
+                + "                    </Polygon>\n"
+                + "\t\t        </surfaceMember>\n"
+                + "            </MultiSurface>\n"
+                + "\t</dcx-gml:spatial>"
+                + "    </ddm:dcmiMetadata>\n"
+                + "</ddm:DDM>";
 
         var document = parseXmlString(xml);
         var reader = Mockito.spy(new XmlReaderImpl());
@@ -822,49 +741,49 @@ class BagRulesImplTest {
     @Test
     void pointsShouldHaveAtLeastTwoNumericValuesWithinBounds() throws Exception {
         var xml = "<ddm:DDM\n"
-            + "        xmlns:dc=\"http://purl.org/dc/elements/1.1/\"\n"
-            + "        xmlns:dcx-dai=\"http://easy.dans.knaw.nl/schemas/dcx/dai/\"\n"
-            + "        xmlns:ddm=\"http://schemas.dans.knaw.nl/dataset/ddm-v2/\"\n"
-            + "        xmlns:dct=\"http://purl.org/dc/terms/\"\n"
-            + "        xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n"
-            + "        xmlns:dcx-gml=\"http://easy.dans.knaw.nl/schemas/dcx/gml/\"\n"
-            + "        xmlns:id-type=\"http://easy.dans.knaw.nl/schemas/vocab/identifier-type/\">\n"
-            + "    <ddm:dcmiMetadata>\n"
-            + "            <dct:spatial xsi:type='dcx-gml:SimpleGMLType'>"
-            + "                <Point xmlns='http://www.opengis.net/gml'>"
-            + "                    <pos>1.0</pos><!-- only one value -->"
-            + "                </Point>"
-            + "            </dct:spatial>"
-            + "            <dct:spatial xsi:type='dcx-gml:SimpleGMLType'>"
-            + "                <Point xmlns='http://www.opengis.net/gml'>"
-            + "                    <pos>a 5</pos><!-- non numeric -->"
-            + "                </Point>"
-            + "            </dct:spatial>"
-            + "            <dcx-gml:spatial>"
-            + "                <boundedBy xmlns='http://www.opengis.net/gml'>"
-            + "                    <Envelope srsName='urn:ogc:def:crs:EPSG::28992'>"
-            + "                        <lowerCorner>-7001 289000</lowerCorner>"
-            + "                        <upperCorner>300001 629000</upperCorner>"
-            + "                    </Envelope>"
-            + "                </boundedBy>"
-            + "            </dcx-gml:spatial>"
-            + "            <dcx-gml:spatial>"
-            + "                <boundedBy xmlns='http://www.opengis.net/gml'>"
-            + "                    <Envelope srsName='urn:ogc:def:crs:EPSG::28992'>"
-            + "                        <lowerCorner>-7000 288999</lowerCorner>"
-            + "                        <upperCorner>300000 629001</upperCorner>"
-            + "                    </Envelope>"
-            + "                </boundedBy>"
-            + "            </dcx-gml:spatial>"
-            + "            <dcx-gml:spatial>"
-            + "                <boundedBy xmlns='http://www.opengis.net/gml'>"
-            + "                    <Envelope><!-- no srsName -->"
-            + "                        <lowerCorner>-7000</lowerCorner>"
-            + "                    </Envelope>"
-            + "                </boundedBy>"
-            + "            </dcx-gml:spatial>"
-            + "    </ddm:dcmiMetadata>"
-            + "</ddm:DDM>";
+                + "        xmlns:dc=\"http://purl.org/dc/elements/1.1/\"\n"
+                + "        xmlns:dcx-dai=\"http://easy.dans.knaw.nl/schemas/dcx/dai/\"\n"
+                + "        xmlns:ddm=\"http://schemas.dans.knaw.nl/dataset/ddm-v2/\"\n"
+                + "        xmlns:dct=\"http://purl.org/dc/terms/\"\n"
+                + "        xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n"
+                + "        xmlns:dcx-gml=\"http://easy.dans.knaw.nl/schemas/dcx/gml/\"\n"
+                + "        xmlns:id-type=\"http://easy.dans.knaw.nl/schemas/vocab/identifier-type/\">\n"
+                + "    <ddm:dcmiMetadata>\n"
+                + "            <dct:spatial xsi:type='dcx-gml:SimpleGMLType'>"
+                + "                <Point xmlns='http://www.opengis.net/gml'>"
+                + "                    <pos>1.0</pos><!-- only one value -->"
+                + "                </Point>"
+                + "            </dct:spatial>"
+                + "            <dct:spatial xsi:type='dcx-gml:SimpleGMLType'>"
+                + "                <Point xmlns='http://www.opengis.net/gml'>"
+                + "                    <pos>a 5</pos><!-- non numeric -->"
+                + "                </Point>"
+                + "            </dct:spatial>"
+                + "            <dcx-gml:spatial>"
+                + "                <boundedBy xmlns='http://www.opengis.net/gml'>"
+                + "                    <Envelope srsName='urn:ogc:def:crs:EPSG::28992'>"
+                + "                        <lowerCorner>-7001 289000</lowerCorner>"
+                + "                        <upperCorner>300001 629000</upperCorner>"
+                + "                    </Envelope>"
+                + "                </boundedBy>"
+                + "            </dcx-gml:spatial>"
+                + "            <dcx-gml:spatial>"
+                + "                <boundedBy xmlns='http://www.opengis.net/gml'>"
+                + "                    <Envelope srsName='urn:ogc:def:crs:EPSG::28992'>"
+                + "                        <lowerCorner>-7000 288999</lowerCorner>"
+                + "                        <upperCorner>300000 629001</upperCorner>"
+                + "                    </Envelope>"
+                + "                </boundedBy>"
+                + "            </dcx-gml:spatial>"
+                + "            <dcx-gml:spatial>"
+                + "                <boundedBy xmlns='http://www.opengis.net/gml'>"
+                + "                    <Envelope><!-- no srsName -->"
+                + "                        <lowerCorner>-7000</lowerCorner>"
+                + "                    </Envelope>"
+                + "                </boundedBy>"
+                + "            </dcx-gml:spatial>"
+                + "    </ddm:dcmiMetadata>"
+                + "</ddm:DDM>";
 
         var document = parseXmlString(xml);
         var reader = Mockito.spy(new XmlReaderImpl());
@@ -877,34 +796,34 @@ class BagRulesImplTest {
         assertThat(result.getException()).isNull();
         assertThat(result.getStatus()).isEqualTo(RuleResult.Status.ERROR);
         assertThat(result.getErrorMessages())
-            .hasSameElementsAs(List.of(
-                "pos has less than two coordinates: 1.0",
-                "pos has non numeric coordinates: a 5",
-                "lowerCorner is outside RD bounds: -7001 289000", // x too small
-                "upperCorner is outside RD bounds: 300001 629000", // x too large
-                "lowerCorner is outside RD bounds: -7000 288999", // y too small
-                "upperCorner is outside RD bounds: 300000 629001", // y too large
-                "lowerCorner has less than two coordinates: -7000"));
+                .hasSameElementsAs(List.of(
+                        "pos has less than two coordinates: 1.0",
+                        "pos has non numeric coordinates: a 5",
+                        "lowerCorner is outside RD bounds: -7001 289000", // x too small
+                        "upperCorner is outside RD bounds: 300001 629000", // x too large
+                        "lowerCorner is outside RD bounds: -7000 288999", // y too small
+                        "upperCorner is outside RD bounds: 300000 629001", // y too large
+                        "lowerCorner has less than two coordinates: -7000"));
     }
 
     @Test
     void pointIsValid() throws Exception {
         var xml = "<ddm:DDM\n"
-            + "        xmlns:dc=\"http://purl.org/dc/elements/1.1/\"\n"
-            + "        xmlns:dcx-dai=\"http://easy.dans.knaw.nl/schemas/dcx/dai/\"\n"
-            + "        xmlns:ddm=\"http://schemas.dans.knaw.nl/dataset/ddm-v2/\"\n"
-            + "        xmlns:dct=\"http://purl.org/dc/terms/\"\n"
-            + "        xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n"
-            + "        xmlns:dcx-gml=\"http://easy.dans.knaw.nl/schemas/dcx/gml/\"\n"
-            + "        xmlns:id-type=\"http://easy.dans.knaw.nl/schemas/vocab/identifier-type/\">\n"
-            + "    <ddm:dcmiMetadata>\n"
-            + "            <dct:spatial xsi:type='dcx-gml:SimpleGMLType'>"
-            + "                <Point xmlns='http://www.opengis.net/gml'>"
-            + "                    <pos>1 2</pos>"
-            + "                </Point>"
-            + "            </dct:spatial>"
-            + "    </ddm:dcmiMetadata>"
-            + "</ddm:DDM>";
+                + "        xmlns:dc=\"http://purl.org/dc/elements/1.1/\"\n"
+                + "        xmlns:dcx-dai=\"http://easy.dans.knaw.nl/schemas/dcx/dai/\"\n"
+                + "        xmlns:ddm=\"http://schemas.dans.knaw.nl/dataset/ddm-v2/\"\n"
+                + "        xmlns:dct=\"http://purl.org/dc/terms/\"\n"
+                + "        xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n"
+                + "        xmlns:dcx-gml=\"http://easy.dans.knaw.nl/schemas/dcx/gml/\"\n"
+                + "        xmlns:id-type=\"http://easy.dans.knaw.nl/schemas/vocab/identifier-type/\">\n"
+                + "    <ddm:dcmiMetadata>\n"
+                + "            <dct:spatial xsi:type='dcx-gml:SimpleGMLType'>"
+                + "                <Point xmlns='http://www.opengis.net/gml'>"
+                + "                    <pos>1 2</pos>"
+                + "                </Point>"
+                + "            </dct:spatial>"
+                + "    </ddm:dcmiMetadata>"
+                + "</ddm:DDM>";
 
         var document = parseXmlString(xml);
         var reader = Mockito.spy(new XmlReaderImpl());
@@ -921,52 +840,48 @@ class BagRulesImplTest {
     @Test
     void archisIdentifiersHaveAtMost10Characters() throws Exception {
         var xml = "<ddm:DDM xmlns:ddm=\"http://schemas.dans.knaw.nl/dataset/ddm-v2/\"\n"
-            + "         xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n"
-            + "         xmlns:dc=\"http://purl.org/dc/elements/1.1/\"\n"
-            + "         xmlns:dct=\"http://purl.org/dc/terms/\"\n"
-            + "         xmlns:dcx-dai=\"http://easy.dans.knaw.nl/schemas/dcx/dai/\">\n"
-            + "    <ddm:dcmiMetadata>\n"
-            + "        <dct:license xsi:type=\"dct:URI\">http://creativecommons.org/licenses/by-sa/4.0</dct:license>\n"
-            + "        <dct:rightsHolder>Mr. Rights</dct:rightsHolder>\n"
-            + "        <dct:identifier xsi:type=\"id-type:ARCHIS-ZAAK-IDENTIFICATIE\">id1</dct:identifier>\n"
-            + "        <dct:identifier xsi:type=\"id-type:ARCHIS-ZAAK-IDENTIFICATIE\">id2</dct:identifier>\n"
-            + "    </ddm:dcmiMetadata>\n"
-            + "</ddm:DDM>\n";
+                + "         xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n"
+                + "         xmlns:dc=\"http://purl.org/dc/elements/1.1/\"\n"
+                + "         xmlns:dct=\"http://purl.org/dc/terms/\"\n"
+                + "         xmlns:dcx-dai=\"http://easy.dans.knaw.nl/schemas/dcx/dai/\">\n"
+                + "    <ddm:dcmiMetadata>\n"
+                + "        <dct:license xsi:type=\"dct:URI\">http://creativecommons.org/licenses/by-sa/4.0</dct:license>\n"
+                + "        <dct:rightsHolder>Mr. Rights</dct:rightsHolder>\n"
+                + "        <dct:identifier xsi:type=\"id-type:ARCHIS-ZAAK-IDENTIFICATIE\">id1</dct:identifier>\n"
+                + "        <dct:identifier xsi:type=\"id-type:ARCHIS-ZAAK-IDENTIFICATIE\">id2</dct:identifier>\n"
+                + "    </ddm:dcmiMetadata>\n"
+                + "</ddm:DDM>\n";
 
         var document = parseXmlString(xml);
         var reader = Mockito.spy(new XmlReaderImpl());
 
         Mockito.doReturn(document).when(reader).readXmlFile(Mockito.any());
 
-        var checker = getBagRulesWithXmlReader(reader);
-
-        var result = checker.archisIdentifiersHaveAtMost10Characters().validate(Path.of("bagdir"));
+        var result = new ArchisIdentifiersHaveAtMost10Characters(reader).validate(Path.of("bagdir"));
         assertEquals(RuleResult.Status.SUCCESS, result.getStatus());
     }
 
     @Test
     void archisIdentifiersHaveAtMost10CharactersButTheValuesAreLarger() throws Exception {
         var xml = "<ddm:DDM xmlns:ddm=\"http://schemas.dans.knaw.nl/dataset/ddm-v2/\"\n"
-            + "         xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n"
-            + "         xmlns:dc=\"http://purl.org/dc/elements/1.1/\"\n"
-            + "         xmlns:dct=\"http://purl.org/dc/terms/\"\n"
-            + "         xmlns:dcx-dai=\"http://easy.dans.knaw.nl/schemas/dcx/dai/\">\n"
-            + "    <ddm:dcmiMetadata>\n"
-            + "        <dct:license xsi:type=\"dct:URI\">http://creativecommons.org/licenses/by-sa/4.0</dct:license>\n"
-            + "        <dct:rightsHolder>Mr. Rights</dct:rightsHolder>\n"
-            + "        <dct:identifier xsi:type=\"id-type:ARCHIS-ZAAK-IDENTIFICATIE\">niet kunnen vinden1</dct:identifier>\n"
-            + "        <dct:identifier xsi:type=\"id-type:ARCHIS-ZAAK-IDENTIFICATIE\">niet kunnen vinden2</dct:identifier>\n"
-            + "    </ddm:dcmiMetadata>\n"
-            + "</ddm:DDM>\n";
+                + "         xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n"
+                + "         xmlns:dc=\"http://purl.org/dc/elements/1.1/\"\n"
+                + "         xmlns:dct=\"http://purl.org/dc/terms/\"\n"
+                + "         xmlns:dcx-dai=\"http://easy.dans.knaw.nl/schemas/dcx/dai/\">\n"
+                + "    <ddm:dcmiMetadata>\n"
+                + "        <dct:license xsi:type=\"dct:URI\">http://creativecommons.org/licenses/by-sa/4.0</dct:license>\n"
+                + "        <dct:rightsHolder>Mr. Rights</dct:rightsHolder>\n"
+                + "        <dct:identifier xsi:type=\"id-type:ARCHIS-ZAAK-IDENTIFICATIE\">niet kunnen vinden1</dct:identifier>\n"
+                + "        <dct:identifier xsi:type=\"id-type:ARCHIS-ZAAK-IDENTIFICATIE\">niet kunnen vinden2</dct:identifier>\n"
+                + "    </ddm:dcmiMetadata>\n"
+                + "</ddm:DDM>\n";
 
         var document = parseXmlString(xml);
         var reader = Mockito.spy(new XmlReaderImpl());
 
         Mockito.doReturn(document).when(reader).readXmlFile(Mockito.any());
 
-        var checker = getBagRulesWithXmlReader(reader);
-
-        var result = checker.archisIdentifiersHaveAtMost10Characters().validate(Path.of("bagdir"));
+        var result = new ArchisIdentifiersHaveAtMost10Characters(reader).validate(Path.of("bagdir"));
 
         assertEquals(RuleResult.Status.ERROR, result.getStatus());
         assertEquals(2, result.getErrorMessages().size());
@@ -977,129 +892,125 @@ class BagRulesImplTest {
     @Test
     void allUrlsAreValid() throws Exception {
         var xml = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>\n"
-            + "<ddm:DDM xmlns:ddm=\"http://schemas.dans.knaw.nl/dataset/ddm-v2/\" xmlns=\"http://easy.dans.knaw.nl/schemas/bag/metadata/files/\" xmlns:abr=\"http://www.den.nl/standaard/166/Archeologisch-Basisregister/\" xmlns:dc=\"http://purl.org/dc/elements/1.1/\" xmlns:dcterms=\"http://purl.org/dc/terms/\" xmlns:dcx-dai=\"http://easy.dans.knaw.nl/schemas/dcx/dai/\" xmlns:dcx-gml=\"http://easy.dans.knaw.nl/schemas/dcx/gml/\" xmlns:id-type=\"http://easy.dans.knaw.nl/schemas/vocab/identifier-type/\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" >\n"
-            + "    <ddm:profile>\n"
-            + "        <dc:title>PAN-00008136 - knobbed sickle</dc:title>\n"
-            + "        <dcterms:description xml:lang=\"en\">This find is registered at Portable Antiquities of the Netherlands with number PAN-00008136</dcterms:description>\n"
-            + "        <dcx-dai:creatorDetails>\n"
-            + "            <dcx-dai:organization>\n"
-            + "                <dcx-dai:name xml:lang=\"en\">Portable Antiquities of the Netherlands</dcx-dai:name>\n"
-            + "                <dcx-dai:role>DataCurator</dcx-dai:role>\n"
-            + "            </dcx-dai:organization>\n"
-            + "        </dcx-dai:creatorDetails>\n"
-            + "        <ddm:created>2017-10-23T17:06:11+02:00</ddm:created>\n"
-            + "        <ddm:available>2017-10-23T17:06:11+02:00</ddm:available>\n"
-            + "        <ddm:audience>D37000</ddm:audience>\n"
-            + "        <ddm:accessRights>OPEN_ACCESS</ddm:accessRights>\n"
-            + "    </ddm:profile>\n"
-            + "    <ddm:dcmiMetadata>\n"
-            + "        <dcterms:spatial>Overbetuwe</dcterms:spatial>\n"
-            + "        <dcterms:isFormatOf>PAN-00008136</dcterms:isFormatOf>\n"
-            + "        <ddm:references href=\"https://www.portable-antiquities.nl/pan/#/object/public/8136\">Portable Antiquities of The Netherlands</ddm:references>\n"
-            + "        <ddm:references scheme=\"URL\">http://abc.def</ddm:references>\n"
-            + "        <ddm:references scheme=\"DOI\">10.17026/test-123-456</ddm:references>\n"
-            + "        <ddm:references scheme=\"DOI\">https://dx.doi.org/doi:10.17026/test-123-456</ddm:references>\n"
-            + "        <ddm:references scheme=\"DOI\" href=\"https://dx.doi.org/doi:10.17026/test-123-456\">a doi referencing my dataset</ddm:references>\n"
-            + "        <ddm:references scheme=\"DOI\">http://doi.org/10.17026/test-123-456</ddm:references>\n"
-            + "        <ddm:references scheme=\"URN\">urn:uuid:6e8bc430-9c3a-11d9-9669-0800200c9a66()+,-\\.:=@;$_!*'%/?#</ddm:references>\n"
-            + "        <ddm:references scheme=\"id-type:URL\">http://abc.def</ddm:references>\n"
-            + "        <ddm:references scheme=\"id-type:DOI\">10.17026/test-123-456</ddm:references>\n"
-            + "        <ddm:references scheme=\"id-type:DOI\">https://dx.doi.org/doi:10.17026/test-123-456</ddm:references>\n"
-            + "        <ddm:references scheme=\"id-type:DOI\" href=\"https://dx.doi.org/doi:10.17026/test-123-456\">a doi referencing my dataset</ddm:references>\n"
-            + "        <ddm:references scheme=\"id-type:DOI\">http://doi.org/10.17026/test-123-456</ddm:references>\n"
-            + "        <ddm:references scheme=\"id-type:URN\">urn:uuid:6e8bc430-9c3a-11d9-9669-0800200c9a66()+,-\\.:=@;$_!*'%/?#</ddm:references>\n"
-            + "        <ddm:subject schemeURI=\"https://data.cultureelerfgoed.nl/term/id/pan/PAN\" subjectScheme=\"PAN thesaurus ideaaltypes\" valueURI=\"https://data.cultureelerfgoed.nl/term/id/pan/17-01-01\" xml:lang=\"en\">knobbed sickle</ddm:subject>\n"
-            + "        <ddm:subject schemeURI=\"http://vocab.getty.edu/aat/\" subjectScheme=\"Art and Architecture Thesaurus\" valueURI=\"http://vocab.getty.edu/aat/300264860\" xml:lang=\"en\">Unknown</ddm:subject>\n"
-            + "        <dc:subject>metaal</dc:subject>\n"
-            + "        <dc:subject>koperlegering</dc:subject>\n"
-            + "        <dcterms:identifier>PAN-00008136</dcterms:identifier>\n"
-            + "        <dcterms:temporal xsi:type=\"abr:ABRperiode\">BRONSMB</dcterms:temporal>\n"
-            + "        <dcterms:temporal xsi:type=\"abr:ABRperiode\">BRONSL</dcterms:temporal>\n"
-            + "        <dcterms:temporal>-1500 until -800</dcterms:temporal>\n"
-            + "        <dc:language xsi:type=\"dcterms:ISO639-2\">eng</dc:language>\n"
-            + "        <dc:publisher xmlns:dc=\"http://purl.org/dc/terms/\">DANS/KNAW</dc:publisher>\n"
-            + "        <dc:type xsi:type=\"dcterms:DCMIType\" xmlns:dc=\"http://purl.org/dc/terms/\">Dataset</dc:type>\n"
-            + "        <dc:format xsi:type=\"dcterms:IMT\">image/jpeg</dc:format>\n"
-            + "        <dc:format xsi:type=\"dcterms:IMT\">application/xml</dc:format>\n"
-            + "        <dcterms:license xsi:type=\"dcterms:URI\">http://creativecommons.org/licenses/by-nc-sa/4.0/</dcterms:license>\n"
-            + "        <dcterms:rightsHolder>Vrije Universiteit Amsterdam</dcterms:rightsHolder>\n"
-            + "        <dcterms:identifier xsi:type=\"id-type:DOI\">10.1234/fantasy-doi-id</dcterms:identifier>\n"
-            + "        <dcterms:identifier xsi:type=\"id-type:DOI\">10.1234.567/issn-987-654</dcterms:identifier>\n"
-            + "    </ddm:dcmiMetadata>\n"
-            + "</ddm:DDM>\n";
+                + "<ddm:DDM xmlns:ddm=\"http://schemas.dans.knaw.nl/dataset/ddm-v2/\" xmlns=\"http://easy.dans.knaw.nl/schemas/bag/metadata/files/\" xmlns:abr=\"http://www.den.nl/standaard/166/Archeologisch-Basisregister/\" xmlns:dc=\"http://purl.org/dc/elements/1.1/\" xmlns:dcterms=\"http://purl.org/dc/terms/\" xmlns:dcx-dai=\"http://easy.dans.knaw.nl/schemas/dcx/dai/\" xmlns:dcx-gml=\"http://easy.dans.knaw.nl/schemas/dcx/gml/\" xmlns:id-type=\"http://easy.dans.knaw.nl/schemas/vocab/identifier-type/\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" >\n"
+                + "    <ddm:profile>\n"
+                + "        <dc:title>PAN-00008136 - knobbed sickle</dc:title>\n"
+                + "        <dcterms:description xml:lang=\"en\">This find is registered at Portable Antiquities of the Netherlands with number PAN-00008136</dcterms:description>\n"
+                + "        <dcx-dai:creatorDetails>\n"
+                + "            <dcx-dai:organization>\n"
+                + "                <dcx-dai:name xml:lang=\"en\">Portable Antiquities of the Netherlands</dcx-dai:name>\n"
+                + "                <dcx-dai:role>DataCurator</dcx-dai:role>\n"
+                + "            </dcx-dai:organization>\n"
+                + "        </dcx-dai:creatorDetails>\n"
+                + "        <ddm:created>2017-10-23T17:06:11+02:00</ddm:created>\n"
+                + "        <ddm:available>2017-10-23T17:06:11+02:00</ddm:available>\n"
+                + "        <ddm:audience>D37000</ddm:audience>\n"
+                + "        <ddm:accessRights>OPEN_ACCESS</ddm:accessRights>\n"
+                + "    </ddm:profile>\n"
+                + "    <ddm:dcmiMetadata>\n"
+                + "        <dcterms:spatial>Overbetuwe</dcterms:spatial>\n"
+                + "        <dcterms:isFormatOf>PAN-00008136</dcterms:isFormatOf>\n"
+                + "        <ddm:references href=\"https://www.portable-antiquities.nl/pan/#/object/public/8136\">Portable Antiquities of The Netherlands</ddm:references>\n"
+                + "        <ddm:references scheme=\"URL\">http://abc.def</ddm:references>\n"
+                + "        <ddm:references scheme=\"DOI\">10.17026/test-123-456</ddm:references>\n"
+                + "        <ddm:references scheme=\"DOI\">https://dx.doi.org/doi:10.17026/test-123-456</ddm:references>\n"
+                + "        <ddm:references scheme=\"DOI\" href=\"https://dx.doi.org/doi:10.17026/test-123-456\">a doi referencing my dataset</ddm:references>\n"
+                + "        <ddm:references scheme=\"DOI\">http://doi.org/10.17026/test-123-456</ddm:references>\n"
+                + "        <ddm:references scheme=\"URN\">urn:uuid:6e8bc430-9c3a-11d9-9669-0800200c9a66()+,-\\.:=@;$_!*'%/?#</ddm:references>\n"
+                + "        <ddm:references scheme=\"id-type:URL\">http://abc.def</ddm:references>\n"
+                + "        <ddm:references scheme=\"id-type:DOI\">10.17026/test-123-456</ddm:references>\n"
+                + "        <ddm:references scheme=\"id-type:DOI\">https://dx.doi.org/doi:10.17026/test-123-456</ddm:references>\n"
+                + "        <ddm:references scheme=\"id-type:DOI\" href=\"https://dx.doi.org/doi:10.17026/test-123-456\">a doi referencing my dataset</ddm:references>\n"
+                + "        <ddm:references scheme=\"id-type:DOI\">http://doi.org/10.17026/test-123-456</ddm:references>\n"
+                + "        <ddm:references scheme=\"id-type:URN\">urn:uuid:6e8bc430-9c3a-11d9-9669-0800200c9a66()+,-\\.:=@;$_!*'%/?#</ddm:references>\n"
+                + "        <ddm:subject schemeURI=\"https://data.cultureelerfgoed.nl/term/id/pan/PAN\" subjectScheme=\"PAN thesaurus ideaaltypes\" valueURI=\"https://data.cultureelerfgoed.nl/term/id/pan/17-01-01\" xml:lang=\"en\">knobbed sickle</ddm:subject>\n"
+                + "        <ddm:subject schemeURI=\"http://vocab.getty.edu/aat/\" subjectScheme=\"Art and Architecture Thesaurus\" valueURI=\"http://vocab.getty.edu/aat/300264860\" xml:lang=\"en\">Unknown</ddm:subject>\n"
+                + "        <dc:subject>metaal</dc:subject>\n"
+                + "        <dc:subject>koperlegering</dc:subject>\n"
+                + "        <dcterms:identifier>PAN-00008136</dcterms:identifier>\n"
+                + "        <dcterms:temporal xsi:type=\"abr:ABRperiode\">BRONSMB</dcterms:temporal>\n"
+                + "        <dcterms:temporal xsi:type=\"abr:ABRperiode\">BRONSL</dcterms:temporal>\n"
+                + "        <dcterms:temporal>-1500 until -800</dcterms:temporal>\n"
+                + "        <dc:language xsi:type=\"dcterms:ISO639-2\">eng</dc:language>\n"
+                + "        <dc:publisher xmlns:dc=\"http://purl.org/dc/terms/\">DANS/KNAW</dc:publisher>\n"
+                + "        <dc:type xsi:type=\"dcterms:DCMIType\" xmlns:dc=\"http://purl.org/dc/terms/\">Dataset</dc:type>\n"
+                + "        <dc:format xsi:type=\"dcterms:IMT\">image/jpeg</dc:format>\n"
+                + "        <dc:format xsi:type=\"dcterms:IMT\">application/xml</dc:format>\n"
+                + "        <dcterms:license xsi:type=\"dcterms:URI\">http://creativecommons.org/licenses/by-nc-sa/4.0/</dcterms:license>\n"
+                + "        <dcterms:rightsHolder>Vrije Universiteit Amsterdam</dcterms:rightsHolder>\n"
+                + "        <dcterms:identifier xsi:type=\"id-type:DOI\">10.1234/fantasy-doi-id</dcterms:identifier>\n"
+                + "        <dcterms:identifier xsi:type=\"id-type:DOI\">10.1234.567/issn-987-654</dcterms:identifier>\n"
+                + "    </ddm:dcmiMetadata>\n"
+                + "</ddm:DDM>\n";
 
         var document = parseXmlString(xml);
         var reader = Mockito.spy(new XmlReaderImpl());
 
         Mockito.doReturn(document).when(reader).readXmlFile(Mockito.any());
 
-        var checker = getBagRulesWithXmlReader(reader);
-
-        var result = checker.allUrlsAreValid().validate(Path.of("bagdir"));
+        var result = new AllUrlsAreValid(xmlReader).validate(Path.of("bagdir"));
         assertEquals(RuleResult.Status.SUCCESS, result.getStatus());
     }
 
     @Test
     void validateUrlsButSomeAreInvalid() throws Exception {
         var xml = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>\n"
-            + "<ddm:DDM xmlns:ddm=\"http://schemas.dans.knaw.nl/dataset/ddm-v2/\" xmlns=\"http://easy.dans.knaw.nl/schemas/bag/metadata/files/\" xmlns:abr=\"http://www.den.nl/standaard/166/Archeologisch-Basisregister/\" xmlns:dc=\"http://purl.org/dc/elements/1.1/\" xmlns:dcterms=\"http://purl.org/dc/terms/\" xmlns:dcx-dai=\"http://easy.dans.knaw.nl/schemas/dcx/dai/\" xmlns:dcx-gml=\"http://easy.dans.knaw.nl/schemas/dcx/gml/\" xmlns:id-type=\"http://easy.dans.knaw.nl/schemas/vocab/identifier-type/\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">\n"
-            + "    <ddm:profile>\n"
-            + "        <dc:title>PAN-00008136 - knobbed sickle</dc:title>\n"
-            + "        <dcterms:description xml:lang=\"en\">This find is registered at Portable Antiquities of the Netherlands with number PAN-00008136</dcterms:description>\n"
-            + "        <dcx-dai:creatorDetails>\n"
-            + "            <dcx-dai:organization>\n"
-            + "                <dcx-dai:name xml:lang=\"en\">Portable Antiquities of the Netherlands</dcx-dai:name>\n"
-            + "                <dcx-dai:role>DataCurator</dcx-dai:role>\n"
-            + "            </dcx-dai:organization>\n"
-            + "        </dcx-dai:creatorDetails>\n"
-            + "        <ddm:created>2017-10-23T17:06:11+02:00</ddm:created>\n"
-            + "        <ddm:available>2017-10-23T17:06:11+02:00</ddm:available>\n"
-            + "        <ddm:audience>D37000</ddm:audience>\n"
-            + "        <ddm:accessRights>OPEN_ACCESS</ddm:accessRights>\n"
-            + "    </ddm:profile>\n"
-            + "    <ddm:dcmiMetadata>\n"
-            + "        <dcterms:spatial>Overbetuwe</dcterms:spatial>\n"
-            + "        <dcterms:isFormatOf>PAN-00008136</dcterms:isFormatOf>\n"
-            // INVALID
-            + "        <ddm:relation href=\"dx.doi.org/10.17026/dans-xrt-q9cp\">Thematische collectie: COOL5-18, Pre-COOL en COOLspeciaal</ddm:relation>"
-            // INVALID
-            + "        <ddm:references href=\"xttps://www.portable-antiquities.nl/pan/#/object/public/8136\">Portable Antiquities of The Netherlands</ddm:references>\n"
-            // INVALID
-            + "        <ddm:references scheme=\"URL\">xttp://abc.def</ddm:references>\n"
-            + "        <ddm:references scheme=\"DOI\">99.1234.abc</ddm:references>\n"
-            + "        <ddm:references scheme=\"URN\">uuid:6e8bc430-9c3a-11d9-9669-0800200c9a66</ddm:references>\n"
-            + "        <ddm:isFormatOf scheme=\"id-type:DOI\">joopajoo</ddm:isFormatOf>\n"
-            + "        <ddm:isFormatOf scheme=\"id-type:URN\">niinpä</ddm:isFormatOf>\n"
-            // INVALID 2x
-            + "        <ddm:subject schemeURI=\"xttps://data.cultureelerfgoed.nl/term/id/pan/PAN\" subjectScheme=\"PAN thesaurus ideaaltypes\" valueURI=\"xttps://data.cultureelerfgoed.nl/term/id/pan/17-01-01\" xml:lang=\"en\">knobbed sickle</ddm:subject>\n"
-            + "        <ddm:subject schemeURI=\"http://vocab.getty.edu/aat/\" subjectScheme=\"Art and Architecture Thesaurus\" valueURI=\"http://vocab.getty.edu/aat/300264860\" xml:lang=\"en\">Unknown</ddm:subject>\n"
-            + "        <dc:subject>metaal</dc:subject>\n"
-            + "        <dc:subject>koperlegering</dc:subject>\n"
-            + "        <dcterms:identifier>PAN-00008136</dcterms:identifier>\n"
-            + "        <dcterms:temporal xsi:type=\"abr:ABRperiode\">BRONSMB</dcterms:temporal>\n"
-            + "        <dcterms:temporal xsi:type=\"abr:ABRperiode\">BRONSL</dcterms:temporal>\n"
-            + "        <dcterms:temporal>-1500 until -800</dcterms:temporal>\n"
-            + "        <dc:language xsi:type=\"dcterms:ISO639-2\">eng</dc:language>\n"
-            + "        <dc:publisher xmlns:dc=\"http://purl.org/dc/terms/\">DANS/KNAW</dc:publisher>\n"
-            + "        <dc:type xsi:type=\"dcterms:DCMIType\" xmlns:dc=\"http://purl.org/dc/terms/\">Dataset</dc:type>\n"
-            + "        <dc:format xsi:type=\"dcterms:IMT\">image/jpeg</dc:format>\n"
-            + "        <dc:format xsi:type=\"dcterms:IMT\">application/xml</dc:format>\n"
-            // INVALID
-            + "        <dcterms:license xsi:type=\"dcterms:URI\">ettp://creativecommons.org/licenses/by-nc-sa/4.0/</dcterms:license>\n"
-            + "        <dcterms:rightsHolder>Vrije Universiteit Amsterdam</dcterms:rightsHolder>\n"
-            + "        <dcterms:identifier xsi:type=\"id-type:DOI\">10.1234/fantasy-doi-id</dcterms:identifier>\n"
-            + "        <dcterms:identifier xsi:type=\"id-type:DOI\">10.1234.567/issn-987-654</dcterms:identifier>\n"
-            + "    </ddm:dcmiMetadata>\n"
-            + "</ddm:DDM>\n";
+                + "<ddm:DDM xmlns:ddm=\"http://schemas.dans.knaw.nl/dataset/ddm-v2/\" xmlns=\"http://easy.dans.knaw.nl/schemas/bag/metadata/files/\" xmlns:abr=\"http://www.den.nl/standaard/166/Archeologisch-Basisregister/\" xmlns:dc=\"http://purl.org/dc/elements/1.1/\" xmlns:dcterms=\"http://purl.org/dc/terms/\" xmlns:dcx-dai=\"http://easy.dans.knaw.nl/schemas/dcx/dai/\" xmlns:dcx-gml=\"http://easy.dans.knaw.nl/schemas/dcx/gml/\" xmlns:id-type=\"http://easy.dans.knaw.nl/schemas/vocab/identifier-type/\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">\n"
+                + "    <ddm:profile>\n"
+                + "        <dc:title>PAN-00008136 - knobbed sickle</dc:title>\n"
+                + "        <dcterms:description xml:lang=\"en\">This find is registered at Portable Antiquities of the Netherlands with number PAN-00008136</dcterms:description>\n"
+                + "        <dcx-dai:creatorDetails>\n"
+                + "            <dcx-dai:organization>\n"
+                + "                <dcx-dai:name xml:lang=\"en\">Portable Antiquities of the Netherlands</dcx-dai:name>\n"
+                + "                <dcx-dai:role>DataCurator</dcx-dai:role>\n"
+                + "            </dcx-dai:organization>\n"
+                + "        </dcx-dai:creatorDetails>\n"
+                + "        <ddm:created>2017-10-23T17:06:11+02:00</ddm:created>\n"
+                + "        <ddm:available>2017-10-23T17:06:11+02:00</ddm:available>\n"
+                + "        <ddm:audience>D37000</ddm:audience>\n"
+                + "        <ddm:accessRights>OPEN_ACCESS</ddm:accessRights>\n"
+                + "    </ddm:profile>\n"
+                + "    <ddm:dcmiMetadata>\n"
+                + "        <dcterms:spatial>Overbetuwe</dcterms:spatial>\n"
+                + "        <dcterms:isFormatOf>PAN-00008136</dcterms:isFormatOf>\n"
+                // INVALID
+                + "        <ddm:relation href=\"dx.doi.org/10.17026/dans-xrt-q9cp\">Thematische collectie: COOL5-18, Pre-COOL en COOLspeciaal</ddm:relation>"
+                // INVALID
+                + "        <ddm:references href=\"xttps://www.portable-antiquities.nl/pan/#/object/public/8136\">Portable Antiquities of The Netherlands</ddm:references>\n"
+                // INVALID
+                + "        <ddm:references scheme=\"URL\">xttp://abc.def</ddm:references>\n"
+                + "        <ddm:references scheme=\"DOI\">99.1234.abc</ddm:references>\n"
+                + "        <ddm:references scheme=\"URN\">uuid:6e8bc430-9c3a-11d9-9669-0800200c9a66</ddm:references>\n"
+                + "        <ddm:isFormatOf scheme=\"id-type:DOI\">joopajoo</ddm:isFormatOf>\n"
+                + "        <ddm:isFormatOf scheme=\"id-type:URN\">niinpä</ddm:isFormatOf>\n"
+                // INVALID 2x
+                + "        <ddm:subject schemeURI=\"xttps://data.cultureelerfgoed.nl/term/id/pan/PAN\" subjectScheme=\"PAN thesaurus ideaaltypes\" valueURI=\"xttps://data.cultureelerfgoed.nl/term/id/pan/17-01-01\" xml:lang=\"en\">knobbed sickle</ddm:subject>\n"
+                + "        <ddm:subject schemeURI=\"http://vocab.getty.edu/aat/\" subjectScheme=\"Art and Architecture Thesaurus\" valueURI=\"http://vocab.getty.edu/aat/300264860\" xml:lang=\"en\">Unknown</ddm:subject>\n"
+                + "        <dc:subject>metaal</dc:subject>\n"
+                + "        <dc:subject>koperlegering</dc:subject>\n"
+                + "        <dcterms:identifier>PAN-00008136</dcterms:identifier>\n"
+                + "        <dcterms:temporal xsi:type=\"abr:ABRperiode\">BRONSMB</dcterms:temporal>\n"
+                + "        <dcterms:temporal xsi:type=\"abr:ABRperiode\">BRONSL</dcterms:temporal>\n"
+                + "        <dcterms:temporal>-1500 until -800</dcterms:temporal>\n"
+                + "        <dc:language xsi:type=\"dcterms:ISO639-2\">eng</dc:language>\n"
+                + "        <dc:publisher xmlns:dc=\"http://purl.org/dc/terms/\">DANS/KNAW</dc:publisher>\n"
+                + "        <dc:type xsi:type=\"dcterms:DCMIType\" xmlns:dc=\"http://purl.org/dc/terms/\">Dataset</dc:type>\n"
+                + "        <dc:format xsi:type=\"dcterms:IMT\">image/jpeg</dc:format>\n"
+                + "        <dc:format xsi:type=\"dcterms:IMT\">application/xml</dc:format>\n"
+                // INVALID
+                + "        <dcterms:license xsi:type=\"dcterms:URI\">ettp://creativecommons.org/licenses/by-nc-sa/4.0/</dcterms:license>\n"
+                + "        <dcterms:rightsHolder>Vrije Universiteit Amsterdam</dcterms:rightsHolder>\n"
+                + "        <dcterms:identifier xsi:type=\"id-type:DOI\">10.1234/fantasy-doi-id</dcterms:identifier>\n"
+                + "        <dcterms:identifier xsi:type=\"id-type:DOI\">10.1234.567/issn-987-654</dcterms:identifier>\n"
+                + "    </ddm:dcmiMetadata>\n"
+                + "</ddm:DDM>\n";
 
         var document = parseXmlString(xml);
         var reader = Mockito.spy(new XmlReaderImpl());
 
         Mockito.doReturn(document).when(reader).readXmlFile(Mockito.any());
 
-        var checker = getBagRulesWithXmlReader(reader);
-
-        var result = checker.allUrlsAreValid().validate(Path.of("bagdir"));
+        var result = new AllUrlsAreValid(reader).validate(Path.of("bagdir"));
         assertEquals(RuleResult.Status.ERROR, result.getStatus());
         assertEquals(6, result.getErrorMessages().size());
     }
@@ -1107,23 +1018,23 @@ class BagRulesImplTest {
     @Test
     void ddmMustHaveRightsHolderDeposit() throws Exception {
         var xml = "<ddm:DDM xmlns:ddm=\"http://schemas.dans.knaw.nl/dataset/ddm-v2/\"\n"
-            + "         xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n"
-            + "         xmlns:dc=\"http://purl.org/dc/elements/1.1/\"\n"
-            + "         xmlns:dct=\"http://purl.org/dc/terms/\"\n"
-            + "         xmlns:dcx-dai=\"http://easy.dans.knaw.nl/schemas/dcx/dai/\">\n"
-            + "    <ddm:profile>\n"
-            + "        <dcx-dai:creatorDetails>\n"
-            + "            <dcx-dai:author>\n"
-            + "                <dcx-dai:role>Distributor</dcx-dai:role>\n"
-            + "            </dcx-dai:author>\n"
-            + "        </dcx-dai:creatorDetails>\n"
-            + "        <ddm:accessRights>OPEN_ACCESS_FOR_REGISTERED_USERS</ddm:accessRights>\n"
-            + "    </ddm:profile>\n"
-            + "    <ddm:dcmiMetadata>\n"
-            + "        <dct:license xsi:type=\"dct:URI\">http://creativecommons.org/licenses/by-sa/4.0</dct:license>\n"
-            + "        <dct:rightsHolder>Johny</dct:rightsHolder>\n"
-            + "    </ddm:dcmiMetadata>\n"
-            + "</ddm:DDM>\n";
+                + "         xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n"
+                + "         xmlns:dc=\"http://purl.org/dc/elements/1.1/\"\n"
+                + "         xmlns:dct=\"http://purl.org/dc/terms/\"\n"
+                + "         xmlns:dcx-dai=\"http://easy.dans.knaw.nl/schemas/dcx/dai/\">\n"
+                + "    <ddm:profile>\n"
+                + "        <dcx-dai:creatorDetails>\n"
+                + "            <dcx-dai:author>\n"
+                + "                <dcx-dai:role>Distributor</dcx-dai:role>\n"
+                + "            </dcx-dai:author>\n"
+                + "        </dcx-dai:creatorDetails>\n"
+                + "        <ddm:accessRights>OPEN_ACCESS_FOR_REGISTERED_USERS</ddm:accessRights>\n"
+                + "    </ddm:profile>\n"
+                + "    <ddm:dcmiMetadata>\n"
+                + "        <dct:license xsi:type=\"dct:URI\">http://creativecommons.org/licenses/by-sa/4.0</dct:license>\n"
+                + "        <dct:rightsHolder>Johny</dct:rightsHolder>\n"
+                + "    </ddm:dcmiMetadata>\n"
+                + "</ddm:DDM>\n";
 
         var document = parseXmlString(xml);
         var reader = Mockito.spy(new XmlReaderImpl());
@@ -1139,22 +1050,22 @@ class BagRulesImplTest {
     @Test
     void ddmMustHaveRightsHolderDepositButItDoesntExist() throws Exception {
         var xml = "<ddm:DDM xmlns:ddm=\"http://schemas.dans.knaw.nl/dataset/ddm-v2/\"\n"
-            + "         xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n"
-            + "         xmlns:dc=\"http://purl.org/dc/elements/1.1/\"\n"
-            + "         xmlns:dct=\"http://purl.org/dc/terms/\"\n"
-            + "         xmlns:dcx-dai=\"http://easy.dans.knaw.nl/schemas/dcx/dai/\">\n"
-            + "    <ddm:profile>\n"
-            + "        <dcx-dai:creatorDetails>\n"
-            + "            <dcx-dai:author>\n"
-            + "                <dcx-dai:role>Distributor</dcx-dai:role>\n"
-            + "            </dcx-dai:author>\n"
-            + "        </dcx-dai:creatorDetails>\n"
-            + "        <ddm:accessRights>OPEN_ACCESS_FOR_REGISTERED_USERS</ddm:accessRights>\n"
-            + "    </ddm:profile>\n"
-            + "    <ddm:dcmiMetadata>\n"
-            + "        <dct:license xsi:type=\"dct:URI\">http://creativecommons.org/licenses/by-sa/4.0</dct:license>\n"
-            + "    </ddm:dcmiMetadata>\n"
-            + "</ddm:DDM>\n";
+                + "         xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n"
+                + "         xmlns:dc=\"http://purl.org/dc/elements/1.1/\"\n"
+                + "         xmlns:dct=\"http://purl.org/dc/terms/\"\n"
+                + "         xmlns:dcx-dai=\"http://easy.dans.knaw.nl/schemas/dcx/dai/\">\n"
+                + "    <ddm:profile>\n"
+                + "        <dcx-dai:creatorDetails>\n"
+                + "            <dcx-dai:author>\n"
+                + "                <dcx-dai:role>Distributor</dcx-dai:role>\n"
+                + "            </dcx-dai:author>\n"
+                + "        </dcx-dai:creatorDetails>\n"
+                + "        <ddm:accessRights>OPEN_ACCESS_FOR_REGISTERED_USERS</ddm:accessRights>\n"
+                + "    </ddm:profile>\n"
+                + "    <ddm:dcmiMetadata>\n"
+                + "        <dct:license xsi:type=\"dct:URI\">http://creativecommons.org/licenses/by-sa/4.0</dct:license>\n"
+                + "    </ddm:dcmiMetadata>\n"
+                + "</ddm:DDM>\n";
 
         var document = parseXmlString(xml);
         var reader = Mockito.spy(new XmlReaderImpl());
@@ -1170,22 +1081,22 @@ class BagRulesImplTest {
     @Test
     void ddmMustHaveRightsHolderMigration() throws Exception {
         var xml = "<ddm:DDM xmlns:ddm=\"http://schemas.dans.knaw.nl/dataset/ddm-v2/\"\n"
-            + "         xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n"
-            + "         xmlns:dc=\"http://purl.org/dc/elements/1.1/\"\n"
-            + "         xmlns:dct=\"http://purl.org/dc/terms/\"\n"
-            + "         xmlns:dcx-dai=\"http://easy.dans.knaw.nl/schemas/dcx/dai/\">\n"
-            + "    <ddm:profile>\n"
-            + "        <dcx-dai:creatorDetails>\n"
-            + "            <dcx-dai:author>\n"
-            + "                <dcx-dai:role>RightsHolder</dcx-dai:role>\n"
-            + "            </dcx-dai:author>\n"
-            + "        </dcx-dai:creatorDetails>\n"
-            + "        <ddm:accessRights>OPEN_ACCESS_FOR_REGISTERED_USERS</ddm:accessRights>\n"
-            + "    </ddm:profile>\n"
-            + "    <ddm:dcmiMetadata>\n"
-            + "        <dct:license xsi:type=\"dct:URI\">http://creativecommons.org/licenses/by-sa/4.0</dct:license>\n"
-            + "    </ddm:dcmiMetadata>\n"
-            + "</ddm:DDM>\n";
+                + "         xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n"
+                + "         xmlns:dc=\"http://purl.org/dc/elements/1.1/\"\n"
+                + "         xmlns:dct=\"http://purl.org/dc/terms/\"\n"
+                + "         xmlns:dcx-dai=\"http://easy.dans.knaw.nl/schemas/dcx/dai/\">\n"
+                + "    <ddm:profile>\n"
+                + "        <dcx-dai:creatorDetails>\n"
+                + "            <dcx-dai:author>\n"
+                + "                <dcx-dai:role>RightsHolder</dcx-dai:role>\n"
+                + "            </dcx-dai:author>\n"
+                + "        </dcx-dai:creatorDetails>\n"
+                + "        <ddm:accessRights>OPEN_ACCESS_FOR_REGISTERED_USERS</ddm:accessRights>\n"
+                + "    </ddm:profile>\n"
+                + "    <ddm:dcmiMetadata>\n"
+                + "        <dct:license xsi:type=\"dct:URI\">http://creativecommons.org/licenses/by-sa/4.0</dct:license>\n"
+                + "    </ddm:dcmiMetadata>\n"
+                + "</ddm:DDM>\n";
 
         var document = parseXmlString(xml);
         var reader = Mockito.spy(new XmlReaderImpl());
@@ -1201,22 +1112,22 @@ class BagRulesImplTest {
     @Test
     void ddmMustHaveRightsHolderMigrationButItDoesntExist() throws Exception {
         var xml = "<ddm:DDM xmlns:ddm=\"http://schemas.dans.knaw.nl/dataset/ddm-v2/\"\n"
-            + "         xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n"
-            + "         xmlns:dc=\"http://purl.org/dc/elements/1.1/\"\n"
-            + "         xmlns:dct=\"http://purl.org/dc/terms/\"\n"
-            + "         xmlns:dcx-dai=\"http://easy.dans.knaw.nl/schemas/dcx/dai/\">\n"
-            + "    <ddm:profile>\n"
-            + "        <dcx-dai:creatorDetails>\n"
-            + "            <dcx-dai:author>\n"
-            + "                <dcx-dai:role>Distributor</dcx-dai:role>\n"
-            + "            </dcx-dai:author>\n"
-            + "        </dcx-dai:creatorDetails>\n"
-            + "        <ddm:accessRights>OPEN_ACCESS_FOR_REGISTERED_USERS</ddm:accessRights>\n"
-            + "    </ddm:profile>\n"
-            + "    <ddm:dcmiMetadata>\n"
-            + "        <dct:license xsi:type=\"dct:URI\">http://creativecommons.org/licenses/by-sa/4.0</dct:license>\n"
-            + "    </ddm:dcmiMetadata>\n"
-            + "</ddm:DDM>\n";
+                + "         xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n"
+                + "         xmlns:dc=\"http://purl.org/dc/elements/1.1/\"\n"
+                + "         xmlns:dct=\"http://purl.org/dc/terms/\"\n"
+                + "         xmlns:dcx-dai=\"http://easy.dans.knaw.nl/schemas/dcx/dai/\">\n"
+                + "    <ddm:profile>\n"
+                + "        <dcx-dai:creatorDetails>\n"
+                + "            <dcx-dai:author>\n"
+                + "                <dcx-dai:role>Distributor</dcx-dai:role>\n"
+                + "            </dcx-dai:author>\n"
+                + "        </dcx-dai:creatorDetails>\n"
+                + "        <ddm:accessRights>OPEN_ACCESS_FOR_REGISTERED_USERS</ddm:accessRights>\n"
+                + "    </ddm:profile>\n"
+                + "    <ddm:dcmiMetadata>\n"
+                + "        <dct:license xsi:type=\"dct:URI\">http://creativecommons.org/licenses/by-sa/4.0</dct:license>\n"
+                + "    </ddm:dcmiMetadata>\n"
+                + "</ddm:DDM>\n";
 
         var document = parseXmlString(xml);
         var reader = Mockito.spy(new XmlReaderImpl());
@@ -1233,8 +1144,8 @@ class BagRulesImplTest {
     void containsNotJustMD5Manifest() throws Exception {
         var checker = getBagRules();
         var manifests = Set.of(
-            new Manifest(StandardSupportedAlgorithms.SHA1),
-            new Manifest(StandardSupportedAlgorithms.MD5)
+                new Manifest(StandardSupportedAlgorithms.SHA1),
+                new Manifest(StandardSupportedAlgorithms.MD5)
         );
 
         Mockito.when(bagItMetadataReader.getBag(Mockito.any())).thenReturn(Optional.of(new Bag()));
@@ -1249,7 +1160,7 @@ class BagRulesImplTest {
     void containsOnlyMD5Manifest() throws Exception {
         var checker = getBagRules();
         var manifests = Set.of(
-            new Manifest(StandardSupportedAlgorithms.MD5)
+                new Manifest(StandardSupportedAlgorithms.MD5)
         );
 
         Mockito.when(bagItMetadataReader.getBag(Mockito.any())).thenReturn(Optional.of(new Bag()));
@@ -1279,8 +1190,8 @@ class BagRulesImplTest {
         var checker = getBagRules();
 
         Mockito.when(bagItMetadataReader.getSingleField(Mockito.any(), Mockito.any()))
-            .thenReturn("USER1-organizational-identifier")
-            .thenReturn("user001");
+                .thenReturn("USER1-organizational-identifier")
+                .thenReturn("user001");
 
         var result = checker.organizationalIdentifierPrefixIsValid().validate(Path.of("bagdir"));
 
@@ -1293,8 +1204,8 @@ class BagRulesImplTest {
         var checker = getBagRules();
 
         Mockito.when(bagItMetadataReader.getSingleField(Mockito.any(), Mockito.any()))
-            .thenReturn("WRONG-organizational-identifier")
-            .thenReturn("user001");
+                .thenReturn("WRONG-organizational-identifier")
+                .thenReturn("user001");
 
         var result = checker.organizationalIdentifierPrefixIsValid().validate(Path.of("bagdir"));
 
@@ -1307,8 +1218,8 @@ class BagRulesImplTest {
         var checker = getBagRules();
 
         Mockito.when(bagItMetadataReader.getSingleField(Mockito.any(), Mockito.any()))
-            .thenReturn("WRONG-organizational-identifier")
-            .thenReturn(null);
+                .thenReturn("WRONG-organizational-identifier")
+                .thenReturn(null);
 
         var result = checker.organizationalIdentifierPrefixIsValid().validate(Path.of("bagdir"));
 
@@ -1341,7 +1252,7 @@ class BagRulesImplTest {
     void optionalFileIsUtf8DecodableButThrowsException() throws Exception {
         Mockito.when(fileService.exists(Mockito.any())).thenReturn(true);
         Mockito.when(fileService.readFileContents(Mockito.any(), Mockito.any()))
-            .thenThrow(new CharacterCodingException());
+                .thenThrow(new CharacterCodingException());
 
         var checker = getBagRules();
         var result = checker.optionalFileIsUtf8Decodable(Path.of("somefile.txt")).validate(Path.of("bagdir"));
@@ -1353,22 +1264,22 @@ class BagRulesImplTest {
     void isOriginalFilepathsFileComplete() throws Exception {
         Mockito.when(originalFilepathsService.exists(Mockito.any())).thenReturn(true);
         Mockito.when(filesXmlService.readFilepaths(Mockito.any()))
-            .thenReturn(Stream.of(
-                Path.of("data/1.txt"),
-                Path.of("data/2.txt")
-            ));
+                .thenReturn(Stream.of(
+                        Path.of("data/1.txt"),
+                        Path.of("data/2.txt")
+                ));
 
         Mockito.when(fileService.getAllFiles(Mockito.any()))
-            .thenReturn(List.of(
-                Path.of("bagdir/data/a.txt"),
-                Path.of("bagdir/data/b.txt")
-            ));
+                .thenReturn(List.of(
+                        Path.of("bagdir/data/a.txt"),
+                        Path.of("bagdir/data/b.txt")
+                ));
 
         Mockito.when(originalFilepathsService.getMapping(Mockito.any()))
-            .thenReturn(List.of(
-                new OriginalFilepathsService.OriginalFilePathItem(Path.of("data/1.txt"), Path.of("data/a.txt")),
-                new OriginalFilepathsService.OriginalFilePathItem(Path.of("data/2.txt"), Path.of("data/b.txt"))
-            ));
+                .thenReturn(List.of(
+                        new OriginalFilepathsService.OriginalFilePathItem(Path.of("data/1.txt"), Path.of("data/a.txt")),
+                        new OriginalFilepathsService.OriginalFilePathItem(Path.of("data/2.txt"), Path.of("data/b.txt"))
+                ));
 
         var checker = getBagRules();
         var result = checker.isOriginalFilepathsFileComplete().validate(Path.of("bagdir"));
@@ -1380,22 +1291,22 @@ class BagRulesImplTest {
     void isOriginalFilepathsFileCompleteWithWrongMapping() throws Exception {
         Mockito.when(originalFilepathsService.exists(Mockito.any())).thenReturn(true);
         Mockito.when(filesXmlService.readFilepaths(Mockito.any()))
-            .thenReturn(Stream.of(
-                Path.of("data/1.txt"),
-                Path.of("data/2.txt")
-            ));
+                .thenReturn(Stream.of(
+                        Path.of("data/1.txt"),
+                        Path.of("data/2.txt")
+                ));
 
         Mockito.when(fileService.getAllFiles(Mockito.any()))
-            .thenReturn(List.of(
-                Path.of("bagdir/data/a.txt"),
-                Path.of("bagdir/data/b.txt")
-            ));
+                .thenReturn(List.of(
+                        Path.of("bagdir/data/a.txt"),
+                        Path.of("bagdir/data/b.txt")
+                ));
 
         Mockito.when(originalFilepathsService.getMapping(Mockito.any()))
-            .thenReturn(List.of(
-                new OriginalFilepathsService.OriginalFilePathItem(Path.of("data/1.txt"), Path.of("data/a.txt")),
-                new OriginalFilepathsService.OriginalFilePathItem(Path.of("data/2.txt"), Path.of("data/c.txt")) // this one is wrong
-            ));
+                .thenReturn(List.of(
+                        new OriginalFilepathsService.OriginalFilePathItem(Path.of("data/1.txt"), Path.of("data/a.txt")),
+                        new OriginalFilepathsService.OriginalFilePathItem(Path.of("data/2.txt"), Path.of("data/c.txt")) // this one is wrong
+                ));
 
         var checker = getBagRules();
         var result = checker.isOriginalFilepathsFileComplete().validate(Path.of("bagdir"));
@@ -1407,21 +1318,21 @@ class BagRulesImplTest {
     void isOriginalFilepathsFileCompleteWithMissingMapping() throws Exception {
         Mockito.when(originalFilepathsService.exists(Mockito.any())).thenReturn(true);
         Mockito.when(filesXmlService.readFilepaths(Mockito.any()))
-            .thenReturn(Stream.of(
-                Path.of("data/1.txt"),
-                Path.of("data/2.txt")
-            ));
+                .thenReturn(Stream.of(
+                        Path.of("data/1.txt"),
+                        Path.of("data/2.txt")
+                ));
 
         Mockito.when(fileService.getAllFiles(Mockito.any()))
-            .thenReturn(List.of(
-                Path.of("bagdir/data/a.txt"),
-                Path.of("bagdir/data/b.txt")
-            ));
+                .thenReturn(List.of(
+                        Path.of("bagdir/data/a.txt"),
+                        Path.of("bagdir/data/b.txt")
+                ));
 
         Mockito.when(originalFilepathsService.getMapping(Mockito.any()))
-            .thenReturn(List.of(
-                new OriginalFilepathsService.OriginalFilePathItem(Path.of("data/2.txt"), Path.of("data/b.txt")) // this one is wrong
-            ));
+                .thenReturn(List.of(
+                        new OriginalFilepathsService.OriginalFilePathItem(Path.of("data/2.txt"), Path.of("data/b.txt")) // this one is wrong
+                ));
 
         var checker = getBagRules();
         var result = checker.isOriginalFilepathsFileComplete().validate(Path.of("bagdir"));
@@ -1433,20 +1344,20 @@ class BagRulesImplTest {
     void isOriginalFilepathsFileCompleteWithMissingFiles() throws Exception {
         Mockito.when(originalFilepathsService.exists(Mockito.any())).thenReturn(true);
         Mockito.when(filesXmlService.readFilepaths(Mockito.any()))
-            .thenReturn(Stream.of(
-                Path.of("data/1.txt")
-            ));
+                .thenReturn(Stream.of(
+                        Path.of("data/1.txt")
+                ));
 
         Mockito.when(fileService.getAllFiles(Mockito.any()))
-            .thenReturn(List.of(
-                Path.of("bagdir/data/a.txt")
-            ));
+                .thenReturn(List.of(
+                        Path.of("bagdir/data/a.txt")
+                ));
 
         Mockito.when(originalFilepathsService.getMapping(Mockito.any()))
-            .thenReturn(List.of(
-                new OriginalFilepathsService.OriginalFilePathItem(Path.of("data/1.txt"), Path.of("data/a.txt")),
-                new OriginalFilepathsService.OriginalFilePathItem(Path.of("data/2.txt"), Path.of("data/b.txt"))
-            ));
+                .thenReturn(List.of(
+                        new OriginalFilepathsService.OriginalFilePathItem(Path.of("data/1.txt"), Path.of("data/a.txt")),
+                        new OriginalFilepathsService.OriginalFilePathItem(Path.of("data/2.txt"), Path.of("data/b.txt"))
+                ));
 
         var checker = getBagRules();
         var result = checker.isOriginalFilepathsFileComplete().validate(Path.of("bagdir"));

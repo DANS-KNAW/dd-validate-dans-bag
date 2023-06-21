@@ -13,15 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package nl.knaw.dans.validatedansbag.core.validator;
+package nl.knaw.dans.validatedansbag.core.rules;
 
-import nl.knaw.dans.lib.dataverse.DataverseException;
+public interface VaasRules {
 
-import java.io.IOException;
+    
 
-public interface LicenseValidator {
+    BagValidatorRule ddmDoiIdentifiersAreValid();
 
-    boolean isValidUri(String license);
-
-    boolean isValidLicense(String license) throws IOException, DataverseException;
 }

@@ -70,8 +70,6 @@ public class BagRulesImpl implements BagRules {
 
     private final OriginalFilepathsService originalFilepathsService;
 
-    private final Pattern doiPattern = Pattern.compile("^10(\\.\\d+)+/.+");
-
     private final IdentifierValidator identifierValidator;
 
     private final PolygonListValidator polygonListValidator;
@@ -431,7 +429,7 @@ public class BagRulesImpl implements BagRules {
     }
 
     @Override
-    public BagValidatorRule ddmMustContainDctermsLicense() {
+    public BagValidatorRule ddmMustContainExactlyOneDctermsLicenseWithXsiTypeUri() {
         return (path) -> {
             var document = xmlReader.readXmlFile(path.resolve("metadata/dataset.xml"));
             // converts a namespace uri into a prefix that is used in the document
@@ -439,7 +437,7 @@ public class BagRulesImpl implements BagRules {
             var expr = String.format("/ddm:DDM/ddm:dcmiMetadata/dcterms:license[@xsi:type='%s:URI']", prefix);
 
             var validNodes = xmlReader.xpathToStream(document, expr)
-                .filter(item -> licenseValidator.isValidLicenseURI(item.getTextContent()))
+                .filter(item -> licenseValidator.isValidUri(item.getTextContent()))
                 .collect(Collectors.toList());
 
             log.debug("Found {} nodes with correct licenses", validNodes.size());
@@ -458,29 +456,6 @@ public class BagRulesImpl implements BagRules {
         };
     }
 
-    @Override
-    public BagValidatorRule ddmDoiIdentifiersAreValid() {
-        return (path) -> {
-            var document = xmlReader.readXmlFile(path.resolve("metadata/dataset.xml"));
-            var expr = "/ddm:DDM/ddm:dcmiMetadata/dcterms:identifier[@xsi:type=\"id-type:DOI\"]";
-
-            var nodes = xmlReader.xpathToStreamOfStrings(document, expr);
-            var match = nodes
-                .peek(node -> log.trace("Validating if {} matches pattern {}", node, doiPattern))
-                .filter((text) -> !doiPattern.matcher(text).matches())
-                .collect(Collectors.joining(", "));
-
-            log.debug("Identifiers (DOI) that do not match the pattern: {}", match);
-
-            if (match.length() > 0) {
-                return RuleResult.error(String.format(
-                    "dataset.xml: Invalid DOIs: %s", match
-                ));
-            }
-
-            return RuleResult.ok();
-        };
-    }
 
     @Override
     public BagValidatorRule ddmDaisAreValid() {

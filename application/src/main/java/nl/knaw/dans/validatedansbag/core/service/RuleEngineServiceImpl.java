@@ -15,24 +15,23 @@
  */
 package nl.knaw.dans.validatedansbag.core.service;
 
+import lombok.extern.slf4j.Slf4j;
 import nl.knaw.dans.validatedansbag.core.BagNotFoundException;
 import nl.knaw.dans.validatedansbag.core.engine.DepositType;
 import nl.knaw.dans.validatedansbag.core.engine.NumberedRule;
 import nl.knaw.dans.validatedansbag.core.engine.RuleEngine;
 import nl.knaw.dans.validatedansbag.core.engine.RuleEngineConfigurationException;
 import nl.knaw.dans.validatedansbag.core.engine.RuleValidationResult;
-import nl.knaw.dans.validatedansbag.core.rules.BagRules;
-import nl.knaw.dans.validatedansbag.core.rules.DatastationRules;
-import nl.knaw.dans.validatedansbag.core.rules.FilesXmlRules;
-import nl.knaw.dans.validatedansbag.core.rules.XmlRules;
+import nl.knaw.dans.validatedansbag.core.rules.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.nio.file.Path;
 import java.util.List;
 
+@Slf4j
 public class RuleEngineServiceImpl implements RuleEngineService {
-    private static final Logger log = LoggerFactory.getLogger(RuleEngineServiceImpl.class);
+
     private final RuleEngine ruleEngine;
     private final FileService fileService;
     private final NumberedRule[] defaultRules;
@@ -41,16 +40,17 @@ public class RuleEngineServiceImpl implements RuleEngineService {
     private final Path payloadPath = Path.of("data");
     private final Path metadataFilesPath = Path.of("metadata/files.xml");
 
-    public RuleEngineServiceImpl(RuleEngine ruleEngine, BagRules bagRules, XmlRules xmlRules, FilesXmlRules filesXmlRules, FileService fileService, DatastationRules datastationRules) {
+    public RuleEngineServiceImpl(RuleEngine ruleEngine, BagRules bagRules, XmlRules xmlRules, FilesXmlRules filesXmlRules, FileService fileService, DatastationRules datastationRules, VaasRules vaasRules) {
         this.ruleEngine = ruleEngine;
         this.fileService = fileService;
+        var bagItMetadataReader = new BagItMetadataReaderImpl();
 
         // validity
         this.defaultRules = new NumberedRule[]{
-                new NumberedRule("1.1.1", bagRules.bagIsValid()),
+                new NumberedRule("1.1.1", new BagIsValid(bagItMetadataReader)),
 
                 // bag-info.txt
-                new NumberedRule("1.2.1", bagRules.bagInfoExistsAndIsWellFormed()),
+                new NumberedRule("1.2.1", new BagInfoExistsAndIsWellformed(bagItMetadataReader, fileService)),
                 new NumberedRule("1.2.2(a)", bagRules.bagInfoContainsExactlyOneOf("Created"), List.of("1.2.1")),
                 new NumberedRule("1.2.2(b)", bagRules.bagInfoCreatedElementIsIso8601Date(), List.of("1.2.2(a)")),
                 new NumberedRule("1.2.3(a)", bagRules.bagInfoContainsAtMostOneOf("Is-Version-Of"), List.of("1.2.1")),
@@ -62,7 +62,7 @@ public class RuleEngineServiceImpl implements RuleEngineService {
                 new NumberedRule("1.3.1", bagRules.containsNotJustMD5Manifest(), List.of("1.1.1")),
 
                 // Structural
-                new NumberedRule("2.1", bagRules.containsDir(metadataPath), List.of("1.1.1")),
+                new NumberedRule("2.1", new ContainsDir(metadataPath, fileService), List.of("1.1.1")),
                 new NumberedRule("2.2(a)", bagRules.containsFile(metadataPath.resolve("dataset.xml")), List.of("2.1")),
                 new NumberedRule("2.2(b)", bagRules.containsFile(metadataPath.resolve("files.xml")), List.of("2.1")),
 
@@ -97,8 +97,7 @@ public class RuleEngineServiceImpl implements RuleEngineService {
 
                 // metadata/dataset.xml
                 new NumberedRule("3.1.1", xmlRules.xmlFileConformsToSchema(datasetPath, "dataset.xml"), List.of("1.1.1", "2.2(a)")),
-                new NumberedRule("3.1.2", bagRules.ddmMustContainDctermsLicense(), List.of("3.1.1")), // TODO: only check that it is a URI
-                new NumberedRule("3.1.3", bagRules.ddmDoiIdentifiersAreValid(), List.of("3.1.1")),
+                new NumberedRule("3.1.2", bagRules.ddmMustContainExactlyOneDctermsLicenseWithXsiTypeUri(), List.of("3.1.1")), // TODO: only check that it is a URI
 
                 new NumberedRule("3.1.4(a)", bagRules.ddmDaisAreValid(), List.of("3.1.1")),
                 new NumberedRule("3.1.4(b)", bagRules.ddmIsnisAreValid(), List.of("3.1.1")),
@@ -138,6 +137,10 @@ public class RuleEngineServiceImpl implements RuleEngineService {
                 new NumberedRule("4.2(b)", datastationRules.organizationalIdentifierExistsInDataset(), DepositType.DEPOSIT, List.of("1.2.3(a)")),
                 new NumberedRule("4.3", datastationRules.licenseExistsInDatastation(), DepositType.DEPOSIT, List.of("3.1.2")),
                 new NumberedRule("4.4", datastationRules.embargoPeriodWithinLimits(), DepositType.DEPOSIT),
+
+
+                new NumberedRule("5.2", vaasRules.ddmDoiIdentifiersAreValid(), List.of("3.1.1")),
+
         };
 
         this.validateRuleConfiguration();
