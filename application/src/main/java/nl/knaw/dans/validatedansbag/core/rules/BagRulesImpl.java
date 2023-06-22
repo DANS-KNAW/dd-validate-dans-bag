@@ -94,28 +94,6 @@ public class BagRulesImpl implements BagRules {
         this.filesXmlService = filesXmlService;
     }
 
-
-    @Override
-    public BagValidatorRule ddmDaisAreValid() {
-        return (path) -> {
-            var document = xmlReader.readXmlFile(path.resolve("metadata/dataset.xml"));
-            var expr = "//dcx-dai:DAI";
-            var match = xmlReader.xpathToStreamOfStrings(document, expr)
-                    .peek(id -> log.trace("Validating if {} is a valid DAI", id))
-                    .filter((id) -> !identifierValidator.validateDai(id))
-                    .collect(Collectors.toList());
-
-            log.debug("Identifiers (DAI) that do not match the pattern: {}", match);
-
-            if (!match.isEmpty()) {
-                var message = String.join(", ", match);
-                return RuleResult.error("dataset.xml: Invalid DAIs: " + message);
-            }
-
-            return RuleResult.ok();
-        };
-    }
-
     @Override
     public BagValidatorRule ddmIsnisAreValid() {
         return (path) -> {

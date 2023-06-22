@@ -18,14 +18,34 @@ package nl.knaw.dans.validatedansbag.core.rules;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import nl.knaw.dans.validatedansbag.core.engine.RuleResult;
+import nl.knaw.dans.validatedansbag.core.service.XmlReader;
+import nl.knaw.dans.validatedansbag.core.validator.IdentifierValidator;
 
 import java.nio.file.Path;
+import java.util.stream.Collectors;
 
 @AllArgsConstructor
 @Slf4j
 public class DdmDaisAreValid implements BagValidatorRule {
+    private final XmlReader xmlReader;
+    private final IdentifierValidator identifierValidator;
+
     @Override
     public RuleResult validate(Path path) throws Exception {
-        return null;
+        var document = xmlReader.readXmlFile(path.resolve("metadata/dataset.xml"));
+        var expr = "//dcx-dai:DAI";
+        var match = xmlReader.xpathToStreamOfStrings(document, expr)
+                .peek(id -> log.trace("Validating if {} is a valid DAI", id))
+                .filter((id) -> !identifierValidator.validateDai(id))
+                .collect(Collectors.toList());
+
+        log.debug("Identifiers (DAI) that do not match the pattern: {}", match);
+
+        if (!match.isEmpty()) {
+            var message = String.join(", ", match);
+            return RuleResult.error("dataset.xml: Invalid DAIs: " + message);
+        }
+
+        return RuleResult.ok();
     }
 }

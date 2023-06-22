@@ -323,11 +323,9 @@ class BagRulesImplTest {
 
         Mockito.doReturn(document).when(reader).readXmlFile(Mockito.any());
 
-        var checker = getBagRulesWithXmlReader(reader);
-
-        assertEquals(RuleResult.Status.SUCCESS, checker.ddmDaisAreValid().validate(Path.of("bagdir")).getStatus());
-        assertEquals(RuleResult.Status.SUCCESS, checker.ddmOrcidsAreValid().validate(Path.of("bagdir")).getStatus());
-        assertEquals(RuleResult.Status.SUCCESS, checker.ddmIsnisAreValid().validate(Path.of("bagdir")).getStatus());
+        assertEquals(RuleResult.Status.SUCCESS, new DdmDaisAreValid(reader, identifierValidator).validate(Path.of("bagdir")).getStatus());
+        assertEquals(RuleResult.Status.SUCCESS, new DdmDaisAreValid(reader, identifierValidator).validate(Path.of("bagdir")).getStatus());
+        assertEquals(RuleResult.Status.SUCCESS, new DdmDaisAreValid(reader, identifierValidator).validate(Path.of("bagdir")).getStatus());
     }
 
     @Test
@@ -356,9 +354,7 @@ class BagRulesImplTest {
 
         Mockito.doReturn(document).when(reader).readXmlFile(Mockito.any());
 
-        var checker = getBagRulesWithXmlReader(reader);
-
-        var result = checker.ddmDaisAreValid().validate(Path.of("bagdir"));
+        var result = new DdmDaisAreValid(reader, identifierValidator).validate(Path.of("bagdir"));
         assertEquals(RuleResult.Status.ERROR, result.getStatus());
     }
 

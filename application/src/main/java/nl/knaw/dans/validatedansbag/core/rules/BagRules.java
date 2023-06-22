@@ -19,8 +19,6 @@ import java.nio.file.Path;
 
 public interface BagRules {
 
-    BagValidatorRule ddmDaisAreValid();
-
     BagValidatorRule ddmGmlPolygonPosListIsWellFormed();
 
     BagValidatorRule polygonsInSameMultiSurfaceHaveSameSrsName();

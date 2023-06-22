@@ -23,6 +23,7 @@ import nl.knaw.dans.validatedansbag.core.engine.RuleEngine;
 import nl.knaw.dans.validatedansbag.core.engine.RuleEngineConfigurationException;
 import nl.knaw.dans.validatedansbag.core.engine.RuleValidationResult;
 import nl.knaw.dans.validatedansbag.core.rules.*;
+import nl.knaw.dans.validatedansbag.core.validator.IdentifierValidator;
 import nl.knaw.dans.validatedansbag.core.validator.LicenseValidator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,7 +42,18 @@ public class RuleEngineServiceImpl implements RuleEngineService {
     private final Path payloadPath = Path.of("data");
     private final Path metadataFilesPath = Path.of("metadata/files.xml");
 
-    public RuleEngineServiceImpl(RuleEngine ruleEngine, BagRules bagRules, XmlRules xmlRules, FilesXmlRules filesXmlRules, FileService fileService, DatastationRules datastationRules, VaasRules vaasRules, FilesXmlService filesXmlService, OriginalFilepathsService originalFilepathService, XmlReader xmlReader, LicenseValidator licenseValidator) {
+    public RuleEngineServiceImpl(RuleEngine ruleEngine,
+                                 BagRules bagRules,
+                                 XmlRules xmlRules,
+                                 FilesXmlRules filesXmlRules,
+                                 FileService fileService,
+                                 DatastationRules datastationRules,
+                                 VaasRules vaasRules,
+                                 FilesXmlService filesXmlService,
+                                 OriginalFilepathsService originalFilepathService,
+                                 XmlReader xmlReader,
+                                 LicenseValidator licenseValidator,
+                                 IdentifierValidator identifierValidator) {
         this.ruleEngine = ruleEngine;
         this.fileService = fileService;
         var bagItMetadataReader = new BagItMetadataReaderImpl();
@@ -100,7 +112,7 @@ public class RuleEngineServiceImpl implements RuleEngineService {
                 new NumberedRule("3.1.1", xmlRules.xmlFileConformsToSchema(datasetPath, "dataset.xml"), List.of("1.1.1", "2.2(a)")),
                 new NumberedRule("3.1.2", new DdmMustContainExactlyOneDctermsLicenseWithXsiTypeUri(xmlReader, licenseValidator), List.of("3.1.1")),
 
-                new NumberedRule("3.1.4(a)", bagRules.ddmDaisAreValid(), List.of("3.1.1")),
+                new NumberedRule("3.1.4(a)", new DdmDaisAreValid(xmlReader, identifierValidator), List.of("3.1.1")),
                 new NumberedRule("3.1.4(b)", bagRules.ddmIsnisAreValid(), List.of("3.1.1")),
                 new NumberedRule("3.1.4(c)", bagRules.ddmOrcidsAreValid(), List.of("3.1.1")),
                 new NumberedRule("3.1.5", bagRules.ddmGmlPolygonPosListIsWellFormed(), List.of("3.1.1")),

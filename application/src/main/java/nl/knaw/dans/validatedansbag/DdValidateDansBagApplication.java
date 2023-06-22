@@ -74,6 +74,7 @@ public class DdValidateDansBagApplication extends Application<DdValidateDansBagC
 
         var dataverseService = new DataverseServiceImpl(configuration.getDataverse().build());
         var licenseValidator = new LicenseValidatorImpl(dataverseService);
+        var identifierValidator = new IdentifierValidatorImpl();
 
         var organizationIdentifierPrefixValidator = new OrganizationIdentifierPrefixValidatorImpl(configuration.getValidation().getOtherIdPrefixes());
 
@@ -87,7 +88,7 @@ public class DdValidateDansBagApplication extends Application<DdValidateDansBagC
 
         // set up the engine and the service that has a default set of rules
         var ruleEngine = new RuleEngineImpl();
-        var ruleEngineService = new RuleEngineServiceImpl(ruleEngine, bagRules, xmlRules, filesXmlRules, fileService, datastationRules, vaasRules, filesXmlService, originalFilepathsService, xmlReader, licenseValidator);
+        var ruleEngineService = new RuleEngineServiceImpl(ruleEngine, bagRules, xmlRules, filesXmlRules, fileService, datastationRules, vaasRules, filesXmlService, originalFilepathsService, xmlReader, licenseValidator, identifierValidator);
 
         environment.jersey().register(new IllegalArgumentExceptionMapper());
         environment.jersey().register(new ValidateResource(ruleEngineService, fileService));

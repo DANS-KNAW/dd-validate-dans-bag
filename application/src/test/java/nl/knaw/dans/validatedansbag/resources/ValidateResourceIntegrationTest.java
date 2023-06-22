@@ -109,6 +109,7 @@ class ValidateResourceIntegrationTest {
         var polygonListValidator = new PolygonListValidatorImpl();
         var originalFilepathsService = new OriginalFilepathsServiceImpl(fileService);
         var filesXmlService = new FilesXmlServiceImpl(xmlReader);
+        var identifierValidator = new IdentifierValidatorImpl();
 
         var organizationIdentifierPrefixValidator = new OrganizationIdentifierPrefixValidatorImpl(
                 List.of("u1:", "u2:")
@@ -124,7 +125,7 @@ class ValidateResourceIntegrationTest {
 
         // set up the engine and the service that has a default set of rules
         var ruleEngine = new RuleEngineImpl();
-        var ruleEngineService = new RuleEngineServiceImpl(ruleEngine, bagRules, xmlRules, filesXmlRules, fileService, datastationRules, vaasRules, filesXmlService, originalFilepathsService, xmlReader, licenseValidator);
+        var ruleEngineService = new RuleEngineServiceImpl(ruleEngine, bagRules, xmlRules, filesXmlRules, fileService, datastationRules, vaasRules, filesXmlService, originalFilepathsService, xmlReader, licenseValidator, identifierValidator);
 
         return new ValidateResource(ruleEngineService, fileService);
     }
