@@ -28,14 +28,7 @@ import nl.knaw.dans.validatedansbag.core.auth.SwordAuthenticator;
 import nl.knaw.dans.validatedansbag.core.auth.SwordUser;
 import nl.knaw.dans.validatedansbag.core.engine.RuleEngineImpl;
 import nl.knaw.dans.validatedansbag.core.rules.*;
-import nl.knaw.dans.validatedansbag.core.service.BagItMetadataReaderImpl;
-import nl.knaw.dans.validatedansbag.core.service.DataverseServiceImpl;
-import nl.knaw.dans.validatedansbag.core.service.FileServiceImpl;
-import nl.knaw.dans.validatedansbag.core.service.FilesXmlServiceImpl;
-import nl.knaw.dans.validatedansbag.core.service.OriginalFilepathsServiceImpl;
-import nl.knaw.dans.validatedansbag.core.service.RuleEngineServiceImpl;
-import nl.knaw.dans.validatedansbag.core.service.XmlReaderImpl;
-import nl.knaw.dans.validatedansbag.core.service.XmlSchemaValidatorImpl;
+import nl.knaw.dans.validatedansbag.core.service.*;
 import nl.knaw.dans.validatedansbag.core.validator.IdentifierValidatorImpl;
 import nl.knaw.dans.validatedansbag.core.validator.LicenseValidatorImpl;
 import nl.knaw.dans.validatedansbag.core.validator.OrganizationIdentifierPrefixValidatorImpl;
@@ -74,7 +67,7 @@ public class DdValidateDansBagApplication extends Application<DdValidateDansBagC
         var xmlReader = new XmlReaderImpl();
         var daiDigestCalculator = new IdentifierValidatorImpl();
         var polygonListValidator = new PolygonListValidatorImpl();
-        var originalFilepathsService = new OriginalFilepathsServiceImpl(fileService);
+        OriginalFilepathsService originalFilepathsService = new OriginalFilepathsServiceImpl(fileService);
         var filesXmlService = new FilesXmlServiceImpl(xmlReader);
 
         var xmlSchemaValidator = new XmlSchemaValidatorImpl(configuration.getValidation().getXmlSchemas().buildMap());
@@ -94,7 +87,7 @@ public class DdValidateDansBagApplication extends Application<DdValidateDansBagC
 
         // set up the engine and the service that has a default set of rules
         var ruleEngine = new RuleEngineImpl();
-        var ruleEngineService = new RuleEngineServiceImpl(ruleEngine, bagRules, xmlRules, filesXmlRules, fileService, datastationRules, vaasRules);
+        var ruleEngineService = new RuleEngineServiceImpl(ruleEngine, bagRules, xmlRules, filesXmlRules, fileService, datastationRules, vaasRules, filesXmlService, originalFilepathsService, xmlReader, licenseValidator);
 
         environment.jersey().register(new IllegalArgumentExceptionMapper());
         environment.jersey().register(new ValidateResource(ruleEngineService, fileService));

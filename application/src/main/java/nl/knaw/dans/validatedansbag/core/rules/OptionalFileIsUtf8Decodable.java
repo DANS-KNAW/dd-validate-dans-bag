@@ -18,14 +18,31 @@ package nl.knaw.dans.validatedansbag.core.rules;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import nl.knaw.dans.validatedansbag.core.engine.RuleResult;
+import nl.knaw.dans.validatedansbag.core.service.FileService;
 
+import java.nio.charset.CharacterCodingException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 
 @Slf4j
 @AllArgsConstructor
 public class OptionalFileIsUtf8Decodable implements BagValidatorRule {
+    private final Path filename;
+    private final FileService fileService;
+
     @Override
     public RuleResult validate(Path path) throws Exception {
-        return null;
+        try {
+            var target = path.resolve(filename);
+
+            if (fileService.exists(target)) {
+                fileService.readFileContents(target, StandardCharsets.UTF_8);
+                return RuleResult.ok();
+            } else {
+                return RuleResult.skipDependencies();
+            }
+        } catch (CharacterCodingException e) {
+            return RuleResult.error("Input not valid UTF-8: " + e.getMessage());
+        }
     }
 }

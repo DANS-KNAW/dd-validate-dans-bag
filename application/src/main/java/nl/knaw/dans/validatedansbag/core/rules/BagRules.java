@@ -19,32 +19,6 @@ import java.nio.file.Path;
 
 public interface BagRules {
 
-    BagValidatorRule bagIsValid();
-
-    BagValidatorRule containsDir(Path dir);
-
-    BagValidatorRule containsFile(Path file);
-
-    BagValidatorRule bagInfoExistsAndIsWellFormed();
-
-    BagValidatorRule bagInfoCreatedElementIsIso8601Date();
-
-    BagValidatorRule bagInfoContainsExactlyOneOf(String key);
-
-    BagValidatorRule bagInfoContainsAtMostOneOf(String key);
-
-    BagValidatorRule bagInfoIsVersionOfIsValidUrnUuid();
-
-    BagValidatorRule containsNothingElseThan(Path dir, String[] paths);
-
-    BagValidatorRule mustNotContain(Path dir, String[] paths);
-
-    BagValidatorRule optionalFileIsUtf8Decodable(Path path);
-
-    BagValidatorRule isOriginalFilepathsFileComplete();
-
-    BagValidatorRule ddmMustContainExactlyOneDctermsLicenseWithXsiTypeUri();
-
     BagValidatorRule ddmDaisAreValid();
 
     BagValidatorRule ddmGmlPolygonPosListIsWellFormed();

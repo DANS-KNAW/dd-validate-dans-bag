@@ -23,6 +23,7 @@ import nl.knaw.dans.validatedansbag.core.engine.RuleEngine;
 import nl.knaw.dans.validatedansbag.core.engine.RuleEngineConfigurationException;
 import nl.knaw.dans.validatedansbag.core.engine.RuleValidationResult;
 import nl.knaw.dans.validatedansbag.core.rules.*;
+import nl.knaw.dans.validatedansbag.core.validator.LicenseValidator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -40,7 +41,7 @@ public class RuleEngineServiceImpl implements RuleEngineService {
     private final Path payloadPath = Path.of("data");
     private final Path metadataFilesPath = Path.of("metadata/files.xml");
 
-    public RuleEngineServiceImpl(RuleEngine ruleEngine, BagRules bagRules, XmlRules xmlRules, FilesXmlRules filesXmlRules, FileService fileService, DatastationRules datastationRules, VaasRules vaasRules) {
+    public RuleEngineServiceImpl(RuleEngine ruleEngine, BagRules bagRules, XmlRules xmlRules, FilesXmlRules filesXmlRules, FileService fileService, DatastationRules datastationRules, VaasRules vaasRules, FilesXmlService filesXmlService, OriginalFilepathsService originalFilepathService, XmlReader xmlReader, LicenseValidator licenseValidator) {
         this.ruleEngine = ruleEngine;
         this.fileService = fileService;
         var bagItMetadataReader = new BagItMetadataReaderImpl();
@@ -51,23 +52,23 @@ public class RuleEngineServiceImpl implements RuleEngineService {
 
                 // bag-info.txt
                 new NumberedRule("1.2.1", new BagInfoExistsAndIsWellformed(bagItMetadataReader, fileService)),
-                new NumberedRule("1.2.2(a)", bagRules.bagInfoContainsExactlyOneOf("Created"), List.of("1.2.1")),
-                new NumberedRule("1.2.2(b)", bagRules.bagInfoCreatedElementIsIso8601Date(), List.of("1.2.2(a)")),
-                new NumberedRule("1.2.3(a)", bagRules.bagInfoContainsAtMostOneOf("Is-Version-Of"), List.of("1.2.1")),
-                new NumberedRule("1.2.3(b)", bagRules.bagInfoIsVersionOfIsValidUrnUuid(), List.of("1.2.3(a)")),
-                new NumberedRule("1.2.4(a)", bagRules.bagInfoContainsAtMostOneOf("Has-Organizational-Identifier"), List.of("1.2.1")),
-                new NumberedRule("1.2.4(b)", bagRules.bagInfoContainsAtMostOneOf("Has-Organizational-Identifier-Version"), List.of("1.2.4(a)")),
+                new NumberedRule("1.2.2(a)", new BagInfoContainsExactlyOneOf("Created", bagItMetadataReader), List.of("1.2.1")),
+                new NumberedRule("1.2.2(b)", new BagInfoCreatedElementIsIso8601Date(bagItMetadataReader), List.of("1.2.2(a)")),
+                new NumberedRule("1.2.3(a)", new BagInfoContainsAtMostOneOf("Is-Version-Of", bagItMetadataReader), List.of("1.2.1")),
+                new NumberedRule("1.2.3(b)", new BagInfoIsVersionOfIsValidUrnUuid(bagItMetadataReader), List.of("1.2.3(a)")),
+                new NumberedRule("1.2.4(a)", new BagInfoContainsAtMostOneOf("Has-Organizational-Identifier", bagItMetadataReader), List.of("1.2.1")),
+                new NumberedRule("1.2.4(b)", new BagInfoContainsAtMostOneOf("Has-Organizational-Identifier-Version", bagItMetadataReader), List.of("1.2.4(a)")),
 
                 // manifests
                 new NumberedRule("1.3.1", bagRules.containsNotJustMD5Manifest(), List.of("1.1.1")),
 
                 // Structural
                 new NumberedRule("2.1", new ContainsDir(metadataPath, fileService), List.of("1.1.1")),
-                new NumberedRule("2.2(a)", bagRules.containsFile(metadataPath.resolve("dataset.xml")), List.of("2.1")),
-                new NumberedRule("2.2(b)", bagRules.containsFile(metadataPath.resolve("files.xml")), List.of("2.1")),
+                new NumberedRule("2.2(a)", new ContainsFile(metadataPath.resolve("dataset.xml"), fileService), List.of("2.1")),
+                new NumberedRule("2.2(b)", new ContainsFile(metadataPath.resolve("files.xml"), fileService), List.of("2.1")),
 
                 // this also covers 2.3 and 2.4 for MIGRATION status deposits
-                new NumberedRule("2.2-MIGRATION", bagRules.containsNothingElseThan(metadataPath, new String[]{
+                new NumberedRule("2.2-MIGRATION", new ContainsNothingElseThan(metadataPath, new String[]{
                         "dataset.xml",
                         "files.xml",
                         "provenance.xml",
@@ -84,20 +85,20 @@ public class RuleEngineServiceImpl implements RuleEngineService {
                         "license.html",
                         "license.txt",
                         "license.pdf"
-                }), DepositType.MIGRATION, List.of("2.1")),
+                }, fileService), DepositType.MIGRATION, List.of("2.1")),
 
-                new NumberedRule("2.3", bagRules.containsNothingElseThan(metadataPath, new String[]{
+                new NumberedRule("2.3", new ContainsNothingElseThan(metadataPath, new String[]{
                         "dataset.xml",
                         "files.xml"
-                }), DepositType.DEPOSIT, List.of("2.1")),
+                }, fileService), DepositType.DEPOSIT, List.of("2.1")),
 
-                new NumberedRule("2.5", bagRules.mustNotContain(payloadPath, new String[]{
+                new NumberedRule("2.5", new MustNotContain(payloadPath, new String[]{
                         "original-metadata.zip"
-                }), List.of("1.1.1")),
+                }, fileService), List.of("1.1.1")),
 
                 // metadata/dataset.xml
                 new NumberedRule("3.1.1", xmlRules.xmlFileConformsToSchema(datasetPath, "dataset.xml"), List.of("1.1.1", "2.2(a)")),
-                new NumberedRule("3.1.2", bagRules.ddmMustContainExactlyOneDctermsLicenseWithXsiTypeUri(), List.of("3.1.1")), // TODO: only check that it is a URI
+                new NumberedRule("3.1.2", new DdmMustContainExactlyOneDctermsLicenseWithXsiTypeUri(xmlReader, licenseValidator), List.of("3.1.1")),
 
                 new NumberedRule("3.1.4(a)", bagRules.ddmDaisAreValid(), List.of("3.1.1")),
                 new NumberedRule("3.1.4(b)", bagRules.ddmIsnisAreValid(), List.of("3.1.1")),
@@ -117,8 +118,8 @@ public class RuleEngineServiceImpl implements RuleEngineService {
                 new NumberedRule("3.2.3", filesXmlRules.filesXmlNoDuplicateFilesAndEveryPayloadFileIsDescribed(), List.of("2.2(b)")),
 
                 // original-filepaths.txt
-                new NumberedRule("3.3.1", bagRules.optionalFileIsUtf8Decodable(Path.of("original-filepaths.txt")), List.of("1.1.1")),
-                new NumberedRule("3.3.2", bagRules.isOriginalFilepathsFileComplete(), List.of("3.3.1")),
+                new NumberedRule("3.3.1", new OptionalFileIsUtf8Decodable(Path.of("original-filepaths.txt"), fileService), List.of("1.1.1")),
+                new NumberedRule("3.3.2", new IsOriginalFilepathsFileComplete(originalFilepathService, fileService, filesXmlService), List.of("3.3.1")),
 
                 // agreements.xml
                 new NumberedRule("3.4.1-MIGRATION", xmlRules.xmlFileIfExistsConformsToSchema(Path.of("metadata/depositor-info/agreements.xml"), "agreements.xml"), DepositType.MIGRATION),

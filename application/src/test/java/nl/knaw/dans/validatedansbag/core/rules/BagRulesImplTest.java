@@ -21,22 +21,8 @@ import gov.loc.repository.bagit.exceptions.InvalidBagitFileFormatException;
 import gov.loc.repository.bagit.hash.StandardSupportedAlgorithms;
 import nl.knaw.dans.validatedansbag.core.engine.RuleResult;
 import nl.knaw.dans.validatedansbag.core.engine.RuleResult.Status;
-import nl.knaw.dans.validatedansbag.core.service.BagItMetadataReader;
-import nl.knaw.dans.validatedansbag.core.service.DataverseService;
-import nl.knaw.dans.validatedansbag.core.service.FileService;
-import nl.knaw.dans.validatedansbag.core.service.FilesXmlService;
-import nl.knaw.dans.validatedansbag.core.service.OriginalFilepathsService;
-import nl.knaw.dans.validatedansbag.core.service.XmlReader;
-import nl.knaw.dans.validatedansbag.core.service.XmlReaderImpl;
-import nl.knaw.dans.validatedansbag.core.validator.IdentifierValidator;
-import nl.knaw.dans.validatedansbag.core.validator.IdentifierValidatorImpl;
-import nl.knaw.dans.validatedansbag.core.validator.LicenseValidator;
-import nl.knaw.dans.validatedansbag.core.validator.LicenseValidatorImpl;
-import nl.knaw.dans.validatedansbag.core.validator.OrganizationIdentifierPrefixValidator;
-import nl.knaw.dans.validatedansbag.core.validator.OrganizationIdentifierPrefixValidatorImpl;
-import nl.knaw.dans.validatedansbag.core.validator.PolygonListValidator;
-import nl.knaw.dans.validatedansbag.core.validator.PolygonListValidatorImpl;
-import org.checkerframework.checker.units.qual.A;
+import nl.knaw.dans.validatedansbag.core.service.*;
+import nl.knaw.dans.validatedansbag.core.validator.*;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -48,11 +34,7 @@ import java.io.IOException;
 import java.nio.CharBuffer;
 import java.nio.charset.CharacterCodingException;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -286,7 +268,7 @@ class BagRulesImplTest {
         Mockito.when(fileService.getAllFilesAndDirectories(Mockito.eq(basePath)))
                 .thenReturn(List.of(basePath.resolve("1.txt"), basePath.resolve("2.txt")));
 
-        var result = new ContainsNothingElseThan("metadata", new String[]{
+        var result = new ContainsNothingElseThan(Path.of("metadata"), new String[]{
                 "1.txt",
                 "2.txt",
                 "3.txt"
@@ -301,7 +283,7 @@ class BagRulesImplTest {
         Mockito.when(fileService.getAllFilesAndDirectories(Mockito.eq(basePath)))
                 .thenReturn(List.of(basePath.resolve("1.txt"), basePath.resolve("2.txt"), basePath.resolve("oh no.txt")));
 
-        var result = new ContainsNothingElseThan("metadata", new String[]{
+        var result = new ContainsNothingElseThan(Path.of("metadata"), new String[]{
                 "1.txt",
                 "2.txt",
                 "3.txt"
@@ -398,9 +380,7 @@ class BagRulesImplTest {
 
         Mockito.doReturn(document).when(reader).readXmlFile(Mockito.any());
 
-        var checker = getBagRulesWithXmlReader(reader);
-
-        var result = checker.ddmMustContainExactlyOneDctermsLicenseWithXsiTypeUri().validate(Path.of("bagdir"));
+        var result = new DdmMustContainExactlyOneDctermsLicenseWithXsiTypeUri(reader, licenseValidator).validate(Path.of("bagdir"));
         assertEquals(RuleResult.Status.ERROR, result.getStatus());
     }
 
@@ -424,9 +404,7 @@ class BagRulesImplTest {
 
         Mockito.doReturn(document).when(reader).readXmlFile(Mockito.any());
 
-        var checker = getBagRulesWithXmlReader(reader);
-
-        var result = checker.ddmMustContainExactlyOneDctermsLicenseWithXsiTypeUri().validate(Path.of("bagdir"));
+        var result = new DdmMustContainExactlyOneDctermsLicenseWithXsiTypeUri(reader, licenseValidator).validate(Path.of("bagdir"));
         assertEquals(RuleResult.Status.ERROR, result.getStatus());
     }
 
@@ -449,9 +427,7 @@ class BagRulesImplTest {
 
         Mockito.doReturn(document).when(reader).readXmlFile(Mockito.any());
 
-        var checker = getBagRulesWithXmlReader(reader);
-
-        var result = checker.ddmMustContainExactlyOneDctermsLicenseWithXsiTypeUri().validate(Path.of("bagdir"));
+        var result = new DdmMustContainExactlyOneDctermsLicenseWithXsiTypeUri(reader, licenseValidator).validate(Path.of("bagdir"));
         assertEquals(Status.SUCCESS, result.getStatus());
     }
 
@@ -474,9 +450,7 @@ class BagRulesImplTest {
 
         Mockito.doReturn(document).when(reader).readXmlFile(Mockito.any());
 
-        var checker = getBagRulesWithXmlReader(reader);
-
-        var result = checker.ddmMustContainExactlyOneDctermsLicenseWithXsiTypeUri().validate(Path.of("bagdir"));
+        var result = new DdmMustContainExactlyOneDctermsLicenseWithXsiTypeUri(reader, licenseValidator).validate(Path.of("bagdir"));
         assertEquals(Status.ERROR, result.getStatus());
     }
 
@@ -499,8 +473,7 @@ class BagRulesImplTest {
 
         Mockito.doReturn(document).when(reader).readXmlFile(Mockito.any());
 
-        var checker = getBagRulesWithXmlReader(reader);
-        var result = checker.ddmMustContainExactlyOneDctermsLicenseWithXsiTypeUri().validate(Path.of("bagdir"));
+        var result = new DdmMustContainExactlyOneDctermsLicenseWithXsiTypeUri(reader, licenseValidator).validate(Path.of("bagdir"));
 
         assertEquals(Status.ERROR, result.getStatus());
     }
@@ -1220,8 +1193,7 @@ class BagRulesImplTest {
         Mockito.when(fileService.exists(Mockito.any())).thenReturn(true);
         Mockito.when(fileService.readFileContents(Mockito.any(), Mockito.any())).thenReturn(CharBuffer.allocate(1));
 
-        var checker = getBagRules();
-        var result = checker.optionalFileIsUtf8Decodable(Path.of("somefile.txt")).validate(Path.of("bagdir"));
+        var result = new OptionalFileIsUtf8Decodable(Path.of("somefile.txt"), fileService).validate(Path.of("bagdir"));
 
         assertEquals(RuleResult.Status.SUCCESS, result.getStatus());
     }
@@ -1231,8 +1203,7 @@ class BagRulesImplTest {
         Mockito.when(fileService.exists(Mockito.any())).thenReturn(false);
         Mockito.when(fileService.readFileContents(Mockito.any(), Mockito.any())).thenReturn(CharBuffer.allocate(1));
 
-        var checker = getBagRules();
-        var result = checker.optionalFileIsUtf8Decodable(Path.of("somefile.txt")).validate(Path.of("bagdir"));
+        var result = new OptionalFileIsUtf8Decodable(Path.of("somefile.txt"), fileService).validate(Path.of("bagdir"));
 
         assertEquals(RuleResult.Status.SKIP_DEPENDENCIES, result.getStatus());
     }
@@ -1243,8 +1214,7 @@ class BagRulesImplTest {
         Mockito.when(fileService.readFileContents(Mockito.any(), Mockito.any()))
                 .thenThrow(new CharacterCodingException());
 
-        var checker = getBagRules();
-        var result = checker.optionalFileIsUtf8Decodable(Path.of("somefile.txt")).validate(Path.of("bagdir"));
+        var result = new OptionalFileIsUtf8Decodable(Path.of("somefile.txt"), fileService).validate(Path.of("bagdir"));
 
         assertEquals(RuleResult.Status.ERROR, result.getStatus());
     }
@@ -1270,8 +1240,7 @@ class BagRulesImplTest {
                         new OriginalFilepathsService.OriginalFilePathItem(Path.of("data/2.txt"), Path.of("data/b.txt"))
                 ));
 
-        var checker = getBagRules();
-        var result = checker.isOriginalFilepathsFileComplete().validate(Path.of("bagdir"));
+        var result = new IsOriginalFilepathsFileComplete(originalFilepathsService, fileService, filesXmlService).validate(Path.of("bagdir"));
 
         assertEquals(RuleResult.Status.SUCCESS, result.getStatus());
     }
@@ -1297,8 +1266,7 @@ class BagRulesImplTest {
                         new OriginalFilepathsService.OriginalFilePathItem(Path.of("data/2.txt"), Path.of("data/c.txt")) // this one is wrong
                 ));
 
-        var checker = getBagRules();
-        var result = checker.isOriginalFilepathsFileComplete().validate(Path.of("bagdir"));
+        var result = new IsOriginalFilepathsFileComplete(originalFilepathsService, fileService, filesXmlService).validate(Path.of("bagdir"));
 
         assertEquals(RuleResult.Status.ERROR, result.getStatus());
     }
@@ -1323,8 +1291,7 @@ class BagRulesImplTest {
                         new OriginalFilepathsService.OriginalFilePathItem(Path.of("data/2.txt"), Path.of("data/b.txt")) // this one is wrong
                 ));
 
-        var checker = getBagRules();
-        var result = checker.isOriginalFilepathsFileComplete().validate(Path.of("bagdir"));
+        var result = new IsOriginalFilepathsFileComplete(originalFilepathsService, fileService, filesXmlService).validate(Path.of("bagdir"));
 
         assertEquals(RuleResult.Status.ERROR, result.getStatus());
     }
@@ -1348,8 +1315,7 @@ class BagRulesImplTest {
                         new OriginalFilepathsService.OriginalFilePathItem(Path.of("data/2.txt"), Path.of("data/b.txt"))
                 ));
 
-        var checker = getBagRules();
-        var result = checker.isOriginalFilepathsFileComplete().validate(Path.of("bagdir"));
+        var result = new IsOriginalFilepathsFileComplete(originalFilepathsService, fileService, filesXmlService).validate(Path.of("bagdir"));
 
         assertEquals(RuleResult.Status.ERROR, result.getStatus());
     }
@@ -1357,8 +1323,7 @@ class BagRulesImplTest {
     @Test
     void isOriginalFilepathsFileCompleteSkipped() throws Exception {
         Mockito.when(originalFilepathsService.exists(Mockito.any())).thenReturn(false);
-        var checker = getBagRules();
-        var result = checker.isOriginalFilepathsFileComplete().validate(Path.of("bagdir"));
+        var result = new IsOriginalFilepathsFileComplete(originalFilepathsService, fileService, filesXmlService).validate(Path.of("bagdir"));
 
         assertEquals(RuleResult.Status.SKIP_DEPENDENCIES, result.getStatus());
     }

@@ -27,7 +27,7 @@ import java.util.stream.Collectors;
 @Slf4j
 @AllArgsConstructor
 public class ContainsNothingElseThan implements BagValidatorRule {
-    private final String dir;
+    private final Path dir;
     private final String[] paths;
     private final FileService fileService;
     @Override
