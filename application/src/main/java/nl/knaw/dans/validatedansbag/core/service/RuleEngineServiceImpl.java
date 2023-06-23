@@ -46,7 +46,6 @@ public class RuleEngineServiceImpl implements RuleEngineService {
 
     public RuleEngineServiceImpl(RuleEngine ruleEngine,
                                  XmlSchemaValidator xmlSchemaValidator,
-                                 FilesXmlRules filesXmlRules,
                                  FileService fileService,
                                  FilesXmlService filesXmlService,
                                  OriginalFilepathsService originalFilepathService,
@@ -129,7 +128,7 @@ public class RuleEngineServiceImpl implements RuleEngineService {
 
                 new NumberedRule("3.2.1", new XmlFileConformsToSchema(metadataFilesPath, xmlReader, "files.xml", xmlSchemaValidator), List.of("3.1.1")),
                 new NumberedRule("3.2.2", new FilesXmlFilePathAttributesContainLocalBagPathAndNonPayloadFilesAreNotDescribed(fileService, filesXmlService, originalFilepathService), List.of("2.2(b)")),
-                new NumberedRule("3.2.3", filesXmlRules.filesXmlNoDuplicateFilesAndEveryPayloadFileIsDescribed(), List.of("2.2(b)")),
+                new NumberedRule("3.2.3", new FilesXmlNoDuplicateFilesAndEveryPayloadFileIsDescribed(filesXmlService, fileService, originalFilepathService), List.of("2.2(b)")),
 
                 // original-filepaths.txt
                 new NumberedRule("3.3.1", new OptionalFileIsUtf8Decodable(Path.of("original-filepaths.txt"), fileService), List.of("1.1.1")),

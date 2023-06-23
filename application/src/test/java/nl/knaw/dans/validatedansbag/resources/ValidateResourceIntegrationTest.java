@@ -115,13 +115,10 @@ class ValidateResourceIntegrationTest {
                 List.of("u1:", "u2:")
         );
 
-        // set up the different rule implementations
-        var filesXmlRules = new FilesXmlRulesImpl(fileService, originalFilepathsService, filesXmlService);
-
         // set up the engine and the service that has a default set of rules
         var ruleEngine = new RuleEngineImpl();
         var ruleEngineService = new RuleEngineServiceImpl(ruleEngine, xmlSchemaValidator,
-                filesXmlRules, fileService, filesXmlService, originalFilepathsService, xmlReader, licenseValidator, identifierValidator, polygonListValidator, organizationIdentifierPrefixValidator, dataverseService);
+                 fileService, filesXmlService, originalFilepathsService, xmlReader, licenseValidator, identifierValidator, polygonListValidator, organizationIdentifierPrefixValidator, dataverseService);
 
         return new ValidateResource(ruleEngineService, fileService);
     }

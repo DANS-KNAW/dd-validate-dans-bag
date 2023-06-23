@@ -78,14 +78,10 @@ public class DdValidateDansBagApplication extends Application<DdValidateDansBagC
 
         var organizationIdentifierPrefixValidator = new OrganizationIdentifierPrefixValidatorImpl(configuration.getValidation().getOtherIdPrefixes());
 
-        // set up the different rule implementations
-        var filesXmlRules = new FilesXmlRulesImpl(fileService, originalFilepathsService, filesXmlService);
-
         // set up the engine and the service that has a default set of rules
         var ruleEngine = new RuleEngineImpl();
         var ruleEngineService = new RuleEngineServiceImpl(ruleEngine,
                 xmlSchemaValidator,
-                filesXmlRules,
                 fileService,
                 filesXmlService,
                 originalFilepathsService,
