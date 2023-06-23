@@ -48,14 +48,14 @@ public class RuleEngineServiceImpl implements RuleEngineService {
                                  XmlRules xmlRules,
                                  FilesXmlRules filesXmlRules,
                                  FileService fileService,
-                                 DatastationRules datastationRules,
                                  FilesXmlService filesXmlService,
                                  OriginalFilepathsService originalFilepathService,
                                  XmlReader xmlReader,
                                  LicenseValidator licenseValidator,
                                  IdentifierValidator identifierValidator,
                                  PolygonListValidator polygonListValidator,
-                                 OrganizationIdentifierPrefixValidator organizationIdentifierPrefixValidator) {
+                                 OrganizationIdentifierPrefixValidator organizationIdentifierPrefixValidator,
+                                 DataverseService dataverseService) {
         this.ruleEngine = ruleEngine;
         this.fileService = fileService;
         var bagItMetadataReader = new BagItMetadataReaderImpl();
@@ -148,10 +148,10 @@ public class RuleEngineServiceImpl implements RuleEngineService {
                 new NumberedRule("3.4.4-MIGRATION", xmlRules.xmlFileIfExistsConformsToSchema(Path.of("metadata/provenance.xml"), "provenance.xml"), DepositType.MIGRATION),
 
                 new NumberedRule("4.1", new OrganizationalIdentifierPrefixIsValid(bagItMetadataReader, organizationIdentifierPrefixValidator), DepositType.DEPOSIT, List.of("1.2.4(a)")),
-                new NumberedRule("4.2(a)", datastationRules.bagExistsInDatastation(), DepositType.DEPOSIT, List.of("4.1")),
-                new NumberedRule("4.2(b)", datastationRules.organizationalIdentifierExistsInDataset(), DepositType.DEPOSIT, List.of("1.2.3(a)")),
-                new NumberedRule("4.3", datastationRules.licenseExistsInDatastation(), DepositType.DEPOSIT, List.of("3.1.2")),
-                new NumberedRule("4.4", datastationRules.embargoPeriodWithinLimits(), DepositType.DEPOSIT),
+                new NumberedRule("4.2(a)", new BagExistsInDataStation(dataverseService, bagItMetadataReader), DepositType.DEPOSIT, List.of("4.1")),
+                new NumberedRule("4.2(b)", new OrganizationalIdentifierExistsInDataset(dataverseService, bagItMetadataReader), DepositType.DEPOSIT, List.of("1.2.3(a)")),
+                new NumberedRule("4.3", new LicenseExistsInDatastation(xmlReader, licenseValidator), DepositType.DEPOSIT, List.of("3.1.2")),
+                new NumberedRule("4.4", new EmbargoPeriodWithinLimits(dataverseService, xmlReader), DepositType.DEPOSIT),
 
 
                 new NumberedRule("5.2", new DdmDoiIdentifiersAreValid(xmlReader), List.of("3.1.1")),

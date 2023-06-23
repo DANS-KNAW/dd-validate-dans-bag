@@ -81,7 +81,6 @@ public class DdValidateDansBagApplication extends Application<DdValidateDansBagC
         // set up the different rule implementations
         var filesXmlRules = new FilesXmlRulesImpl(fileService, originalFilepathsService, filesXmlService);
         var xmlRules = new XmlRulesImpl(xmlReader, xmlSchemaValidator, fileService);
-        var datastationRules = new DatastationRulesImpl(bagItMetadataReader, dataverseService, xmlReader, licenseValidator);
 
         // set up the engine and the service that has a default set of rules
         var ruleEngine = new RuleEngineImpl();
@@ -89,14 +88,14 @@ public class DdValidateDansBagApplication extends Application<DdValidateDansBagC
                 xmlRules,
                 filesXmlRules,
                 fileService,
-                datastationRules,
                 filesXmlService,
                 originalFilepathsService,
                 xmlReader,
                 licenseValidator,
                 identifierValidator,
                 polygonListValidator,
-                organizationIdentifierPrefixValidator);
+                organizationIdentifierPrefixValidator,
+                dataverseService);
 
         environment.jersey().register(new IllegalArgumentExceptionMapper());
         environment.jersey().register(new ValidateResource(ruleEngineService, fileService));
