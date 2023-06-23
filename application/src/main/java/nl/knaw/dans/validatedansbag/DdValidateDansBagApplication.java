@@ -82,7 +82,6 @@ public class DdValidateDansBagApplication extends Application<DdValidateDansBagC
         var filesXmlRules = new FilesXmlRulesImpl(fileService, originalFilepathsService, filesXmlService);
         var xmlRules = new XmlRulesImpl(xmlReader, xmlSchemaValidator, fileService);
         var datastationRules = new DatastationRulesImpl(bagItMetadataReader, dataverseService, xmlReader, licenseValidator);
-        var vaasRules = new VaasRulesImpl(xmlReader);
 
         // set up the engine and the service that has a default set of rules
         var ruleEngine = new RuleEngineImpl();
@@ -91,7 +90,6 @@ public class DdValidateDansBagApplication extends Application<DdValidateDansBagC
                 filesXmlRules,
                 fileService,
                 datastationRules,
-                vaasRules,
                 filesXmlService,
                 originalFilepathsService,
                 xmlReader,

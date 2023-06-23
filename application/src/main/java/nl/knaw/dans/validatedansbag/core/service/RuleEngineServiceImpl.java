@@ -49,7 +49,6 @@ public class RuleEngineServiceImpl implements RuleEngineService {
                                  FilesXmlRules filesXmlRules,
                                  FileService fileService,
                                  DatastationRules datastationRules,
-                                 VaasRules vaasRules,
                                  FilesXmlService filesXmlService,
                                  OriginalFilepathsService originalFilepathService,
                                  XmlReader xmlReader,
@@ -155,7 +154,7 @@ public class RuleEngineServiceImpl implements RuleEngineService {
                 new NumberedRule("4.4", datastationRules.embargoPeriodWithinLimits(), DepositType.DEPOSIT),
 
 
-                new NumberedRule("5.2", vaasRules.ddmDoiIdentifiersAreValid(), List.of("3.1.1")),
+                new NumberedRule("5.2", new DdmDoiIdentifiersAreValid(xmlReader), List.of("3.1.1")),
 
         };
 

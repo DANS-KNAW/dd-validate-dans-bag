@@ -52,9 +52,7 @@ public class VaasRulesImplTest {
 
         Mockito.doReturn(document).when(reader).readXmlFile(Mockito.any());
 
-        var checker = new VaasRulesImpl(reader);
-
-        var result = checker.ddmDoiIdentifiersAreValid().validate(Path.of("bagdir"));
+        var result = new DdmDoiIdentifiersAreValid(reader).validate(Path.of("bagdir"));
         assertEquals(RuleResult.Status.SUCCESS, result.getStatus());
     }
 
@@ -78,9 +76,7 @@ public class VaasRulesImplTest {
 
         Mockito.doReturn(document).when(reader).readXmlFile(Mockito.any());
 
-        var checker = new VaasRulesImpl(reader);
-
-        var result = checker.ddmDoiIdentifiersAreValid().validate(Path.of("bagdir"));
+        var result = new DdmDoiIdentifiersAreValid(reader).validate(Path.of("bagdir"));
         assertEquals(RuleResult.Status.ERROR, result.getStatus());
     }
 }
