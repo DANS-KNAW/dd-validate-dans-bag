@@ -15,17 +15,43 @@
  */
 package nl.knaw.dans.validatedansbag.core.rules;
 
+import gov.loc.repository.bagit.hash.StandardSupportedAlgorithms;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import nl.knaw.dans.validatedansbag.core.BagNotFoundException;
 import nl.knaw.dans.validatedansbag.core.engine.RuleResult;
+import nl.knaw.dans.validatedansbag.core.service.BagItMetadataReader;
 
 import java.nio.file.Path;
 
 @Slf4j
 @AllArgsConstructor
 public class ContainsNotJustMD5Manifest implements BagValidatorRule {
+    private final BagItMetadataReader bagItMetadataReader;
+
     @Override
     public RuleResult validate(Path path) throws Exception {
-        return null;
+        var bag = bagItMetadataReader.getBag(path).orElseThrow(
+                () -> new BagNotFoundException(String.format("Bag on path %s could not be opened", path)));
+
+        var manifests = bagItMetadataReader.getBagManifests(bag);
+        var hasOtherManifests = false;
+
+        log.debug("Manifests to compare: {}", manifests);
+
+        for (var manifest : manifests) {
+            log.trace("Checking if manifest {} has MD5 algorithm (algorithm is {})", manifest, manifest.getAlgorithm());
+
+            if (!StandardSupportedAlgorithms.MD5.equals(manifest.getAlgorithm())) {
+                hasOtherManifests = true;
+                break;
+            }
+        }
+
+        if (!hasOtherManifests) {
+            return RuleResult.error("The bag contains no manifests or only a MD5 manifest");
+        }
+
+        return RuleResult.ok();
     }
 }

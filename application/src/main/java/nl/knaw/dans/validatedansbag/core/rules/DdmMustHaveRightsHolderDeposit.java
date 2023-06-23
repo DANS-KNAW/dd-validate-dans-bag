@@ -15,17 +15,30 @@
  */
 package nl.knaw.dans.validatedansbag.core.rules;
 
-import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import nl.knaw.dans.validatedansbag.core.engine.RuleResult;
+import nl.knaw.dans.validatedansbag.core.service.XmlReader;
 
 import java.nio.file.Path;
 
 @Slf4j
-@AllArgsConstructor
-public class DdmMustHaveRightsHolderDeposit implements BagValidatorRule {
+public class DdmMustHaveRightsHolderDeposit extends DdmRightsHolderRulesBase implements BagValidatorRule {
+
+    public DdmMustHaveRightsHolderDeposit(XmlReader xmlReader) {
+        super(xmlReader);
+    }
+
     @Override
     public RuleResult validate(Path path) throws Exception {
-        return null;
+        var document = xmlReader.readXmlFile(path.resolve("metadata/dataset.xml"));
+
+        // in case of deposit, it may also be in the dcterms:rightsHolder element
+        var rightsHolder = getRightsHolderInElement(document);
+
+        if (rightsHolder.isEmpty()) {
+            return RuleResult.error("No RightsHolder found in <dcterms:rightsHolder> element");
+        }
+
+        return RuleResult.ok();
     }
 }

@@ -116,8 +116,6 @@ class ValidateResourceIntegrationTest {
         );
 
         // set up the different rule implementations
-        var bagRules = new BagRulesImpl(fileService, bagItMetadataReader, xmlReader, originalFilepathsService, daiDigestCalculator, polygonListValidator, licenseValidator,
-                organizationIdentifierPrefixValidator, filesXmlService);
         var filesXmlRules = new FilesXmlRulesImpl(fileService, originalFilepathsService, filesXmlService);
         var xmlRules = new XmlRulesImpl(xmlReader, xmlSchemaValidator, fileService);
         var datastationRules = new DatastationRulesImpl(bagItMetadataReader, dataverseService, xmlReader, licenseValidator);
@@ -125,7 +123,7 @@ class ValidateResourceIntegrationTest {
 
         // set up the engine and the service that has a default set of rules
         var ruleEngine = new RuleEngineImpl();
-        var ruleEngineService = new RuleEngineServiceImpl(ruleEngine, bagRules, xmlRules, filesXmlRules, fileService, datastationRules, vaasRules, filesXmlService, originalFilepathsService, xmlReader, licenseValidator, identifierValidator);
+        var ruleEngineService = new RuleEngineServiceImpl(ruleEngine, xmlRules, filesXmlRules, fileService, datastationRules, vaasRules, filesXmlService, originalFilepathsService, xmlReader, licenseValidator, identifierValidator, polygonListValidator, organizationIdentifierPrefixValidator);
 
         return new ValidateResource(ruleEngineService, fileService);
     }

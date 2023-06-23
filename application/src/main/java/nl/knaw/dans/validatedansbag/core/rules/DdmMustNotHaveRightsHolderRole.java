@@ -15,17 +15,30 @@
  */
 package nl.knaw.dans.validatedansbag.core.rules;
 
-import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import nl.knaw.dans.validatedansbag.core.engine.RuleResult;
+import nl.knaw.dans.validatedansbag.core.service.XmlReader;
 
 import java.nio.file.Path;
 
-@AllArgsConstructor
 @Slf4j
-public class DdmMustNotHaveRightsHolderRole implements BagValidatorRule {
+public class DdmMustNotHaveRightsHolderRole extends DdmRightsHolderRulesBase implements BagValidatorRule {
+
+    public DdmMustNotHaveRightsHolderRole(XmlReader xmlReader) {
+        super(xmlReader);
+    }
+
     @Override
     public RuleResult validate(Path path) throws Exception {
-        return null;
+        var document = xmlReader.readXmlFile(path.resolve("metadata/dataset.xml"));
+
+        var inRole = getRightsHolderInAuthor(document);
+        log.debug("Results for rights holder search, inRole {}", inRole);
+
+        if (inRole.isPresent()) {
+            return RuleResult.error("RightsHolder found in <dcx-dai:role>");
+        }
+
+        return RuleResult.ok();
     }
 }

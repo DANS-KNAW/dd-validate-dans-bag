@@ -18,14 +18,47 @@ package nl.knaw.dans.validatedansbag.core.rules;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import nl.knaw.dans.validatedansbag.core.engine.RuleResult;
+import nl.knaw.dans.validatedansbag.core.service.XmlReader;
 
 import java.nio.file.Path;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Slf4j
 @AllArgsConstructor
 public class PolygonsInSameMultiSurfaceHaveSameSrsName implements BagValidatorRule {
+    private final XmlReader xmlReader;
+
     @Override
     public RuleResult validate(Path path) throws Exception {
-        return null;
+        var document = xmlReader.readXmlFile(path.resolve("metadata/dataset.xml"));
+        var expr = "//gml:MultiSurface";
+        var nodes = xmlReader.xpathToStream(document, expr);
+        var match = nodes.filter(node -> {
+                    try {
+                        var srsNames = xmlReader.xpathToStreamOfStrings(node, ".//gml:Polygon/@srsName")
+                                .filter(Objects::nonNull)
+                                .collect(Collectors.toSet());
+
+                        log.trace("Found unique srsName values: {}", srsNames);
+                        if (srsNames.size() > 1) {
+                            return true;
+                        }
+                    } catch (Throwable e) {
+                        log.error("Error checking srsNames attribute", e);
+                        return true;
+                    }
+
+                    return false;
+                })
+                .collect(Collectors.toList());
+
+        log.debug("Invalid MultiSurface elements that contain polygons with different srsNames: {}", match);
+
+        if (!match.isEmpty()) {
+            return RuleResult.error("dataset.xml: Found MultiSurface element containing polygons with different srsNames");
+        }
+
+        return RuleResult.ok();
     }
 }

@@ -18,14 +18,29 @@ package nl.knaw.dans.validatedansbag.core.rules;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import nl.knaw.dans.validatedansbag.core.engine.RuleResult;
+import nl.knaw.dans.validatedansbag.core.service.BagItMetadataReader;
+import nl.knaw.dans.validatedansbag.core.validator.OrganizationIdentifierPrefixValidator;
 
 import java.nio.file.Path;
 
 @AllArgsConstructor
 @Slf4j
 public class OrganizationalIdentifierPrefixIsValid implements BagValidatorRule {
+    private final BagItMetadataReader bagItMetadataReader;
+    private final OrganizationIdentifierPrefixValidator organizationIdentifierPrefixValidator;
+
     @Override
     public RuleResult validate(Path path) throws Exception {
-        return null;
+        var hasOrganizationalIdentifier = bagItMetadataReader.getSingleField(path, "Has-Organizational-Identifier");
+
+        log.debug("Checking prefix on organizational identifier '{}'", hasOrganizationalIdentifier);
+
+        var isValid = organizationIdentifierPrefixValidator.hasValidPrefix(hasOrganizationalIdentifier);
+
+        if (!isValid) {
+            return RuleResult.error(String.format("No valid prefix given for value of 'Has-Organizational-Identifier': %s", hasOrganizationalIdentifier));
+        }
+
+        return RuleResult.ok();
     }
 }

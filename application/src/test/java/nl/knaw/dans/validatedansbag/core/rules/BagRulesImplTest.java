@@ -66,16 +66,6 @@ class BagRulesImplTest {
         Mockito.reset(originalFilepathsService);
     }
 
-    BagRules getBagRules() {
-        return new BagRulesImpl(fileService, bagItMetadataReader, xmlReader, originalFilepathsService, identifierValidator, polygonListValidator, licenseValidator,
-                organizationIdentifierPrefixValidator, filesXmlService);
-    }
-
-    BagRules getBagRulesWithXmlReader(XmlReader xmlReader) {
-        return new BagRulesImpl(fileService, bagItMetadataReader, xmlReader, originalFilepathsService, identifierValidator, polygonListValidator, licenseValidator,
-                organizationIdentifierPrefixValidator, filesXmlService);
-    }
-
     @Test
     void testBagIsValid() throws Exception {
         var result = new BagIsValid(bagItMetadataReader).validate(Path.of("testpath"));
@@ -518,9 +508,7 @@ class BagRulesImplTest {
 
         Mockito.doReturn(document).when(reader).readXmlFile(Mockito.any());
 
-        var checker = getBagRulesWithXmlReader(reader);
-
-        var result = checker.ddmGmlPolygonPosListIsWellFormed().validate(Path.of("bagdir"));
+        var result = new DdmGmlPolygonPosListIsWellFormed(reader, polygonListValidator).validate(Path.of("bagdir"));
         assertEquals(RuleResult.Status.SUCCESS, result.getStatus());
     }
 
@@ -568,9 +556,7 @@ class BagRulesImplTest {
 
         Mockito.doReturn(document).when(reader).readXmlFile(Mockito.any());
 
-        var checker = getBagRulesWithXmlReader(reader);
-
-        var result = checker.ddmGmlPolygonPosListIsWellFormed().validate(Path.of("bagdir"));
+        var result = new DdmGmlPolygonPosListIsWellFormed(reader, polygonListValidator).validate(Path.of("bagdir"));
         assertEquals(RuleResult.Status.ERROR, result.getStatus());
     }
 
@@ -608,9 +594,7 @@ class BagRulesImplTest {
 
         Mockito.doReturn(document).when(reader).readXmlFile(Mockito.any());
 
-        var checker = getBagRulesWithXmlReader(reader);
-
-        var result = checker.polygonsInSameMultiSurfaceHaveSameSrsName().validate(Path.of("bagdir"));
+        var result = new PolygonsInSameMultiSurfaceHaveSameSrsName(reader).validate(Path.of("bagdir"));
         assertEquals(RuleResult.Status.SUCCESS, result.getStatus());
     }
 
@@ -648,9 +632,7 @@ class BagRulesImplTest {
 
         Mockito.doReturn(document).when(reader).readXmlFile(Mockito.any());
 
-        var checker = getBagRulesWithXmlReader(reader);
-
-        var result = checker.polygonsInSameMultiSurfaceHaveSameSrsName().validate(Path.of("bagdir"));
+        var result = new PolygonsInSameMultiSurfaceHaveSameSrsName(reader).validate(Path.of("bagdir"));
         assertEquals(RuleResult.Status.ERROR, result.getStatus());
     }
 
@@ -690,9 +672,7 @@ class BagRulesImplTest {
 
         Mockito.doReturn(document).when(reader).readXmlFile(Mockito.any());
 
-        var checker = getBagRulesWithXmlReader(reader);
-
-        var result = checker.polygonsInSameMultiSurfaceHaveSameSrsName().validate(Path.of("bagdir"));
+        var result = new PolygonsInSameMultiSurfaceHaveSameSrsName(reader).validate(Path.of("bagdir"));
         assertEquals(RuleResult.Status.SUCCESS, result.getStatus());
     }
 
@@ -748,9 +728,7 @@ class BagRulesImplTest {
 
         Mockito.doReturn(document).when(reader).readXmlFile(Mockito.any());
 
-        var checker = getBagRulesWithXmlReader(reader);
-
-        var result = checker.pointsHaveAtLeastTwoValues().validate(Path.of("bagdir"));
+        var result = new PointsHaveAtLeastTwoValues(reader).validate(Path.of("bagdir"));
         assertThat(result.getException()).isNull();
         assertThat(result.getStatus()).isEqualTo(RuleResult.Status.ERROR);
         assertThat(result.getErrorMessages())
@@ -788,9 +766,7 @@ class BagRulesImplTest {
 
         Mockito.doReturn(document).when(reader).readXmlFile(Mockito.any());
 
-        var checker = getBagRulesWithXmlReader(reader);
-
-        var result = checker.pointsHaveAtLeastTwoValues().validate(Path.of("bagdir"));
+        var result = new PointsHaveAtLeastTwoValues(reader).validate(Path.of("bagdir"));
         assertThat(result.getException()).isNull();
         assertThat(result.getStatus()).isEqualTo(Status.SUCCESS);
     }
@@ -999,9 +975,7 @@ class BagRulesImplTest {
 
         Mockito.doReturn(document).when(reader).readXmlFile(Mockito.any());
 
-        var checker = getBagRulesWithXmlReader(reader);
-
-        var result = checker.ddmMustHaveRightsHolderDeposit().validate(Path.of("bagdir"));
+        var result = new DdmMustHaveRightsHolderDeposit(reader).validate(Path.of("bagdir"));
         assertEquals(RuleResult.Status.SUCCESS, result.getStatus());
     }
 
@@ -1030,9 +1004,7 @@ class BagRulesImplTest {
 
         Mockito.doReturn(document).when(reader).readXmlFile(Mockito.any());
 
-        var checker = getBagRulesWithXmlReader(reader);
-
-        var result = checker.ddmMustHaveRightsHolderDeposit().validate(Path.of("bagdir"));
+        var result = new DdmMustHaveRightsHolderDeposit(reader).validate(Path.of("bagdir"));
         assertEquals(RuleResult.Status.ERROR, result.getStatus());
     }
 
@@ -1061,9 +1033,7 @@ class BagRulesImplTest {
 
         Mockito.doReturn(document).when(reader).readXmlFile(Mockito.any());
 
-        var checker = getBagRulesWithXmlReader(reader);
-
-        var result = checker.ddmMustHaveRightsHolderMigration().validate(Path.of("bagdir"));
+        var result = new DdmMustHaveRightsHolderMigration(reader).validate(Path.of("bagdir"));
         assertEquals(RuleResult.Status.SUCCESS, result.getStatus());
     }
 
@@ -1092,15 +1062,12 @@ class BagRulesImplTest {
 
         Mockito.doReturn(document).when(reader).readXmlFile(Mockito.any());
 
-        var checker = getBagRulesWithXmlReader(reader);
-
-        var result = checker.ddmMustHaveRightsHolderMigration().validate(Path.of("bagdir"));
+        var result = new DdmMustHaveRightsHolderMigration(reader).validate(Path.of("bagdir"));
         assertEquals(RuleResult.Status.ERROR, result.getStatus());
     }
 
     @Test
     void containsNotJustMD5Manifest() throws Exception {
-        var checker = getBagRules();
         var manifests = Set.of(
                 new Manifest(StandardSupportedAlgorithms.SHA1),
                 new Manifest(StandardSupportedAlgorithms.MD5)
@@ -1109,14 +1076,13 @@ class BagRulesImplTest {
         Mockito.when(bagItMetadataReader.getBag(Mockito.any())).thenReturn(Optional.of(new Bag()));
         Mockito.when(bagItMetadataReader.getBagManifests(Mockito.any())).thenReturn(manifests);
 
-        var result = checker.containsNotJustMD5Manifest().validate(Path.of("bagdir"));
+        var result = new ContainsNotJustMD5Manifest(bagItMetadataReader).validate(Path.of("bagdir"));
 
         assertEquals(RuleResult.Status.SUCCESS, result.getStatus());
     }
 
     @Test
     void containsOnlyMD5Manifest() throws Exception {
-        var checker = getBagRules();
         var manifests = Set.of(
                 new Manifest(StandardSupportedAlgorithms.MD5)
         );
@@ -1124,62 +1090,52 @@ class BagRulesImplTest {
         Mockito.when(bagItMetadataReader.getBag(Mockito.any())).thenReturn(Optional.of(new Bag()));
         Mockito.when(bagItMetadataReader.getBagManifests(Mockito.any())).thenReturn(manifests);
 
-        var result = checker.containsNotJustMD5Manifest().validate(Path.of("bagdir"));
+        var result = new ContainsNotJustMD5Manifest(bagItMetadataReader).validate(Path.of("bagdir"));
 
         assertEquals(RuleResult.Status.ERROR, result.getStatus());
     }
 
     @Test
     void containsNoManifestsAtAll() throws Exception {
-        var checker = getBagRules();
         var manifests = new HashSet<Manifest>();
 
         Mockito.when(bagItMetadataReader.getBag(Mockito.any())).thenReturn(Optional.of(new Bag()));
         Mockito.when(bagItMetadataReader.getBagManifests(Mockito.any())).thenReturn(manifests);
 
-        var result = checker.containsNotJustMD5Manifest().validate(Path.of("bagdir"));
+        var result = new ContainsNotJustMD5Manifest(bagItMetadataReader).validate(Path.of("bagdir"));
 
         assertEquals(RuleResult.Status.ERROR, result.getStatus());
     }
 
     @Test
     void organizationalIdentifierPrefixIsValid() throws Exception {
-
-        var checker = getBagRules();
-
         Mockito.when(bagItMetadataReader.getSingleField(Mockito.any(), Mockito.any()))
                 .thenReturn("USER1-organizational-identifier")
                 .thenReturn("user001");
 
-        var result = checker.organizationalIdentifierPrefixIsValid().validate(Path.of("bagdir"));
+        var result = new OrganizationalIdentifierPrefixIsValid(bagItMetadataReader, organizationIdentifierPrefixValidator).validate(Path.of("bagdir"));
 
         assertEquals(RuleResult.Status.SUCCESS, result.getStatus());
     }
 
     @Test
     void organizationalIdentifierPrefixIsInvalid() throws Exception {
-
-        var checker = getBagRules();
-
         Mockito.when(bagItMetadataReader.getSingleField(Mockito.any(), Mockito.any()))
                 .thenReturn("WRONG-organizational-identifier")
                 .thenReturn("user001");
 
-        var result = checker.organizationalIdentifierPrefixIsValid().validate(Path.of("bagdir"));
+        var result = new OrganizationalIdentifierPrefixIsValid(bagItMetadataReader, organizationIdentifierPrefixValidator).validate(Path.of("bagdir"));
 
         assertEquals(RuleResult.Status.ERROR, result.getStatus());
     }
 
     @Test
     void organizationalIdentifierPrefixIsMissing() throws Exception {
-
-        var checker = getBagRules();
-
         Mockito.when(bagItMetadataReader.getSingleField(Mockito.any(), Mockito.any()))
                 .thenReturn("WRONG-organizational-identifier")
                 .thenReturn(null);
 
-        var result = checker.organizationalIdentifierPrefixIsValid().validate(Path.of("bagdir"));
+        var result = new OrganizationalIdentifierPrefixIsValid(bagItMetadataReader, organizationIdentifierPrefixValidator).validate(Path.of("bagdir"));
 
         assertEquals(RuleResult.Status.ERROR, result.getStatus());
     }

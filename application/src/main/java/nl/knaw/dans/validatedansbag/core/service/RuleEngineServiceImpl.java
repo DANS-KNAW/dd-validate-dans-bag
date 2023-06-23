@@ -25,6 +25,8 @@ import nl.knaw.dans.validatedansbag.core.engine.RuleValidationResult;
 import nl.knaw.dans.validatedansbag.core.rules.*;
 import nl.knaw.dans.validatedansbag.core.validator.IdentifierValidator;
 import nl.knaw.dans.validatedansbag.core.validator.LicenseValidator;
+import nl.knaw.dans.validatedansbag.core.validator.OrganizationIdentifierPrefixValidator;
+import nl.knaw.dans.validatedansbag.core.validator.PolygonListValidator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -43,7 +45,6 @@ public class RuleEngineServiceImpl implements RuleEngineService {
     private final Path metadataFilesPath = Path.of("metadata/files.xml");
 
     public RuleEngineServiceImpl(RuleEngine ruleEngine,
-                                 BagRules bagRules,
                                  XmlRules xmlRules,
                                  FilesXmlRules filesXmlRules,
                                  FileService fileService,
@@ -53,7 +54,9 @@ public class RuleEngineServiceImpl implements RuleEngineService {
                                  OriginalFilepathsService originalFilepathService,
                                  XmlReader xmlReader,
                                  LicenseValidator licenseValidator,
-                                 IdentifierValidator identifierValidator) {
+                                 IdentifierValidator identifierValidator,
+                                 PolygonListValidator polygonListValidator,
+                                 OrganizationIdentifierPrefixValidator organizationIdentifierPrefixValidator) {
         this.ruleEngine = ruleEngine;
         this.fileService = fileService;
         var bagItMetadataReader = new BagItMetadataReaderImpl();
@@ -72,7 +75,7 @@ public class RuleEngineServiceImpl implements RuleEngineService {
                 new NumberedRule("1.2.4(b)", new BagInfoContainsAtMostOneOf("Has-Organizational-Identifier-Version", bagItMetadataReader), List.of("1.2.4(a)")),
 
                 // manifests
-                new NumberedRule("1.3.1", bagRules.containsNotJustMD5Manifest(), List.of("1.1.1")),
+                new NumberedRule("1.3.1", new ContainsNotJustMD5Manifest(bagItMetadataReader), List.of("1.1.1")),
 
                 // Structural
                 new NumberedRule("2.1", new ContainsDir(metadataPath, fileService), List.of("1.1.1")),
@@ -113,17 +116,17 @@ public class RuleEngineServiceImpl implements RuleEngineService {
                 new NumberedRule("3.1.2", new DdmMustContainExactlyOneDctermsLicenseWithXsiTypeUri(xmlReader, licenseValidator), List.of("3.1.1")),
 
                 new NumberedRule("3.1.4(a)", new DdmDaisAreValid(xmlReader, identifierValidator), List.of("3.1.1")),
-                new NumberedRule("3.1.4(b)", bagRules.ddmIsnisAreValid(), List.of("3.1.1")),
-                new NumberedRule("3.1.4(c)", bagRules.ddmOrcidsAreValid(), List.of("3.1.1")),
-                new NumberedRule("3.1.5", bagRules.ddmGmlPolygonPosListIsWellFormed(), List.of("3.1.1")),
-                new NumberedRule("3.1.6", bagRules.polygonsInSameMultiSurfaceHaveSameSrsName(), List.of("3.1.1")),
-                new NumberedRule("3.1.7", bagRules.pointsHaveAtLeastTwoValues(), List.of("3.1.1")),
-                new NumberedRule("3.1.8", bagRules.archisIdentifiersHaveAtMost10Characters(), List.of("3.1.1")),
-                new NumberedRule("3.1.9", bagRules.allUrlsAreValid(), List.of("3.1.1")),
+                new NumberedRule("3.1.4(b)", new DdmIsnisAreValid(xmlReader, identifierValidator), List.of("3.1.1")),
+                new NumberedRule("3.1.4(c)", new DdmOrcidsAreValid(xmlReader, identifierValidator), List.of("3.1.1")),
+                new NumberedRule("3.1.5", new DdmGmlPolygonPosListIsWellFormed(xmlReader, polygonListValidator), List.of("3.1.1")),
+                new NumberedRule("3.1.6", new PolygonsInSameMultiSurfaceHaveSameSrsName(xmlReader), List.of("3.1.1")),
+                new NumberedRule("3.1.7", new PointsHaveAtLeastTwoValues(xmlReader), List.of("3.1.1")),
+                new NumberedRule("3.1.8", new ArchisIdentifiersHaveAtMost10Characters(xmlReader), List.of("3.1.1")),
+                new NumberedRule("3.1.9", new AllUrlsAreValid(xmlReader), List.of("3.1.1")),
 
-                new NumberedRule("3.1.10", bagRules.ddmMustHaveRightsHolderDeposit(), DepositType.DEPOSIT, List.of("3.1.1")),
-                new NumberedRule("3.1.10-MIGRATION", bagRules.ddmMustHaveRightsHolderDeposit(), DepositType.MIGRATION, List.of("3.1.1")),
-                new NumberedRule("3.1.11", bagRules.ddmMustNotHaveRightsHolderRole(), DepositType.DEPOSIT, List.of("3.1.1")),
+                new NumberedRule("3.1.10", new DdmMustHaveRightsHolderDeposit(xmlReader), DepositType.DEPOSIT, List.of("3.1.1")),
+                new NumberedRule("3.1.10-MIGRATION", new DdmMustHaveRightsHolderDeposit(xmlReader), DepositType.MIGRATION, List.of("3.1.1")),
+                new NumberedRule("3.1.11", new DdmMustNotHaveRightsHolderRole(xmlReader), DepositType.DEPOSIT, List.of("3.1.1")),
 
                 new NumberedRule("3.2.1", xmlRules.xmlFileConformsToSchema(metadataFilesPath, "files.xml"), List.of("3.1.1")),
                 new NumberedRule("3.2.2", filesXmlRules.filesXmlFilePathAttributesContainLocalBagPathAndNonPayloadFilesAreNotDescribed(), List.of("2.2(b)")),
@@ -145,7 +148,7 @@ public class RuleEngineServiceImpl implements RuleEngineService {
                 // provenance.xml
                 new NumberedRule("3.4.4-MIGRATION", xmlRules.xmlFileIfExistsConformsToSchema(Path.of("metadata/provenance.xml"), "provenance.xml"), DepositType.MIGRATION),
 
-                new NumberedRule("4.1", bagRules.organizationalIdentifierPrefixIsValid(), DepositType.DEPOSIT, List.of("1.2.4(a)")),
+                new NumberedRule("4.1", new OrganizationalIdentifierPrefixIsValid(bagItMetadataReader, organizationIdentifierPrefixValidator), DepositType.DEPOSIT, List.of("1.2.4(a)")),
                 new NumberedRule("4.2(a)", datastationRules.bagExistsInDatastation(), DepositType.DEPOSIT, List.of("4.1")),
                 new NumberedRule("4.2(b)", datastationRules.organizationalIdentifierExistsInDataset(), DepositType.DEPOSIT, List.of("1.2.3(a)")),
                 new NumberedRule("4.3", datastationRules.licenseExistsInDatastation(), DepositType.DEPOSIT, List.of("3.1.2")),
