@@ -73,9 +73,7 @@ class XmlRulesImplTest {
         Mockito.doReturn(new ArrayList<SAXParseException>())
             .when(xmlSchemaValidator).validateDocument(Mockito.any(), Mockito.anyString());
 
-        var checker = new XmlRulesImpl(reader, xmlSchemaValidator, fileService);
-
-        var result = checker.xmlFileConformsToSchema(Path.of("metadata/dataset.xml"), "ddm").validate(Path.of("bagdir"));
+        var result = new XmlFileConformsToSchema(Path.of("metadata/dataset.xml"), reader,"ddm", xmlSchemaValidator).validate(Path.of("bagdir"));
         assertEquals(RuleResult.Status.SUCCESS, result.getStatus());
     }
 
@@ -97,9 +95,7 @@ class XmlRulesImplTest {
         Mockito.doReturn(List.of(new SAXParseException("msg", null)))
             .when(xmlSchemaValidator).validateDocument(Mockito.any(), Mockito.anyString());
 
-        var checker = new XmlRulesImpl(reader, xmlSchemaValidator, fileService);
-
-        var result = checker.xmlFileConformsToSchema(Path.of("metadata/dataset.xml"), "ddm").validate(Path.of("bagdir"));
+        var result = new XmlFileConformsToSchema(Path.of("metadata/dataset.xml"), reader,"ddm", xmlSchemaValidator).validate(Path.of("bagdir"));
         assertEquals(RuleResult.Status.ERROR, result.getStatus());
     }
 
@@ -110,9 +106,7 @@ class XmlRulesImplTest {
         Mockito.doThrow(new SAXParseException("Invalid XML", null))
             .when(reader).readXmlFile(Mockito.any());
 
-        var checker = new XmlRulesImpl(reader, xmlSchemaValidator, fileService);
-
-        var result = checker.xmlFileConformsToSchema(Path.of("metadata/dataset.xml"), "ddm").validate(Path.of("bagdir"));
+        var result = new XmlFileConformsToSchema(Path.of("metadata/dataset.xml"), reader,"ddm", xmlSchemaValidator).validate(Path.of("bagdir"));
         assertEquals(RuleResult.Status.ERROR, result.getStatus());
     }
 
@@ -133,9 +127,7 @@ class XmlRulesImplTest {
         Mockito.doReturn(List.of(new SAXParseException("msg", null)))
             .when(xmlSchemaValidator).validateDocument(Mockito.any(), Mockito.anyString());
 
-        var checker = new XmlRulesImpl(reader, xmlSchemaValidator, fileService);
-
-        var result = checker.xmlFileIfExistsConformsToSchema(Path.of("metadata/dataset.xml"), "ddm").validate(Path.of("bagdir"));
+        var result = new XmlFileIfExistsConformsToSchema(Path.of("metadata/dataset.xml"), reader, "ddm", xmlSchemaValidator, fileService).validate(Path.of("bagdir"));
         assertEquals(RuleResult.Status.ERROR, result.getStatus());
     }
 
@@ -144,10 +136,7 @@ class XmlRulesImplTest {
         var reader = Mockito.spy(new XmlReaderImpl());
 
         Mockito.doReturn(false).when(fileService).exists(Path.of("bagdir/metadata/dataset.xml"));
-
-        var checker = new XmlRulesImpl(reader, xmlSchemaValidator, fileService);
-
-        var result = checker.xmlFileIfExistsConformsToSchema(Path.of("metadata/dataset.xml"), "ddm").validate(Path.of("bagdir"));
+        var result = new XmlFileIfExistsConformsToSchema(Path.of("metadata/dataset.xml"), reader, "ddm", xmlSchemaValidator, fileService).validate(Path.of("bagdir"));
         assertEquals(RuleResult.Status.SKIP_DEPENDENCIES, result.getStatus());
 
     }

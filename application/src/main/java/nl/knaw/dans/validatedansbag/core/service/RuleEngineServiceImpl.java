@@ -45,7 +45,7 @@ public class RuleEngineServiceImpl implements RuleEngineService {
     private final Path metadataFilesPath = Path.of("metadata/files.xml");
 
     public RuleEngineServiceImpl(RuleEngine ruleEngine,
-                                 XmlRules xmlRules,
+                                 XmlSchemaValidator xmlSchemaValidator,
                                  FilesXmlRules filesXmlRules,
                                  FileService fileService,
                                  FilesXmlService filesXmlService,
@@ -111,7 +111,7 @@ public class RuleEngineServiceImpl implements RuleEngineService {
                 }, fileService), List.of("1.1.1")),
 
                 // metadata/dataset.xml
-                new NumberedRule("3.1.1", xmlRules.xmlFileConformsToSchema(datasetPath, "dataset.xml"), List.of("1.1.1", "2.2(a)")),
+                new NumberedRule("3.1.1", new XmlFileConformsToSchema(datasetPath, xmlReader, "dataset.xml", xmlSchemaValidator), List.of("1.1.1", "2.2(a)")),
                 new NumberedRule("3.1.2", new DdmMustContainExactlyOneDctermsLicenseWithXsiTypeUri(xmlReader, licenseValidator), List.of("3.1.1")),
 
                 new NumberedRule("3.1.4(a)", new DdmDaisAreValid(xmlReader, identifierValidator), List.of("3.1.1")),
@@ -127,8 +127,8 @@ public class RuleEngineServiceImpl implements RuleEngineService {
                 new NumberedRule("3.1.10-MIGRATION", new DdmMustHaveRightsHolderDeposit(xmlReader), DepositType.MIGRATION, List.of("3.1.1")),
                 new NumberedRule("3.1.11", new DdmMustNotHaveRightsHolderRole(xmlReader), DepositType.DEPOSIT, List.of("3.1.1")),
 
-                new NumberedRule("3.2.1", xmlRules.xmlFileConformsToSchema(metadataFilesPath, "files.xml"), List.of("3.1.1")),
-                new NumberedRule("3.2.2", filesXmlRules.filesXmlFilePathAttributesContainLocalBagPathAndNonPayloadFilesAreNotDescribed(), List.of("2.2(b)")),
+                new NumberedRule("3.2.1", new XmlFileConformsToSchema(metadataFilesPath, xmlReader, "files.xml", xmlSchemaValidator), List.of("3.1.1")),
+                new NumberedRule("3.2.2", new FilesXmlFilePathAttributesContainLocalBagPathAndNonPayloadFilesAreNotDescribed(fileService, filesXmlService, originalFilepathService), List.of("2.2(b)")),
                 new NumberedRule("3.2.3", filesXmlRules.filesXmlNoDuplicateFilesAndEveryPayloadFileIsDescribed(), List.of("2.2(b)")),
 
                 // original-filepaths.txt
@@ -136,16 +136,16 @@ public class RuleEngineServiceImpl implements RuleEngineService {
                 new NumberedRule("3.3.2", new IsOriginalFilepathsFileComplete(originalFilepathService, fileService, filesXmlService), List.of("3.3.1")),
 
                 // agreements.xml
-                new NumberedRule("3.4.1-MIGRATION", xmlRules.xmlFileIfExistsConformsToSchema(Path.of("metadata/depositor-info/agreements.xml"), "agreements.xml"), DepositType.MIGRATION),
+                new NumberedRule("3.4.1-MIGRATION", new XmlFileIfExistsConformsToSchema(Path.of("metadata/depositor-info/agreements.xml"), xmlReader, "agreements.xml", xmlSchemaValidator, fileService), DepositType.MIGRATION),
 
                 // amd.xml
-                new NumberedRule("3.4.2-MIGRATION", xmlRules.xmlFileIfExistsConformsToSchema(Path.of("metadata/amd.xml"), "amd.xml"), DepositType.MIGRATION),
+                new NumberedRule("3.4.2-MIGRATION", new XmlFileIfExistsConformsToSchema(Path.of("metadata/amd.xml"), xmlReader, "amd.xml", xmlSchemaValidator, fileService), DepositType.MIGRATION),
 
                 // emd.xml
-                new NumberedRule("3.4.3-MIGRATION", xmlRules.xmlFileIfExistsConformsToSchema(Path.of("metadata/emd.xml"), "emd.xml"), DepositType.MIGRATION),
+                new NumberedRule("3.4.3-MIGRATION", new XmlFileIfExistsConformsToSchema(Path.of("metadata/emd.xml"), xmlReader, "emd.xml", xmlSchemaValidator, fileService), DepositType.MIGRATION),
 
                 // provenance.xml
-                new NumberedRule("3.4.4-MIGRATION", xmlRules.xmlFileIfExistsConformsToSchema(Path.of("metadata/provenance.xml"), "provenance.xml"), DepositType.MIGRATION),
+                new NumberedRule("3.4.4-MIGRATION", new XmlFileIfExistsConformsToSchema(Path.of("metadata/provenance.xml"), xmlReader, "provenance.xml", xmlSchemaValidator, fileService), DepositType.MIGRATION),
 
                 new NumberedRule("4.1", new OrganizationalIdentifierPrefixIsValid(bagItMetadataReader, organizationIdentifierPrefixValidator), DepositType.DEPOSIT, List.of("1.2.4(a)")),
                 new NumberedRule("4.2(a)", new BagExistsInDataStation(dataverseService, bagItMetadataReader), DepositType.DEPOSIT, List.of("4.1")),

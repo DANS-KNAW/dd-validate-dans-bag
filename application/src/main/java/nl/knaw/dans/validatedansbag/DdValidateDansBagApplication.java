@@ -80,12 +80,11 @@ public class DdValidateDansBagApplication extends Application<DdValidateDansBagC
 
         // set up the different rule implementations
         var filesXmlRules = new FilesXmlRulesImpl(fileService, originalFilepathsService, filesXmlService);
-        var xmlRules = new XmlRulesImpl(xmlReader, xmlSchemaValidator, fileService);
 
         // set up the engine and the service that has a default set of rules
         var ruleEngine = new RuleEngineImpl();
         var ruleEngineService = new RuleEngineServiceImpl(ruleEngine,
-                xmlRules,
+                xmlSchemaValidator,
                 filesXmlRules,
                 fileService,
                 filesXmlService,

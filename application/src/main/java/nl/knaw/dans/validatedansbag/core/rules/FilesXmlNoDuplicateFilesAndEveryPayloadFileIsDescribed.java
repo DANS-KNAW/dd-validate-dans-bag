@@ -15,10 +15,18 @@
  */
 package nl.knaw.dans.validatedansbag.core.rules;
 
+import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import nl.knaw.dans.validatedansbag.core.engine.RuleResult;
+
 import java.nio.file.Path;
 
-public interface XmlRules {
-    BagValidatorRule xmlFileConformsToSchema(Path file, String schema);
+@Slf4j
+@AllArgsConstructor
+public class FilesXmlNoDuplicateFilesAndEveryPayloadFileIsDescribed implements BagValidatorRule {
 
-    BagValidatorRule xmlFileIfExistsConformsToSchema(Path file, String schema);
+    @Override
+    public RuleResult validate(Path path) throws Exception {
+        return null;
+    }
 }

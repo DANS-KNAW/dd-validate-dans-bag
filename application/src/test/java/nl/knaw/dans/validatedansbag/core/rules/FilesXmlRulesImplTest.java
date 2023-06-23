@@ -53,16 +53,6 @@ class FilesXmlRulesImplTest {
     }
 
     @Test
-    void filesXmlFilePathAttributesContainLocalBagPathAndNonPayloadFilesAreNotDescribed() throws Exception {
-        var checker = Mockito.spy(new FilesXmlRulesImpl(fileService, originalFilepathsService, filesXmlService));
-        Mockito.doReturn(Set.of()).when(checker).filesXmlDescribesOnlyPayloadFiles(Mockito.any());
-
-        var result = checker.filesXmlFilePathAttributesContainLocalBagPathAndNonPayloadFilesAreNotDescribed().validate(Path.of("bagdir"));
-
-        assertEquals(RuleResult.Status.SUCCESS, result.getStatus());
-    }
-
-    @Test
     void filesXmlFilePathAttributesContainLocalBagPathAndNonPayloadFilesAreNotDescribedThrowsDoubleError() throws Exception {
         var checker = Mockito.spy(new FilesXmlRulesImpl(fileService, originalFilepathsService, filesXmlService));
         Mockito.doReturn(Set.of(Path.of("some/path.txt"))).when(checker).filesXmlDescribesOnlyPayloadFiles(Mockito.any());
