@@ -15,5 +15,39 @@
  */
 package nl.knaw.dans.validatedansbag.core.rules;
 
-public class OrganizationalIdentifierPrefixIsValidTest {
+import nl.knaw.dans.validatedansbag.core.engine.RuleResult;
+import nl.knaw.dans.validatedansbag.core.validator.OrganizationIdentifierPrefixValidator;
+import nl.knaw.dans.validatedansbag.core.validator.OrganizationIdentifierPrefixValidatorImpl;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
+
+import java.nio.file.Path;
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+public class OrganizationalIdentifierPrefixIsValidTest extends RuleTestFixture {
+    private final OrganizationIdentifierPrefixValidator organizationIdentifierPrefixValidator = new OrganizationIdentifierPrefixValidatorImpl(
+            List.of("USER1-", "U2:")
+    );
+
+    @Test
+    void should_return_SUCCESS_if_prefix_is_on_configured_list() throws Exception {
+        Mockito.when(bagItMetadataReader.getSingleField(Mockito.any(), Mockito.any()))
+                .thenReturn("USER1-organizational-identifier");
+
+        var result = new OrganizationalIdentifierPrefixIsValid(bagItMetadataReader, organizationIdentifierPrefixValidator).validate(Path.of("bagdir"));
+
+        assertEquals(RuleResult.Status.SUCCESS, result.getStatus());
+    }
+
+    @Test
+    void should_return_ERROR_if_prefix_is_not_on_configured_list() throws Exception {
+        Mockito.when(bagItMetadataReader.getSingleField(Mockito.any(), Mockito.any()))
+                .thenReturn("WRONG-organizational-identifier");
+
+        var result = new OrganizationalIdentifierPrefixIsValid(bagItMetadataReader, organizationIdentifierPrefixValidator).validate(Path.of("bagdir"));
+
+        assertEquals(RuleResult.Status.ERROR, result.getStatus());
+    }
 }

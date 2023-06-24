@@ -15,5 +15,45 @@
  */
 package nl.knaw.dans.validatedansbag.core.rules;
 
-public class OptionalFileIsUtf8DecodableTest {
+import nl.knaw.dans.validatedansbag.core.engine.RuleResult;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
+
+import java.nio.CharBuffer;
+import java.nio.charset.CharacterCodingException;
+import java.nio.file.Path;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+public class OptionalFileIsUtf8DecodableTest extends RuleTestFixture {
+
+    @Test
+    void should_return_SUCCESS_when_file_is_successfully_read() throws Exception {
+        Mockito.when(fileService.exists(Mockito.any())).thenReturn(true);
+        Mockito.when(fileService.readFileContents(Mockito.any(), Mockito.any())).thenReturn(CharBuffer.allocate(1));
+
+        var result = new OptionalFileIsUtf8Decodable(Path.of("somefile.txt"), fileService).validate(Path.of("bagdir"));
+
+        assertEquals(RuleResult.Status.SUCCESS, result.getStatus());
+    }
+
+    @Test
+    void should_return_SUCCESS_when_file_does_not_exist() throws Exception {
+        Mockito.when(fileService.exists(Mockito.any())).thenReturn(false);
+
+        var result = new OptionalFileIsUtf8Decodable(Path.of("somefile.txt"), fileService).validate(Path.of("bagdir"));
+
+        assertEquals(RuleResult.Status.SKIP_DEPENDENCIES, result.getStatus());
+    }
+
+    @Test
+    void should_return_ERROR_when_reading_file_throws_charencoding_exception() throws Exception {
+        Mockito.when(fileService.exists(Mockito.any())).thenReturn(true);
+        Mockito.when(fileService.readFileContents(Mockito.any(), Mockito.any()))
+                .thenThrow(new CharacterCodingException());
+
+        var result = new OptionalFileIsUtf8Decodable(Path.of("somefile.txt"), fileService).validate(Path.of("bagdir"));
+
+        assertEquals(RuleResult.Status.ERROR, result.getStatus());
+    }
 }

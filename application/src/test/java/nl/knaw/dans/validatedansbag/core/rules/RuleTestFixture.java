@@ -42,10 +42,6 @@ public class RuleTestFixture {
     protected final LicenseValidator licenseValidator = new LicenseValidatorImpl(dataverseService);
     protected final FilesXmlService filesXmlService = Mockito.mock(FilesXmlService.class);
 
-    protected final OrganizationIdentifierPrefixValidator organizationIdentifierPrefixValidator = new OrganizationIdentifierPrefixValidatorImpl(
-            List.of("USER1-", "U2:")
-    );
-
     @AfterEach
     void afterEach() {
         Mockito.reset(fileService);

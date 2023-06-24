@@ -15,5 +15,48 @@
  */
 package nl.knaw.dans.validatedansbag.core.rules;
 
-public class ContainsNotJustMD5ManifestTest {
+import gov.loc.repository.bagit.domain.Bag;
+import gov.loc.repository.bagit.domain.Manifest;
+import gov.loc.repository.bagit.hash.StandardSupportedAlgorithms;
+import nl.knaw.dans.validatedansbag.core.engine.RuleResult;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
+
+import java.nio.file.Path;
+import java.util.Optional;
+import java.util.Set;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+public class ContainsNotJustMD5ManifestTest extends RuleTestFixture {
+
+    @Test
+    void should_return_SUCCESS_if_one_more_manifest_next_to_md5_present() throws Exception {
+        var manifests = Set.of(
+                new Manifest(StandardSupportedAlgorithms.SHA1),
+                new Manifest(StandardSupportedAlgorithms.MD5)
+        );
+
+        Mockito.when(bagItMetadataReader.getBag(Mockito.any())).thenReturn(Optional.of(new Bag()));
+        Mockito.when(bagItMetadataReader.getBagManifests(Mockito.any())).thenReturn(manifests);
+
+        var result = new ContainsNotJustMD5Manifest(bagItMetadataReader).validate(Path.of("bagdir"));
+
+        assertEquals(RuleResult.Status.SUCCESS, result.getStatus());
+    }
+
+    @Test
+    void should_return_ERROR_if_only_md5_manifest_present() throws Exception {
+        var manifests = Set.of(
+                new Manifest(StandardSupportedAlgorithms.MD5)
+        );
+
+        Mockito.when(bagItMetadataReader.getBag(Mockito.any())).thenReturn(Optional.of(new Bag()));
+        Mockito.when(bagItMetadataReader.getBagManifests(Mockito.any())).thenReturn(manifests);
+
+        var result = new ContainsNotJustMD5Manifest(bagItMetadataReader).validate(Path.of("bagdir"));
+
+        assertEquals(RuleResult.Status.ERROR, result.getStatus());
+    }
+
 }
