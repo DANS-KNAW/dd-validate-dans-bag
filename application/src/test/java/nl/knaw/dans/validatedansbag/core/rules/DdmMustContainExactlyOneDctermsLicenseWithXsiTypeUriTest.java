@@ -15,5 +15,158 @@
  */
 package nl.knaw.dans.validatedansbag.core.rules;
 
-public class DdmMustContainExactlyOneDctermsLicenseWithXsiTypeUriTest {
+import nl.knaw.dans.validatedansbag.core.engine.RuleResult;
+import nl.knaw.dans.validatedansbag.core.service.XmlReaderImpl;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
+
+import java.nio.file.Path;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+public class DdmMustContainExactlyOneDctermsLicenseWithXsiTypeUriTest extends RuleTestFixture {
+
+    @Test
+    void should_return_ERROR_for_zero_licenses() throws Exception {
+        final String xml = "<ddm:DDM\n"
+                + "        xmlns:dc=\"http://purl.org/dc/elements/1.1/\"\n"
+                + "        xmlns:dcx-dai=\"http://easy.dans.knaw.nl/schemas/dcx/dai/\"\n"
+                + "        xmlns:ddm=\"http://schemas.dans.knaw.nl/dataset/ddm-v2/\"\n"
+                + "        xmlns:dcterms=\"http://purl.org/dc/terms/\"\n"
+                + "        xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n"
+                + "        xmlns:id-type=\"http://easy.dans.knaw.nl/schemas/vocab/identifier-type/\">\n"
+                + "    <ddm:dcmiMetadata>\n"
+                + "    </ddm:dcmiMetadata>\n"
+                + "</ddm:DDM>";
+
+        var document = parseXmlString(xml);
+        var reader = Mockito.spy(new XmlReaderImpl());
+
+        Mockito.doReturn(document).when(reader).readXmlFile(Mockito.any());
+
+        var result = new DdmMustContainExactlyOneDctermsLicenseWithXsiTypeUri(reader, licenseValidator).validate(Path.of("bagdir"));
+        assertEquals(RuleResult.Status.ERROR, result.getStatus());
+    }
+
+    @Test
+    void should_return_ERROR_for_multiple_licenses() throws Exception {
+        final String xml = "<ddm:DDM\n"
+                + "        xmlns:dc=\"http://purl.org/dc/elements/1.1/\"\n"
+                + "        xmlns:dcx-dai=\"http://easy.dans.knaw.nl/schemas/dcx/dai/\"\n"
+                + "        xmlns:ddm=\"http://schemas.dans.knaw.nl/dataset/ddm-v2/\"\n"
+                + "        xmlns:dcterms=\"http://purl.org/dc/terms/\"\n"
+                + "        xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n"
+                + "        xmlns:id-type=\"http://easy.dans.knaw.nl/schemas/vocab/identifier-type/\">\n"
+                + "    <ddm:dcmiMetadata>\n"
+                + "        <dcterms:license xsi:type=\"dcterms:URI\">http://opensource.org/licenses/MIT</dcterms:license>\n"
+                + "        <dcterms:license xsi:type=\"dcterms:URI\">http://opensource.org/licenses/MIT</dcterms:license>\n"
+                + "    </ddm:dcmiMetadata>\n"
+                + "</ddm:DDM>";
+
+        var document = parseXmlString(xml);
+        var reader = Mockito.spy(new XmlReaderImpl());
+
+        Mockito.doReturn(document).when(reader).readXmlFile(Mockito.any());
+
+        var result = new DdmMustContainExactlyOneDctermsLicenseWithXsiTypeUri(reader, licenseValidator).validate(Path.of("bagdir"));
+        assertEquals(RuleResult.Status.ERROR, result.getStatus());
+    }
+
+    @Test
+    void should_return_SUCCESS_for_valid_URI() throws Exception {
+        final String xml = "<ddm:DDM\n"
+                + "        xmlns:dc=\"http://purl.org/dc/elements/1.1/\"\n"
+                + "        xmlns:dcx-dai=\"http://easy.dans.knaw.nl/schemas/dcx/dai/\"\n"
+                + "        xmlns:ddm=\"http://schemas.dans.knaw.nl/dataset/ddm-v2/\"\n"
+                + "        xmlns:dcterms=\"http://purl.org/dc/terms/\"\n"
+                + "        xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n"
+                + "        xmlns:id-type=\"http://easy.dans.knaw.nl/schemas/vocab/identifier-type/\">\n"
+                + "    <ddm:dcmiMetadata>\n"
+                + "        <dcterms:license xsi:type=\"dcterms:URI\">http://random.org/licenses/MIT</dcterms:license>\n"
+                + "    </ddm:dcmiMetadata>\n"
+                + "</ddm:DDM>";
+
+        var document = parseXmlString(xml);
+        var reader = Mockito.spy(new XmlReaderImpl());
+
+        Mockito.doReturn(document).when(reader).readXmlFile(Mockito.any());
+
+        var result = new DdmMustContainExactlyOneDctermsLicenseWithXsiTypeUri(reader, licenseValidator).validate(Path.of("bagdir"));
+        assertEquals(RuleResult.Status.SUCCESS, result.getStatus());
+    }
+
+
+    @Test
+    void should_return_SUCCESS_for_valid_URI_and_extra_license_without_attribute() throws Exception {
+        final String xml = "<ddm:DDM\n"
+                + "        xmlns:dc=\"http://purl.org/dc/elements/1.1/\"\n"
+                + "        xmlns:dcx-dai=\"http://easy.dans.knaw.nl/schemas/dcx/dai/\"\n"
+                + "        xmlns:ddm=\"http://schemas.dans.knaw.nl/dataset/ddm-v2/\"\n"
+                + "        xmlns:dcterms=\"http://purl.org/dc/terms/\"\n"
+                + "        xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n"
+                + "        xmlns:id-type=\"http://easy.dans.knaw.nl/schemas/vocab/identifier-type/\">\n"
+                + "    <ddm:dcmiMetadata>\n"
+                + "        <dcterms:license xsi:type=\"dcterms:URI\">http://random.org/licenses/MIT</dcterms:license>\n"
+                + "        <dcterms:license>NOT MARKED WITH XSI TYPE, SO SHOULD BE IGNORED</dcterms:license>\n"
+                + "    </ddm:dcmiMetadata>\n"
+                + "</ddm:DDM>";
+
+        var document = parseXmlString(xml);
+        var reader = Mockito.spy(new XmlReaderImpl());
+
+        Mockito.doReturn(document).when(reader).readXmlFile(Mockito.any());
+
+        var result = new DdmMustContainExactlyOneDctermsLicenseWithXsiTypeUri(reader, licenseValidator).validate(Path.of("bagdir"));
+        assertEquals(RuleResult.Status.SUCCESS, result.getStatus());
+    }
+
+
+
+    @Test
+    void should_return_ERROR_for_nondcterms_uri() throws Exception {
+        final String xml = "<ddm:DDM\n"
+                + "        xmlns:dc=\"http://purl.org/dc/elements/1.1/\"\n"
+                + "        xmlns:dcx-dai=\"http://easy.dans.knaw.nl/schemas/dcx/dai/\"\n"
+                + "        xmlns:ddm=\"http://schemas.dans.knaw.nl/dataset/ddm-v2/\"\n"
+                + "        xmlns:dcterms=\"http://purl.org/dc/terms/\"\n"
+                + "        xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n"
+                + "        xmlns:id-type=\"http://easy.dans.knaw.nl/schemas/vocab/identifier-type/\">\n"
+                + "    <ddm:dcmiMetadata>\n"
+                + "        <dcterms:license xsi:type=\"dcterms:SOMETHING_ELSE\">http://random.org/licenses/MIT</dcterms:license>\n"
+                + "    </ddm:dcmiMetadata>\n"
+                + "</ddm:DDM>";
+
+        var document = parseXmlString(xml);
+        var reader = Mockito.spy(new XmlReaderImpl());
+
+        Mockito.doReturn(document).when(reader).readXmlFile(Mockito.any());
+
+        var result = new DdmMustContainExactlyOneDctermsLicenseWithXsiTypeUri(reader, licenseValidator).validate(Path.of("bagdir"));
+        assertEquals(RuleResult.Status.ERROR, result.getStatus());
+    }
+
+    @Test
+    void should_return_ERROR_for_invalid_uri() throws Exception {
+        final String xml = "<ddm:DDM\n"
+                + "        xmlns:dc=\"http://purl.org/dc/elements/1.1/\"\n"
+                + "        xmlns:dcx-dai=\"http://easy.dans.knaw.nl/schemas/dcx/dai/\"\n"
+                + "        xmlns:ddm=\"http://schemas.dans.knaw.nl/dataset/ddm-v2/\"\n"
+                + "        xmlns:dcterms=\"http://purl.org/dc/terms/\"\n"
+                + "        xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n"
+                + "        xmlns:id-type=\"http://easy.dans.knaw.nl/schemas/vocab/identifier-type/\">\n"
+                + "    <ddm:dcmiMetadata>\n"
+                + "        <dcterms:license xsi:type=\"dcterms:URI\">invalid uri</dcterms:license>\n"
+                + "    </ddm:dcmiMetadata>\n"
+                + "</ddm:DDM>";
+
+        var document = parseXmlString(xml);
+        var reader = Mockito.spy(new XmlReaderImpl());
+
+        Mockito.doReturn(document).when(reader).readXmlFile(Mockito.any());
+
+        var result = new DdmMustContainExactlyOneDctermsLicenseWithXsiTypeUri(reader, licenseValidator).validate(Path.of("bagdir"));
+
+        assertEquals(RuleResult.Status.ERROR, result.getStatus());
+    }
+
 }

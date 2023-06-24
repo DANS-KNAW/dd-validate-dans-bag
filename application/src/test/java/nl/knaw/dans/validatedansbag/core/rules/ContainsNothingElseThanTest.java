@@ -15,5 +15,61 @@
  */
 package nl.knaw.dans.validatedansbag.core.rules;
 
-public class ContainsNothingElseThanTest {
+import nl.knaw.dans.validatedansbag.core.engine.RuleResult;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
+
+import java.nio.file.Path;
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+public class ContainsNothingElseThanTest extends RuleTestFixture {
+    @Test
+    void should_return_SUCCESS_when_subset_of_allowed_files_found() throws Exception {
+        var basePath = Path.of("bagdir/metadata");
+
+        Mockito.when(fileService.getAllFilesAndDirectories(Mockito.eq(basePath)))
+                .thenReturn(List.of(basePath.resolve("1.txt"), basePath.resolve("2.txt")));
+
+        var result = new ContainsNothingElseThan(Path.of("metadata"), new String[]{
+                "1.txt",
+                "2.txt",
+                "3.txt"
+        }, fileService).validate(Path.of("bagdir"));
+        assertEquals(RuleResult.Status.SUCCESS, result.getStatus());
+    }
+
+    @Test
+    void should_return_SUCCESS_when_exact_set_of_allowed_files_found() throws Exception {
+        var basePath = Path.of("bagdir/metadata");
+
+        Mockito.when(fileService.getAllFilesAndDirectories(Mockito.eq(basePath)))
+                .thenReturn(List.of(basePath.resolve("1.txt"),
+                        basePath.resolve("2.txt"), basePath.resolve("3.txt")));
+
+        var result = new ContainsNothingElseThan(Path.of("metadata"), new String[]{
+                "1.txt",
+                "2.txt",
+                "3.txt"
+        }, fileService).validate(Path.of("bagdir"));
+        assertEquals(RuleResult.Status.SUCCESS, result.getStatus());
+    }
+
+    @Test
+    void should_return_ERROR_when_other_than_allowed_files_found() throws Exception {
+        var basePath = Path.of("bagdir/metadata");
+
+        Mockito.when(fileService.getAllFilesAndDirectories(Mockito.eq(basePath)))
+                .thenReturn(List.of(basePath.resolve("1.txt"), basePath.resolve("2.txt"),
+                        basePath.resolve("oh no.txt")));
+
+        var result = new ContainsNothingElseThan(Path.of("metadata"), new String[]{
+                "1.txt",
+                "2.txt",
+                "3.txt"
+        }, fileService).validate(Path.of("bagdir"));
+        assertEquals(RuleResult.Status.ERROR, result.getStatus());
+    }
+
 }

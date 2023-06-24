@@ -34,15 +34,15 @@ public class DdmDaisAreValid implements BagValidatorRule {
     public RuleResult validate(Path path) throws Exception {
         var document = xmlReader.readXmlFile(path.resolve("metadata/dataset.xml"));
         var expr = "//dcx-dai:DAI";
-        var match = xmlReader.xpathToStreamOfStrings(document, expr)
-                .peek(id -> log.trace("Validating if {} is a valid DAI", id))
-                .filter((id) -> !identifierValidator.validateDai(id))
+        var invalidDais = xmlReader.xpathToStreamOfStrings(document, expr)
+                .peek(dai -> log.debug("Validating if {} is a valid DAI", dai))
+                .filter((dai) -> !identifierValidator.validateDai(dai))
                 .collect(Collectors.toList());
 
-        log.debug("Identifiers (DAI) that do not match the pattern: {}", match);
+        log.debug("Identifiers (DAI) that do not match the pattern: {}", invalidDais);
 
-        if (!match.isEmpty()) {
-            var message = String.join(", ", match);
+        if (!invalidDais.isEmpty()) {
+            var message = String.join(", ", invalidDais);
             return RuleResult.error("dataset.xml: Invalid DAIs: " + message);
         }
 

@@ -15,5 +15,131 @@
  */
 package nl.knaw.dans.validatedansbag.core.rules;
 
-public class PolygonsInSameMultiSurfaceHaveSameSrsNameTest {
+import nl.knaw.dans.validatedansbag.core.engine.RuleResult;
+import nl.knaw.dans.validatedansbag.core.service.XmlReaderImpl;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
+
+import java.nio.file.Path;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+public class PolygonsInSameMultiSurfaceHaveSameSrsNameTest extends RuleTestFixture {
+
+    @Test
+    void should_return_SUCCESS_when_srs_names_the_same() throws Exception {
+        var xml = "<ddm:DDM\n"
+                + "        xmlns:dc=\"http://purl.org/dc/elements/1.1/\"\n"
+                + "        xmlns:dcx-dai=\"http://easy.dans.knaw.nl/schemas/dcx/dai/\"\n"
+                + "        xmlns:ddm=\"http://schemas.dans.knaw.nl/dataset/ddm-v2/\"\n"
+                + "        xmlns:dcterms=\"http://purl.org/dc/terms/\"\n"
+                + "        xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n"
+                + "        xmlns:dcx-gml=\"http://easy.dans.knaw.nl/schemas/dcx/gml/\"\n"
+                + "        xmlns:id-type=\"http://easy.dans.knaw.nl/schemas/vocab/identifier-type/\">\n"
+                + "    <ddm:dcmiMetadata>\n"
+                + "          <dcx-gml:spatial>\n"
+                + "            <MultiSurface xmlns=\"http://www.opengis.net/gml\">\n"
+                + "                <name>A random surface with multiple polygons</name>\n"
+                + "                <surfaceMember>\n"
+                + "                    <Polygon srsName=\"http://google.com\">\n"
+                + "                        <description>A triangle between BP, De Horeca Academie en the railway station</description>\n"
+                + "                    </Polygon>\n"
+                + "\t\t        </surfaceMember>\n"
+                + "                <surfaceMember>\n"
+                + "                    <Polygon srsName=\"http://google.com\">\n"
+                + "                        <description>A triangle between BP, De Horeca Academie en the railway station</description>\n"
+                + "                    </Polygon>\n"
+                + "\t\t        </surfaceMember>\n"
+                + "            </MultiSurface>\n"
+                + "\t</dcx-gml:spatial>"
+                + "    </ddm:dcmiMetadata>\n"
+                + "</ddm:DDM>";
+
+        var document = parseXmlString(xml);
+        var reader = Mockito.spy(new XmlReaderImpl());
+
+        Mockito.doReturn(document).when(reader).readXmlFile(Mockito.any());
+
+        var result = new PolygonsInSameMultiSurfaceHaveSameSrsName(reader).validate(Path.of("bagdir"));
+        assertEquals(RuleResult.Status.SUCCESS, result.getStatus());
+    }
+
+    @Test
+    void should_return_ERROR_when_srs_names_different() throws Exception {
+        var xml = "<ddm:DDM\n"
+                + "        xmlns:dc=\"http://purl.org/dc/elements/1.1/\"\n"
+                + "        xmlns:dcx-dai=\"http://easy.dans.knaw.nl/schemas/dcx/dai/\"\n"
+                + "        xmlns:ddm=\"http://schemas.dans.knaw.nl/dataset/ddm-v2/\"\n"
+                + "        xmlns:dcterms=\"http://purl.org/dc/terms/\"\n"
+                + "        xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n"
+                + "        xmlns:dcx-gml=\"http://easy.dans.knaw.nl/schemas/dcx/gml/\"\n"
+                + "        xmlns:id-type=\"http://easy.dans.knaw.nl/schemas/vocab/identifier-type/\">\n"
+                + "    <ddm:dcmiMetadata>\n"
+                + "          <dcx-gml:spatial>\n"
+                + "            <MultiSurface xmlns=\"http://www.opengis.net/gml\">\n"
+                + "                <name>A random surface with multiple polygons</name>\n"
+                + "                <surfaceMember>\n"
+                + "                    <Polygon srsName=\"http://yahoo.com\">\n"
+                + "                        <description>A triangle between BP, De Horeca Academie en the railway station</description>\n"
+                + "                    </Polygon>\n"
+                + "\t\t        </surfaceMember>\n"
+                + "                <surfaceMember>\n"
+                + "                    <Polygon srsName=\"http://google.com\">\n"
+                + "                        <description>A triangle between BP, De Horeca Academie en the railway station</description>\n"
+                + "                    </Polygon>\n"
+                + "\t\t        </surfaceMember>\n"
+                + "            </MultiSurface>\n"
+                + "\t</dcx-gml:spatial>"
+                + "    </ddm:dcmiMetadata>\n"
+                + "</ddm:DDM>";
+
+        var document = parseXmlString(xml);
+        var reader = Mockito.spy(new XmlReaderImpl());
+
+        Mockito.doReturn(document).when(reader).readXmlFile(Mockito.any());
+
+        var result = new PolygonsInSameMultiSurfaceHaveSameSrsName(reader).validate(Path.of("bagdir"));
+        assertEquals(RuleResult.Status.ERROR, result.getStatus());
+    }
+
+    @Test
+    void should_return_SUCCESS_when_srs_names_different_but_in_different_multisurfaces() throws Exception {
+        var xml = "<ddm:DDM\n"
+                + "        xmlns:dc=\"http://purl.org/dc/elements/1.1/\"\n"
+                + "        xmlns:dcx-dai=\"http://easy.dans.knaw.nl/schemas/dcx/dai/\"\n"
+                + "        xmlns:ddm=\"http://schemas.dans.knaw.nl/dataset/ddm-v2/\"\n"
+                + "        xmlns:dcterms=\"http://purl.org/dc/terms/\"\n"
+                + "        xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n"
+                + "        xmlns:dcx-gml=\"http://easy.dans.knaw.nl/schemas/dcx/gml/\"\n"
+                + "        xmlns:id-type=\"http://easy.dans.knaw.nl/schemas/vocab/identifier-type/\">\n"
+                + "    <ddm:dcmiMetadata>\n"
+                + "          <dcx-gml:spatial>\n"
+                + "            <MultiSurface xmlns=\"http://www.opengis.net/gml\">\n"
+                + "                <name>A random surface with multiple polygons</name>\n"
+                + "                <surfaceMember>\n"
+                + "                    <Polygon srsName=\"http://yahoo.com\">\n"
+                + "                        <description>A triangle between BP, De Horeca Academie en the railway station</description>\n"
+                + "                    </Polygon>\n"
+                + "\t\t        </surfaceMember>\n"
+                + "            </MultiSurface>"
+                + "            <MultiSurface xmlns=\"http://www.opengis.net/gml\">\n"
+                + "                <surfaceMember>\n"
+                + "                    <Polygon srsName=\"http://google.com\">\n"
+                + "                        <description>A triangle between BP, De Horeca Academie en the railway station</description>\n"
+                + "                    </Polygon>\n"
+                + "\t\t        </surfaceMember>\n"
+                + "            </MultiSurface>\n"
+                + "\t</dcx-gml:spatial>"
+                + "    </ddm:dcmiMetadata>\n"
+                + "</ddm:DDM>";
+
+        var document = parseXmlString(xml);
+        var reader = Mockito.spy(new XmlReaderImpl());
+
+        Mockito.doReturn(document).when(reader).readXmlFile(Mockito.any());
+
+        var result = new PolygonsInSameMultiSurfaceHaveSameSrsName(reader).validate(Path.of("bagdir"));
+        assertEquals(RuleResult.Status.SUCCESS, result.getStatus());
+    }
+
 }
