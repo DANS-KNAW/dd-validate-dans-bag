@@ -27,7 +27,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class ArchisIdentifiersHaveAtMost10CharactersTest extends RuleTestFixture {
     @Test
-    void allOk() throws Exception {
+    void should_return_SUCCESS_if_all_ok() throws Exception {
         var xml = "<ddm:DDM xmlns:ddm=\"http://schemas.dans.knaw.nl/dataset/ddm-v2/\"\n"
                 + "         xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n"
                 + "         xmlns:dc=\"http://purl.org/dc/elements/1.1/\"\n"
@@ -51,7 +51,7 @@ public class ArchisIdentifiersHaveAtMost10CharactersTest extends RuleTestFixture
     }
 
     @Test
-    void tooLong() throws Exception {
+    void should_return_ERROR_if_some_too_long() throws Exception {
         var xml = "<ddm:DDM xmlns:ddm=\"http://schemas.dans.knaw.nl/dataset/ddm-v2/\"\n"
                 + "         xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n"
                 + "         xmlns:dc=\"http://purl.org/dc/elements/1.1/\"\n"

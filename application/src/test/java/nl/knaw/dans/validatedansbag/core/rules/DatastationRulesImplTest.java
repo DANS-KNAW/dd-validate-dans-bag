@@ -63,30 +63,7 @@ class DatastationRulesImplTest {
     }
 
 
-    @Test
-    void bagExistsInDatastation_should_return_SUCCESS_if_bag_exists() throws Exception {
-        Mockito.doReturn("urn:uuid:is-version-of-id")
-            .when(bagItMetadataReader).getSingleField(Mockito.any(), Mockito.anyString());
 
-        var doi = "doi:10.5072/FK2/QZZSST";
-        mockSearchBySwordToken(getSearchResult(doi));
-        mockGetDataset(getLatestVersion(doi, null));
-
-        var result = new BagExistsInDataStation(dataverseService, bagItMetadataReader).validate(Path.of("bagdir"));
-        assertEquals(RuleResult.Status.SUCCESS, result.getStatus());
-    }
-
-    @Test
-    void bagExistsInDatastation_should_return_ERROR_when_search_yields_zero_results() throws Exception {
-        Mockito.doReturn("urn:uuid:is-version-of-id")
-            .when(bagItMetadataReader).getSingleField(Mockito.any(), Mockito.anyString());
-
-        String emptySearchResult = getEmptySearchResult();
-        mockSearchBySwordToken(emptySearchResult);
-
-        var result = new BagExistsInDataStation(dataverseService, bagItMetadataReader).validate(Path.of("bagdir"));
-        assertEquals(RuleResult.Status.ERROR, result.getStatus());
-    }
 
     @Test
     void organizationalIdentifierExistsInDataset_should_return_SUCCESS_if_otherId_matches_hasOrganizationalIdentifier() throws Exception {

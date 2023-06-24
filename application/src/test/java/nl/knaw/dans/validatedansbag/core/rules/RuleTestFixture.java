@@ -15,8 +15,12 @@
  */
 package nl.knaw.dans.validatedansbag.core.rules;
 
+import nl.knaw.dans.lib.dataverse.DataverseException;
+import nl.knaw.dans.lib.dataverse.model.dataset.DatasetLatestVersion;
+import nl.knaw.dans.lib.dataverse.model.search.SearchResult;
 import nl.knaw.dans.validatedansbag.core.service.*;
 import nl.knaw.dans.validatedansbag.core.validator.*;
+import nl.knaw.dans.validatedansbag.resources.util.MockedDataverseResponse;
 import org.junit.jupiter.api.AfterEach;
 import org.mockito.Mockito;
 import org.w3c.dom.Document;
@@ -54,4 +58,101 @@ public class RuleTestFixture {
     protected Document parseXmlString(String str) throws ParserConfigurationException, IOException, SAXException {
         return new XmlReaderImpl().readXmlString(str);
     }
+
+    protected void mockGetDataset(String json) throws IOException, DataverseException {
+        var response = new MockedDataverseResponse<>(json, DatasetLatestVersion.class);
+        Mockito.doReturn(response).when(dataverseService).getDataset(Mockito.anyString());
+    }
+
+    protected void mockSearchBySwordToken(String json) throws IOException, DataverseException {
+        var response = new MockedDataverseResponse<>(json, SearchResult.class);
+        Mockito.doReturn(response).when(dataverseService).searchBySwordToken(Mockito.any());
+    }
+
+    protected String getSearchResult(String globalId) {
+        return String.format("{\n"
+                + "  \"status\": \"OK\",\n"
+                + "  \"data\": {\n"
+                + "    \"q\": \"NBN:urn:nbn:nl:ui:13-025de6e2-bdcf-4622-b134-282b4c590f42\",\n"
+                + "    \"total_count\": 1,\n"
+                + "    \"start\": 0,\n"
+                + "    \"spelling_alternatives\": {},\n"
+                + "    \"items\": [\n"
+                + "      {\n"
+                + "        \"name\": \"Manual Test\",\n"
+                + "        \"type\": \"dataset\",\n"
+                + "        \"url\": \"https://doi.org/10.5072/FK2/QZZSST\",\n"
+                + "        \"global_id\": \"%s\"\n"
+                + "      }\n"
+                + "    ],\n"
+                + "    \"count_in_response\": 1\n"
+                + "  }\n"
+                + "}", globalId);
+    }
+
+    protected String getEmptySearchResult() {
+        return "{\n"
+                + "  \"status\": \"OK\",\n"
+                + "  \"data\": {\n"
+                + "    \"q\": \"NBN:urn:nbn:nl:ui:13-025de6e2-bdcf-4622-b134-282b4c590f42\",\n"
+                + "    \"total_count\": 1,\n"
+                + "    \"start\": 0,\n"
+                + "    \"spelling_alternatives\": {},\n"
+                + "    \"items\": [\n"
+                + "    ],\n"
+                + "    \"count_in_response\": 0\n"
+                + "  }\n"
+                + "}";
+    }
+
+    protected String getLatestVersion(String persistentId, String dansOtherId) {
+        if (persistentId == null) {
+            persistentId = "persistent_id";
+        }
+
+        if (dansOtherId == null) {
+            dansOtherId = "null";
+        }
+        else {
+            dansOtherId = "\"" + dansOtherId + "\"";
+        }
+
+        return String.format("{\n"
+                + "  \"status\": \"OK\",\n"
+                + "  \"data\": {\n"
+                + "    \"id\": 2,\n"
+                + "    \"identifier\": \"FK2/QZZSST\",\n"
+                + "    \"persistentUrl\": \"https://doi.org/10.5072/FK2/QZZSST\",\n"
+                + "    \"latestVersion\": {\n"
+                + "      \"id\": 2,\n"
+                + "      \"datasetId\": 2,\n"
+                + "      \"datasetPersistentId\": \"%s\",\n"
+                + "      \"storageIdentifier\": \"file://10.5072/FK2/QZZSST\",\n"
+                + "      \"fileAccessRequest\": false,\n"
+                + "      \"metadataBlocks\": {\n"
+                + "        \"dansDataVaultMetadata\": {\n"
+                + "          \"displayName\": \"Data Vault Metadata\",\n"
+                + "          \"name\": \"dansDataVaultMetadata\",\n"
+                + "          \"fields\": [\n"
+                + "            {\n"
+                + "              \"typeName\": \"dansSwordToken\",\n"
+                + "              \"multiple\": false,\n"
+                + "              \"typeClass\": \"primitive\",\n"
+                + "              \"value\": \"urn:uuid:2cd3745a-8b42-44a7-b1ca-5c93aa6f4e32\"\n"
+                + "            },\n"
+                + "            {\n"
+                + "              \"typeName\": \"dansOtherId\",\n"
+                + "              \"multiple\": false,\n"
+                + "              \"typeClass\": \"primitive\",\n"
+                + "              \"value\": %s\n"
+                + "            }\n"
+                + "          ]\n"
+                + "        }\n"
+                + "      }\n"
+                + "    }\n"
+                + "  }\n"
+                + "}", persistentId, dansOtherId);
+    }
+
+
 }
