@@ -41,6 +41,7 @@ public class RuleTestFixture {
 
     protected final LicenseValidator licenseValidator = new LicenseValidatorImpl(dataverseService);
     protected final FilesXmlService filesXmlService = Mockito.mock(FilesXmlService.class);
+    protected final XmlSchemaValidator xmlSchemaValidator = Mockito.mock(XmlSchemaValidator.class);
 
     @AfterEach
     void afterEach() {
@@ -49,6 +50,7 @@ public class RuleTestFixture {
         Mockito.reset(bagItMetadataReader);
         Mockito.reset(dataverseService);
         Mockito.reset(originalFilepathsService);
+        Mockito.reset(filesXmlService);
     }
 
     protected Document parseXmlString(String str) throws ParserConfigurationException, IOException, SAXException {
