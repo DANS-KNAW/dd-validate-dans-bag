@@ -17,11 +17,12 @@ package nl.knaw.dans.validatedansbag.core.rules;
 
 import nl.knaw.dans.validatedansbag.core.engine.RuleEngineImpl;
 import nl.knaw.dans.validatedansbag.core.service.*;
-import nl.knaw.dans.validatedansbag.core.validator.*;
+import nl.knaw.dans.validatedansbag.core.validator.IdentifierValidator;
+import nl.knaw.dans.validatedansbag.core.validator.LicenseValidator;
+import nl.knaw.dans.validatedansbag.core.validator.OrganizationIdentifierPrefixValidator;
+import nl.knaw.dans.validatedansbag.core.validator.PolygonListValidator;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
-
-import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
