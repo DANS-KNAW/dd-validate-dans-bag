@@ -33,7 +33,7 @@ public class BagExistsInDataStationTest extends RuleTestFixture {
         mockSearchBySwordToken(getSearchResult(doi));
         mockGetDataset(getLatestVersion(doi, null));
 
-        var result = new BagExistsInDataStation(dataverseService, bagItMetadataReader).validate(Path.of("bagdir"));
+        var result = new IsVersionOfPointsToExistingDatasetInDataverse(dataverseService, bagItMetadataReader).validate(Path.of("bagdir"));
         assertEquals(RuleResult.Status.SUCCESS, result.getStatus());
     }
 
@@ -45,7 +45,7 @@ public class BagExistsInDataStationTest extends RuleTestFixture {
         String emptySearchResult = getEmptySearchResult();
         mockSearchBySwordToken(emptySearchResult);
 
-        var result = new BagExistsInDataStation(dataverseService, bagItMetadataReader).validate(Path.of("bagdir"));
+        var result = new IsVersionOfPointsToExistingDatasetInDataverse(dataverseService, bagItMetadataReader).validate(Path.of("bagdir"));
         assertEquals(RuleResult.Status.ERROR, result.getStatus());
     }
 }

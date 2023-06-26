@@ -23,10 +23,10 @@ import nl.knaw.dans.validatedansbag.core.service.DataverseService;
 import java.nio.file.Path;
 
 @Slf4j
-public class BagExistsInDataStation extends DataverseRuleBase implements BagValidatorRule {
+public class IsVersionOfPointsToExistingDatasetInDataverse extends DataverseRuleBase implements BagValidatorRule {
     private final BagItMetadataReader bagItMetadataReader;
 
-    public BagExistsInDataStation(DataverseService dataverseService, BagItMetadataReader bagItMetadataReader) {
+    public IsVersionOfPointsToExistingDatasetInDataverse(DataverseService dataverseService, BagItMetadataReader bagItMetadataReader) {
         super(dataverseService);
         this.bagItMetadataReader = bagItMetadataReader;
     }

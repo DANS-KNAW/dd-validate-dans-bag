@@ -323,7 +323,7 @@ class ValidateResourceIntegrationTest {
         assertThat(response.getRuleViolations().size()).isEqualTo(1);
         assertThat(response.getRuleViolations().get(0).getViolation()).contains("not allowed");
         assertThat(response.getRuleViolations().get(0).getViolation()).contains("original-metadata.zip");
-        assertThat(response.getRuleViolations().get(0).getRule()).isEqualTo("2.5");
+        assertThat(response.getRuleViolations().get(0).getRule()).isEqualTo("4.4");
     }
 
     @Test
@@ -667,7 +667,7 @@ class ValidateResourceIntegrationTest {
         var failed = response.getRuleViolations().stream()
                 .map(ValidateOkRuleViolations::getRule).collect(Collectors.toSet());
 
-        assertEquals(Set.of("4.2(b)"), failed);
+        assertEquals(Set.of("4.1(b)"), failed);
         assertFalse(response.getIsCompliant());
         assertEquals("bag-with-is-version-of", response.getName());
     }
@@ -778,7 +778,7 @@ class ValidateResourceIntegrationTest {
         var failed = response.getRuleViolations().stream()
                 .map(ValidateOkRuleViolations::getRule).collect(Collectors.toSet());
 
-        assertEquals(Set.of("4.2(a)", "4.2(b)"), failed);
+        assertEquals(Set.of("4.1(a)", "4.1(b)"), failed);
         assertFalse(response.getIsCompliant());
         assertEquals("bag-with-is-version-of", response.getName());
     }
