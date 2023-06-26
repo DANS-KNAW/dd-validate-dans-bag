@@ -21,6 +21,7 @@ import io.dropwizard.forms.MultiPartBundle;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
 import nl.knaw.dans.validatedansbag.core.engine.RuleEngineImpl;
+import nl.knaw.dans.validatedansbag.core.rules.RuleSets;
 import nl.knaw.dans.validatedansbag.core.service.*;
 import nl.knaw.dans.validatedansbag.core.validator.IdentifierValidatorImpl;
 import nl.knaw.dans.validatedansbag.core.validator.LicenseValidatorImpl;
@@ -72,15 +73,19 @@ public class DdValidateDansBagApplication extends Application<DdValidateDansBagC
 
         // set up the engine and the service that has a default set of rules
         var ruleEngine = new RuleEngineImpl();
-        var ruleEngineService = new RuleEngineServiceImpl(ruleEngine,
-                dataverseService, fileService, filesXmlService, originalFilepathsService, xmlReader,
+        var ruleSets = new RuleSets(dataverseService,
+                fileService,
+                filesXmlService,
+                originalFilepathsService,
+                xmlReader,
                 bagItMetadataReader,
                 xmlSchemaValidator,
                 licenseValidator,
                 identifierValidator,
                 polygonListValidator,
-                organizationIdentifierPrefixValidator
-        );
+                organizationIdentifierPrefixValidator);
+        var ruleEngineService = new RuleEngineServiceImpl(ruleEngine, fileService,
+                configuration.getDataverse() != null ? ruleSets.getDataStationSet() : ruleSets.getVaasSet());
 
         environment.jersey().register(new IllegalArgumentExceptionMapper());
         environment.jersey().register(new ValidateResource(ruleEngineService, fileService));
