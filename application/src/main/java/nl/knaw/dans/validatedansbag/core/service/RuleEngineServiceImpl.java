@@ -27,8 +27,6 @@ import nl.knaw.dans.validatedansbag.core.validator.IdentifierValidator;
 import nl.knaw.dans.validatedansbag.core.validator.LicenseValidator;
 import nl.knaw.dans.validatedansbag.core.validator.OrganizationIdentifierPrefixValidator;
 import nl.knaw.dans.validatedansbag.core.validator.PolygonListValidator;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.nio.file.Path;
 import java.util.List;
@@ -39,27 +37,27 @@ public class RuleEngineServiceImpl implements RuleEngineService {
     private final RuleEngine ruleEngine;
     private final FileService fileService;
     private final NumberedRule[] defaultRules;
-    private final Path datasetPath = Path.of("metadata/dataset.xml");
-    private final Path metadataPath = Path.of("metadata");
-    private final Path payloadPath = Path.of("data");
-    private final Path metadataFilesPath = Path.of("metadata/files.xml");
+    private static final Path metadataPath = Path.of("metadata");
+    private static final Path payloadPath = Path.of("data");
+    private static final Path metadataFilesPath = Path.of("metadata/files.xml");
 
     public RuleEngineServiceImpl(RuleEngine ruleEngine,
-                                 XmlSchemaValidator xmlSchemaValidator,
+                                 DataverseService dataverseService,
                                  FileService fileService,
                                  FilesXmlService filesXmlService,
                                  OriginalFilepathsService originalFilepathService,
                                  XmlReader xmlReader,
+                                 BagItMetadataReader bagItMetadataReader,
+                                 XmlSchemaValidator xmlSchemaValidator,
                                  LicenseValidator licenseValidator,
                                  IdentifierValidator identifierValidator,
                                  PolygonListValidator polygonListValidator,
-                                 OrganizationIdentifierPrefixValidator organizationIdentifierPrefixValidator,
-                                 DataverseService dataverseService) {
+                                 OrganizationIdentifierPrefixValidator organizationIdentifierPrefixValidator) {
         this.ruleEngine = ruleEngine;
         this.fileService = fileService;
-        var bagItMetadataReader = new BagItMetadataReaderImpl();
 
         // validity
+        Path datasetPath = Path.of("metadata/dataset.xml");
         this.defaultRules = new NumberedRule[]{
                 new NumberedRule("1.1.1", new BagIsValid(bagItMetadataReader)),
 

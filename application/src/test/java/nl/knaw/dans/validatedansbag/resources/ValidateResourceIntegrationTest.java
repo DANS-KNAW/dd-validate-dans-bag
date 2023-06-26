@@ -30,7 +30,6 @@ import nl.knaw.dans.validatedansbag.api.ValidateOk;
 import nl.knaw.dans.validatedansbag.api.ValidateOkRuleViolations;
 import nl.knaw.dans.validatedansbag.core.auth.SwordUser;
 import nl.knaw.dans.validatedansbag.core.engine.RuleEngineImpl;
-import nl.knaw.dans.validatedansbag.core.rules.*;
 import nl.knaw.dans.validatedansbag.core.service.BagItMetadataReaderImpl;
 import nl.knaw.dans.validatedansbag.core.service.DataverseService;
 import nl.knaw.dans.validatedansbag.core.service.FileServiceImpl;
@@ -117,8 +116,8 @@ class ValidateResourceIntegrationTest {
 
         // set up the engine and the service that has a default set of rules
         var ruleEngine = new RuleEngineImpl();
-        var ruleEngineService = new RuleEngineServiceImpl(ruleEngine, xmlSchemaValidator,
-                 fileService, filesXmlService, originalFilepathsService, xmlReader, licenseValidator, identifierValidator, polygonListValidator, organizationIdentifierPrefixValidator, dataverseService);
+        var ruleEngineService = new RuleEngineServiceImpl(ruleEngine, dataverseService, fileService, filesXmlService, originalFilepathsService, xmlReader,
+                bagItMetadataReader, xmlSchemaValidator, licenseValidator, identifierValidator, polygonListValidator, organizationIdentifierPrefixValidator);
 
         return new ValidateResource(ruleEngineService, fileService);
     }

@@ -17,17 +17,10 @@
 package nl.knaw.dans.validatedansbag;
 
 import io.dropwizard.Application;
-import io.dropwizard.auth.AuthDynamicFeature;
-import io.dropwizard.auth.AuthValueFactoryProvider;
-import io.dropwizard.auth.basic.BasicCredentialAuthFilter;
-import io.dropwizard.client.HttpClientBuilder;
 import io.dropwizard.forms.MultiPartBundle;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
-import nl.knaw.dans.validatedansbag.core.auth.SwordAuthenticator;
-import nl.knaw.dans.validatedansbag.core.auth.SwordUser;
 import nl.knaw.dans.validatedansbag.core.engine.RuleEngineImpl;
-import nl.knaw.dans.validatedansbag.core.rules.*;
 import nl.knaw.dans.validatedansbag.core.service.*;
 import nl.knaw.dans.validatedansbag.core.validator.IdentifierValidatorImpl;
 import nl.knaw.dans.validatedansbag.core.validator.LicenseValidatorImpl;
@@ -65,7 +58,6 @@ public class DdValidateDansBagApplication extends Application<DdValidateDansBagC
         var fileService = new FileServiceImpl();
         var bagItMetadataReader = new BagItMetadataReaderImpl();
         var xmlReader = new XmlReaderImpl();
-        var daiDigestCalculator = new IdentifierValidatorImpl();
         var polygonListValidator = new PolygonListValidatorImpl();
         OriginalFilepathsService originalFilepathsService = new OriginalFilepathsServiceImpl(fileService);
         var filesXmlService = new FilesXmlServiceImpl(xmlReader);
@@ -81,16 +73,14 @@ public class DdValidateDansBagApplication extends Application<DdValidateDansBagC
         // set up the engine and the service that has a default set of rules
         var ruleEngine = new RuleEngineImpl();
         var ruleEngineService = new RuleEngineServiceImpl(ruleEngine,
+                dataverseService, fileService, filesXmlService, originalFilepathsService, xmlReader,
+                bagItMetadataReader,
                 xmlSchemaValidator,
-                fileService,
-                filesXmlService,
-                originalFilepathsService,
-                xmlReader,
                 licenseValidator,
                 identifierValidator,
                 polygonListValidator,
-                organizationIdentifierPrefixValidator,
-                dataverseService);
+                organizationIdentifierPrefixValidator
+        );
 
         environment.jersey().register(new IllegalArgumentExceptionMapper());
         environment.jersey().register(new ValidateResource(ruleEngineService, fileService));
