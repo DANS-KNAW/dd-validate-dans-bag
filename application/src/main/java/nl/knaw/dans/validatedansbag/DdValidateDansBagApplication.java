@@ -17,6 +17,7 @@
 package nl.knaw.dans.validatedansbag;
 
 import io.dropwizard.Application;
+import io.dropwizard.Configuration;
 import io.dropwizard.forms.MultiPartBundle;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
@@ -55,23 +56,25 @@ public class DdValidateDansBagApplication extends Application<DdValidateDansBagC
 
     @Override
     public void run(final DdValidateDansBagConfiguration configuration, final Environment environment) {
+        validateContextConfiguration(configuration);
+        DataverseService dataverseService = null;
+
+        if (configuration.getDataverse() != null) {
+            dataverseService = new DataverseServiceImpl(configuration.getDataverse().build());
+        }
 
         var fileService = new FileServiceImpl();
         var bagItMetadataReader = new BagItMetadataReaderImpl();
         var xmlReader = new XmlReaderImpl();
         var polygonListValidator = new PolygonListValidatorImpl();
-        OriginalFilepathsService originalFilepathsService = new OriginalFilepathsServiceImpl(fileService);
+        var originalFilepathsService = new OriginalFilepathsServiceImpl(fileService);
         var filesXmlService = new FilesXmlServiceImpl(xmlReader);
-
         var xmlSchemaValidator = new XmlSchemaValidatorImpl(configuration.getValidation().getXmlSchemas().buildMap());
 
-        var dataverseService = new DataverseServiceImpl(configuration.getDataverse().build());
         var licenseValidator = new LicenseValidatorImpl(dataverseService);
         var identifierValidator = new IdentifierValidatorImpl();
-
         var organizationIdentifierPrefixValidator = new OrganizationIdentifierPrefixValidatorImpl(configuration.getValidation().getOtherIdPrefixes());
 
-        // set up the engine and the service that has a default set of rules
         var ruleEngine = new RuleEngineImpl();
         var ruleSets = new RuleSets(dataverseService,
                 fileService,
@@ -93,5 +96,11 @@ public class DdValidateDansBagApplication extends Application<DdValidateDansBagC
 
         environment.healthChecks().register("xml-schemas", new XmlSchemaHealthCheck(xmlSchemaValidator));
         environment.healthChecks().register("dataverse", new DataverseHealthCheck(dataverseService));
+    }
+
+    private void validateContextConfiguration(DdValidateDansBagConfiguration configuration) {
+        if ((configuration.getDataverse() != null) == (configuration.getVaultCatalog() != null)) {
+            throw new IllegalArgumentException("Exactly one of dataverse and vaultCatalog must be configured");
+        }
     }
 }
