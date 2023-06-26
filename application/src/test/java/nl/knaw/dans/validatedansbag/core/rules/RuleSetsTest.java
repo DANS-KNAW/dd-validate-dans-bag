@@ -15,87 +15,61 @@
  */
 package nl.knaw.dans.validatedansbag.core.rules;
 
-import nl.knaw.dans.lib.dataverse.DataverseException;
 import nl.knaw.dans.validatedansbag.core.engine.RuleEngineImpl;
 import nl.knaw.dans.validatedansbag.core.service.*;
-import nl.knaw.dans.validatedansbag.core.validator.IdentifierValidatorImpl;
-import nl.knaw.dans.validatedansbag.core.validator.LicenseValidator;
-import nl.knaw.dans.validatedansbag.core.validator.OrganizationIdentifierPrefixValidatorImpl;
-import nl.knaw.dans.validatedansbag.core.validator.PolygonListValidatorImpl;
-import nl.knaw.dans.validatedansbag.resources.ValidateResource;
+import nl.knaw.dans.validatedansbag.core.validator.*;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
-import java.io.IOException;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class RuleSetsTest {
+
     private static final DataverseService dataverseService = Mockito.mock(DataverseService.class);
+    private static final FileService fileService = Mockito.mock(FileService.class);
+
+    private static final BagItMetadataReader bagItMetadataReader = Mockito.mock(BagItMetadataReader.class);
+
     private static final XmlSchemaValidator xmlSchemaValidator = Mockito.mock(XmlSchemaValidator.class);
 
-    private static final LicenseValidator licenseValidator = new LicenseValidator() {
+    private static final LicenseValidator licenseValidator = Mockito.mock(LicenseValidator.class);
+    private static final XmlReader xmlReader = Mockito.mock(XmlReader.class);
 
-        @Override
-        public boolean isValidUri(String license) {
-            return true;
-        }
+    private static final PolygonListValidator polygonListValidator = Mockito.mock(PolygonListValidator.class);
 
-        @Override
-        public boolean isValidLicense(String license) throws IOException, DataverseException {
-            return true;
-        }
-    };
+    private static final OriginalFilepathsService originalFilepathsService = Mockito.mock(OriginalFilepathsService.class);
 
+    private static final FilesXmlService filesXmlService = Mockito.mock(FilesXmlService.class);
+
+    private static final IdentifierValidator identifierValidator = Mockito.mock(IdentifierValidator.class);
+
+    private static final OrganizationIdentifierPrefixValidator organizationIdentifierPrefixValidator = Mockito.mock(OrganizationIdentifierPrefixValidator.class);
+
+
+    /*
+     * The services in this test are never called; the only thing we want to test is whether the rule sets are consistent in terms of dependencies.
+     * Therefore, the services are all mocked.
+     */
 
     @Test
     public void dataStationsRuleSet_should_be_consistent() throws Exception {
-        var fileService = new FileServiceImpl();
-        var bagItMetadataReader = new BagItMetadataReaderImpl();
-        var xmlReader = new XmlReaderImpl();
-        var polygonListValidator = new PolygonListValidatorImpl();
-        var originalFilepathsService = new OriginalFilepathsServiceImpl(fileService);
-        var filesXmlService = new FilesXmlServiceImpl(xmlReader);
-        var identifierValidator = new IdentifierValidatorImpl();
-
-        var organizationIdentifierPrefixValidator = new OrganizationIdentifierPrefixValidatorImpl(
-                List.of("u1:", "u2:")
-        );
-
-        // set up the engine and the service that has a default set of rules
-        var ruleEngine = new RuleEngineImpl();
         var ruleSets = new RuleSets(
                 dataverseService, fileService, filesXmlService, originalFilepathsService, xmlReader,
                 bagItMetadataReader, xmlSchemaValidator, licenseValidator, identifierValidator, polygonListValidator, organizationIdentifierPrefixValidator
         );
-
-        new RuleEngineServiceImpl(ruleEngine, fileService, ruleSets.getDataStationSet());
+        new RuleEngineImpl().validateRuleConfiguration(ruleSets.getDataStationSet());
         assertTrue(true); // if we get here, the rule set is consistent
     }
 
     @Test
     public void vaasRuleSet_should_be_consistent() throws Exception {
-        var fileService = new FileServiceImpl();
-        var bagItMetadataReader = new BagItMetadataReaderImpl();
-        var xmlReader = new XmlReaderImpl();
-        var polygonListValidator = new PolygonListValidatorImpl();
-        var originalFilepathsService = new OriginalFilepathsServiceImpl(fileService);
-        var filesXmlService = new FilesXmlServiceImpl(xmlReader);
-        var identifierValidator = new IdentifierValidatorImpl();
-
-        var organizationIdentifierPrefixValidator = new OrganizationIdentifierPrefixValidatorImpl(
-                List.of("u1:", "u2:")
-        );
-
-        // set up the engine and the service that has a default set of rules
-        var ruleEngine = new RuleEngineImpl();
         var ruleSets = new RuleSets(
                 dataverseService, fileService, filesXmlService, originalFilepathsService, xmlReader,
                 bagItMetadataReader, xmlSchemaValidator, licenseValidator, identifierValidator, polygonListValidator, organizationIdentifierPrefixValidator
         );
-
-        new RuleEngineServiceImpl(ruleEngine, fileService, ruleSets.getVaasSet());
+        new RuleEngineImpl().validateRuleConfiguration(ruleSets.getVaasSet());
         assertTrue(true); // if we get here, the rule set is consistent
     }
 
