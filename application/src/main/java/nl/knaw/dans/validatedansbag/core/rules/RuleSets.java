@@ -101,18 +101,18 @@ public class RuleSets {
                 new NumberedRule("1.2.3(b)", new BagInfoIsVersionOfIsValidUrnUuid(bagItMetadataReader), List.of("1.2.3(a)")),
                 new NumberedRule("1.2.4(a)", new BagInfoContainsAtMostOneOf("Has-Organizational-Identifier", bagItMetadataReader), List.of("1.2.1")),
                 new NumberedRule("1.2.4(b)", new BagInfoContainsAtMostOneOf("Has-Organizational-Identifier-Version", bagItMetadataReader), List.of("1.2.4(a)")),
-                new NumberedRule("1.2.4(c)", new OrganizationalIdentifierPrefixIsValid(bagItMetadataReader, organizationIdentifierPrefixValidator), DepositType.DEPOSIT, List.of("1.2.4(a)")),
+                new NumberedRule("1.2.4(c)", new BagInfoOrganizationalIdentifierPrefixIsValid(bagItMetadataReader, organizationIdentifierPrefixValidator), DepositType.DEPOSIT, List.of("1.2.4(a)")),
 
                 // 1.3. Manifests
-                new NumberedRule("1.3.1", new ContainsNotJustMD5Manifest(bagItMetadataReader), List.of("1.1.1")),
+                new NumberedRule("1.3.1", new BagHasOtherManifestsThanOnlyMd5(bagItMetadataReader), List.of("1.1.1")),
 
                 // 2 Structural
-                new NumberedRule("2.1", new ContainsDir(metadataPath, fileService), List.of("1.1.1")),
-                new NumberedRule("2.2(a)", new ContainsFile(metadataPath.resolve("dataset.xml"), fileService), List.of("2.1")),
-                new NumberedRule("2.2(b)", new ContainsFile(metadataPath.resolve("files.xml"), fileService), List.of("2.1")),
+                new NumberedRule("2.1", new BagContainsDir(metadataPath, fileService), List.of("1.1.1")),
+                new NumberedRule("2.2(a)", new BagContainsFile(metadataPath.resolve("dataset.xml"), fileService), List.of("2.1")),
+                new NumberedRule("2.2(b)", new BagContainsFile(metadataPath.resolve("files.xml"), fileService), List.of("2.1")),
 
                 // this also covers 2.3 and 2.4 for MIGRATION status deposits
-                new NumberedRule("2.2-MIGRATION", new ContainsNothingElseThan(metadataPath, new String[]{
+                new NumberedRule("2.2-MIGRATION", new BagDirContainsNothingElseThan(metadataPath, new String[]{
                         "dataset.xml",
                         "files.xml",
                         "provenance.xml",
@@ -131,7 +131,7 @@ public class RuleSets {
                         "license.pdf"
                 }, fileService), DepositType.MIGRATION, List.of("2.1")),
 
-                new NumberedRule("2.3", new ContainsNothingElseThan(metadataPath, new String[]{
+                new NumberedRule("2.3", new BagDirContainsNothingElseThan(metadataPath, new String[]{
                         "dataset.xml",
                         "files.xml"
                 }, fileService), DepositType.DEPOSIT, List.of("2.1")),
@@ -140,45 +140,45 @@ public class RuleSets {
                 // 3 Metadata requirements¶
 
                 // 3.1 metadata/dataset.xml¶
-                new NumberedRule("3.1.1", new XmlFileConformsToSchema(datasetPath, xmlReader, "dataset.xml", xmlSchemaValidator), List.of("1.1.1", "2.2(a)")),
-                new NumberedRule("3.1.2", new DdmMustContainExactlyOneDctermsLicenseWithXsiTypeUri(xmlReader, licenseValidator), List.of("3.1.1")),
+                new NumberedRule("3.1.1", new BagFileConformsToXmlSchema(datasetPath, xmlReader, "dataset.xml", xmlSchemaValidator), List.of("1.1.1", "2.2(a)")),
+                new NumberedRule("3.1.2", new DatasetXmlContainsExactlyOneDctermsLicenseWithXsiTypeUri(xmlReader, licenseValidator), List.of("3.1.1")),
 
-                new NumberedRule("3.1.3(a)", new DdmDaisAreValid(xmlReader, identifierValidator), List.of("3.1.1")),
-                new NumberedRule("3.1.3(b)", new DdmIsnisAreValid(xmlReader, identifierValidator), List.of("3.1.1")),
-                new NumberedRule("3.1.3(c)", new DdmOrcidsAreValid(xmlReader, identifierValidator), List.of("3.1.1")),
-                new NumberedRule("3.1.4", new DdmGmlPolygonPosListIsWellFormed(xmlReader, polygonListValidator), List.of("3.1.1")),
-                new NumberedRule("3.1.5", new PolygonsInSameMultiSurfaceHaveSameSrsName(xmlReader), List.of("3.1.1")),
-                new NumberedRule("3.1.6", new PointsHaveAtLeastTwoValues(xmlReader), List.of("3.1.1")),
-                new NumberedRule("3.1.7", new ArchisIdentifiersHaveAtMost10Characters(xmlReader), List.of("3.1.1")),
-                new NumberedRule("3.1.8", new AllUrlsAreValid(xmlReader), List.of("3.1.1")),
+                new NumberedRule("3.1.3(a)", new DatasetXmlDaisAreValid(xmlReader, identifierValidator), List.of("3.1.1")),
+                new NumberedRule("3.1.3(b)", new DatasetXmlIsnisAreValid(xmlReader, identifierValidator), List.of("3.1.1")),
+                new NumberedRule("3.1.3(c)", new DatasetXmlOrcidsAreValid(xmlReader, identifierValidator), List.of("3.1.1")),
+                new NumberedRule("3.1.4", new DatasetXmlGmlPolygonPosListIsWellFormed(xmlReader, polygonListValidator), List.of("3.1.1")),
+                new NumberedRule("3.1.5", new DatasetXmlGmlPolygonsInSameMultiSurfaceHaveSameSrsName(xmlReader), List.of("3.1.1")),
+                new NumberedRule("3.1.6", new DatasetXmlGmlPointsHaveAtLeastTwoValues(xmlReader), List.of("3.1.1")),
+                new NumberedRule("3.1.7", new DatasetXmlArchisIdentifiersHaveAtMost10Characters(xmlReader), List.of("3.1.1")),
+                new NumberedRule("3.1.8", new DatasetXmlAllUrlsAreValid(xmlReader), List.of("3.1.1")),
 
-                new NumberedRule("3.1.9", new DdmMustHaveRightsHolderDeposit(xmlReader), DepositType.DEPOSIT, List.of("3.1.1")),
-                new NumberedRule("3.1.9-MIGRATION", new DdmMustHaveRightsHolderDeposit(xmlReader), DepositType.MIGRATION, List.of("3.1.1")),
-                new NumberedRule("3.1.10", new DdmMustNotHaveRightsHolderRole(xmlReader), DepositType.DEPOSIT, List.of("3.1.1")),
+                new NumberedRule("3.1.9", new DatasetXmlHasRightsHolderInElement(xmlReader), DepositType.DEPOSIT, List.of("3.1.1")),
+                new NumberedRule("3.1.9-MIGRATION", new DatasetXmlHasRightsHolderInElement(xmlReader), DepositType.MIGRATION, List.of("3.1.1")),
+                new NumberedRule("3.1.10", new DatasetXmlDoesNotHaveRightHolderInAuthorRole(xmlReader), DepositType.DEPOSIT, List.of("3.1.1")),
 
                 // 3.2 metadata/files.xml
-                new NumberedRule("3.2.1", new XmlFileConformsToSchema(metadataFilesPath, xmlReader, "files.xml", xmlSchemaValidator), List.of("1.1.1", "2.2(b)")),
+                new NumberedRule("3.2.1", new BagFileConformsToXmlSchema(metadataFilesPath, xmlReader, "files.xml", xmlSchemaValidator), List.of("1.1.1", "2.2(b)")),
                 new NumberedRule("3.2.2", new FilesXmlFilePathAttributesContainLocalBagPathAndNonPayloadFilesAreNotDescribed(fileService, filesXmlService, originalFilepathService), List.of("3.2.1")),
                 new NumberedRule("3.2.3", new FilesXmlNoDuplicateFilesAndEveryPayloadFileIsDescribed(filesXmlService, fileService, originalFilepathService), List.of("3.2.1")),
 
                 // 3.3 original-filepaths.txt
-                new NumberedRule("3.3.1", new OptionalFileIsUtf8Decodable(Path.of("original-filepaths.txt"), fileService), List.of("1.1.1")),
-                new NumberedRule("3.3.2", new IsOriginalFilepathsFileComplete(originalFilepathService, fileService, filesXmlService), List.of("3.3.1")),
+                new NumberedRule("3.3.1", new OptionalBagFileIsUtf8Decodable(Path.of("original-filepaths.txt"), fileService), List.of("1.1.1")),
+                new NumberedRule("3.3.2", new OptionalOriginalFilePathsIsComplete(originalFilepathService, fileService, filesXmlService), List.of("3.3.1")),
 
                 // 3.4 Migration-only metadata¶
-                new NumberedRule("3.4.1-MIGRATION", new XmlFileIfExistsConformsToSchema(Path.of("metadata/depositor-info/agreements.xml"), xmlReader, "agreements.xml", xmlSchemaValidator, fileService), DepositType.MIGRATION),
-                new NumberedRule("3.4.2-MIGRATION", new XmlFileIfExistsConformsToSchema(Path.of("metadata/amd.xml"), xmlReader, "amd.xml", xmlSchemaValidator, fileService), DepositType.MIGRATION),
-                new NumberedRule("3.4.3-MIGRATION", new XmlFileIfExistsConformsToSchema(Path.of("metadata/emd.xml"), xmlReader, "emd.xml", xmlSchemaValidator, fileService), DepositType.MIGRATION),
-                new NumberedRule("3.4.4-MIGRATION", new XmlFileIfExistsConformsToSchema(Path.of("metadata/provenance.xml"), xmlReader, "provenance.xml", xmlSchemaValidator, fileService), DepositType.MIGRATION));
+                new NumberedRule("3.4.1-MIGRATION", new OptionalBagFileConformsToXmlSchema(Path.of("metadata/depositor-info/agreements.xml"), xmlReader, "agreements.xml", xmlSchemaValidator, fileService), DepositType.MIGRATION),
+                new NumberedRule("3.4.2-MIGRATION", new OptionalBagFileConformsToXmlSchema(Path.of("metadata/amd.xml"), xmlReader, "amd.xml", xmlSchemaValidator, fileService), DepositType.MIGRATION),
+                new NumberedRule("3.4.3-MIGRATION", new OptionalBagFileConformsToXmlSchema(Path.of("metadata/emd.xml"), xmlReader, "emd.xml", xmlSchemaValidator, fileService), DepositType.MIGRATION),
+                new NumberedRule("3.4.4-MIGRATION", new OptionalBagFileConformsToXmlSchema(Path.of("metadata/provenance.xml"), xmlReader, "provenance.xml", xmlSchemaValidator, fileService), DepositType.MIGRATION));
     }
 
     private List<NumberedRule> getDataStationOnlyRules() {
         return List.of(
-                new NumberedRule("4.1(a)", new IsVersionOfPointsToExistingDatasetInDataverse(dataverseService, bagItMetadataReader), DepositType.DEPOSIT, List.of("1.2.3(a)")),
-                new NumberedRule("4.1(b)", new OrganizationalIdentifierExistsInDataset(dataverseService, bagItMetadataReader), DepositType.DEPOSIT, List.of("1.2.4(a)")),
-                new NumberedRule("4.2", new LicenseExistsInDatastation(xmlReader, licenseValidator), DepositType.DEPOSIT, List.of("3.1.2")),
-                new NumberedRule("4.3", new EmbargoPeriodWithinLimits(dataverseService, xmlReader), DepositType.DEPOSIT, List.of("3.1.1")),
-                new NumberedRule("4.4", new MustNotContain(payloadPath, new String[]{
+                new NumberedRule("4.1(a)", new BagInfoIsVersionOfPointsToExistingDatasetInDataverse(dataverseService, bagItMetadataReader), DepositType.DEPOSIT, List.of("1.2.3(a)")),
+                new NumberedRule("4.1(b)", new BagInfoOrganizationalIdentifierExistsInDataset(dataverseService, bagItMetadataReader), DepositType.DEPOSIT, List.of("1.2.4(a)")),
+                new NumberedRule("4.2", new DatasetXmlLicenseAllowedByDatastation(xmlReader, licenseValidator), DepositType.DEPOSIT, List.of("3.1.2")),
+                new NumberedRule("4.3", new DatasetXmlEmbargoPeriodWithinLimits(dataverseService, xmlReader), DepositType.DEPOSIT, List.of("3.1.1")),
+                new NumberedRule("4.4", new BagDirDoesNotContain(payloadPath, new String[]{
                         "original-metadata.zip"
                 }, fileService), DepositType.DEPOSIT, List.of("1.1.1"))
         );
@@ -188,7 +188,7 @@ public class RuleSets {
         // 5 Vault as a Service context requirements
         return List.of(
                 // TODO: 5.1
-                new NumberedRule("5.2", new DdmDoiIdentifiersAreValid(xmlReader), List.of("3.1.1"))
+                new NumberedRule("5.2", new DatasetXmlDoisAreValid(xmlReader), List.of("3.1.1"))
         );
     }
 
