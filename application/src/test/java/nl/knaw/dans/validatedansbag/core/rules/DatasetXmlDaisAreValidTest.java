@@ -22,7 +22,7 @@ import org.mockito.Mockito;
 
 import java.nio.file.Path;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class DatasetXmlDaisAreValidTest extends RuleTestFixture {
     @Test

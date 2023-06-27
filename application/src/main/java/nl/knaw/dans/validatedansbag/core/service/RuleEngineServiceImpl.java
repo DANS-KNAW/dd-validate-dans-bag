@@ -17,12 +17,11 @@ package nl.knaw.dans.validatedansbag.core.service;
 
 import lombok.extern.slf4j.Slf4j;
 import nl.knaw.dans.validatedansbag.core.BagNotFoundException;
-import nl.knaw.dans.validatedansbag.core.engine.*;
-import nl.knaw.dans.validatedansbag.core.rules.*;
-import nl.knaw.dans.validatedansbag.core.validator.IdentifierValidator;
-import nl.knaw.dans.validatedansbag.core.validator.LicenseValidator;
-import nl.knaw.dans.validatedansbag.core.validator.OrganizationIdentifierPrefixValidator;
-import nl.knaw.dans.validatedansbag.core.validator.PolygonListValidator;
+import nl.knaw.dans.validatedansbag.core.engine.DepositType;
+import nl.knaw.dans.validatedansbag.core.engine.NumberedRule;
+import nl.knaw.dans.validatedansbag.core.engine.RuleEngine;
+import nl.knaw.dans.validatedansbag.core.engine.RuleEngineConfigurationException;
+import nl.knaw.dans.validatedansbag.core.engine.RuleValidationResult;
 
 import java.nio.file.Path;
 import java.util.List;

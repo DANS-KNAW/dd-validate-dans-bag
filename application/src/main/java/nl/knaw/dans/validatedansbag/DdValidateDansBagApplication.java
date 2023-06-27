@@ -17,13 +17,20 @@
 package nl.knaw.dans.validatedansbag;
 
 import io.dropwizard.Application;
-import io.dropwizard.Configuration;
 import io.dropwizard.forms.MultiPartBundle;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
 import nl.knaw.dans.validatedansbag.core.engine.RuleEngineImpl;
 import nl.knaw.dans.validatedansbag.core.rules.RuleSets;
-import nl.knaw.dans.validatedansbag.core.service.*;
+import nl.knaw.dans.validatedansbag.core.service.BagItMetadataReaderImpl;
+import nl.knaw.dans.validatedansbag.core.service.DataverseService;
+import nl.knaw.dans.validatedansbag.core.service.DataverseServiceImpl;
+import nl.knaw.dans.validatedansbag.core.service.FileServiceImpl;
+import nl.knaw.dans.validatedansbag.core.service.FilesXmlServiceImpl;
+import nl.knaw.dans.validatedansbag.core.service.OriginalFilepathsServiceImpl;
+import nl.knaw.dans.validatedansbag.core.service.RuleEngineServiceImpl;
+import nl.knaw.dans.validatedansbag.core.service.XmlReaderImpl;
+import nl.knaw.dans.validatedansbag.core.service.XmlSchemaValidatorImpl;
 import nl.knaw.dans.validatedansbag.core.validator.IdentifierValidatorImpl;
 import nl.knaw.dans.validatedansbag.core.validator.LicenseValidatorImpl;
 import nl.knaw.dans.validatedansbag.core.validator.OrganizationIdentifierPrefixValidatorImpl;

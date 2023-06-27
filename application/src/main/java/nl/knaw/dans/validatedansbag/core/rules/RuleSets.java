@@ -17,7 +17,13 @@ package nl.knaw.dans.validatedansbag.core.rules;
 
 import nl.knaw.dans.validatedansbag.core.engine.DepositType;
 import nl.knaw.dans.validatedansbag.core.engine.NumberedRule;
-import nl.knaw.dans.validatedansbag.core.service.*;
+import nl.knaw.dans.validatedansbag.core.service.BagItMetadataReader;
+import nl.knaw.dans.validatedansbag.core.service.DataverseService;
+import nl.knaw.dans.validatedansbag.core.service.FileService;
+import nl.knaw.dans.validatedansbag.core.service.FilesXmlService;
+import nl.knaw.dans.validatedansbag.core.service.OriginalFilepathsService;
+import nl.knaw.dans.validatedansbag.core.service.XmlReader;
+import nl.knaw.dans.validatedansbag.core.service.XmlSchemaValidator;
 import nl.knaw.dans.validatedansbag.core.validator.IdentifierValidator;
 import nl.knaw.dans.validatedansbag.core.validator.LicenseValidator;
 import nl.knaw.dans.validatedansbag.core.validator.OrganizationIdentifierPrefixValidator;
