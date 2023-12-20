@@ -21,6 +21,7 @@ import io.dropwizard.core.setup.Bootstrap;
 import io.dropwizard.core.setup.Environment;
 import io.dropwizard.forms.MultiPartBundle;
 import nl.knaw.dans.validatedansbag.client.VaultCatalogClient;
+import nl.knaw.dans.validatedansbag.core.config.DdValidateDansBagConfiguration;
 import nl.knaw.dans.validatedansbag.core.engine.RuleEngineImpl;
 import nl.knaw.dans.validatedansbag.core.rules.RuleSets;
 import nl.knaw.dans.validatedansbag.core.service.BagItMetadataReaderImpl;
@@ -71,7 +72,7 @@ public class DdValidateDansBagApplication extends Application<DdValidateDansBagC
         DataverseService dataverseService = null;
 
         if (configuration.getDataverse() != null) {
-            dataverseService = new DataverseServiceImpl(configuration.getDataverse().build());
+            dataverseService = new DataverseServiceImpl(configuration.getDataverse().build(environment, "dd-validate-dans-bag/dataverse"));
         }
 
         var vaultService = getVaultService(configuration);

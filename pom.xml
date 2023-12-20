@@ -16,14 +16,15 @@
     limitations under the License.
 
 -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
         <groupId>nl.knaw.dans</groupId>
         <artifactId>dd-parent</artifactId>
-        <version>0.23.0</version>
-        <relativePath />
+        <version>0.25.0-SNAPSHOT</version>
+        <relativePath/>
     </parent>
 
     <artifactId>dd-validate-dans-bag</artifactId>
@@ -46,7 +47,8 @@
     <dependencies>
         <dependency>
             <groupId>nl.knaw.dans</groupId>
-	    <artifactId>dans-java-utils</artifactId>
+            <artifactId>dans-java-utils</artifactId>
+            <version>0.7.1-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>io.dropwizard</groupId>

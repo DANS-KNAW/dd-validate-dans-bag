@@ -15,13 +15,11 @@
  */
 package nl.knaw.dans.validatedansbag.resources;
 
-import io.dropwizard.auth.AuthValueFactoryProvider;
 import io.dropwizard.testing.junit5.DropwizardExtensionsSupport;
 import io.dropwizard.testing.junit5.ResourceExtension;
 import nl.knaw.dans.validatedansbag.api.ValidateCommandDto;
 import nl.knaw.dans.validatedansbag.api.ValidateOkDto;
 import nl.knaw.dans.validatedansbag.core.BagNotFoundException;
-import nl.knaw.dans.validatedansbag.core.auth.SwordUser;
 import nl.knaw.dans.validatedansbag.core.service.FileService;
 import nl.knaw.dans.validatedansbag.core.service.RuleEngineService;
 import org.glassfish.jersey.media.multipart.FormDataMultiPart;
@@ -49,7 +47,6 @@ class ValidateResourceTest {
     public final ResourceExtension EXT = ResourceExtension.builder()
         .addProvider(MultiPartFeature.class)
         .addResource(new ValidateResource(ruleEngineService, fileService))
-        .addProvider(new AuthValueFactoryProvider.Binder<>(SwordUser.class))
         .build();
 
     @BeforeEach

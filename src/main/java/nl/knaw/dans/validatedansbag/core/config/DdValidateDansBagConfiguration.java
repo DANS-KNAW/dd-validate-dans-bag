@@ -13,27 +13,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package nl.knaw.dans.validatedansbag.core.auth;
 
-import java.security.Principal;
+package nl.knaw.dans.validatedansbag.core.config;
 
-public class SwordUser implements Principal {
-    private String name;
+import io.dropwizard.core.Configuration;
+import lombok.Getter;
+import lombok.Setter;
+import nl.knaw.dans.lib.util.DataverseClientFactory;
 
-    public SwordUser(String name) {
-        this.name = name;
-    }
+import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
 
-    public SwordUser() {
+@Getter
+@Setter
+public class DdValidateDansBagConfiguration extends Configuration {
 
-    }
+    @Valid
+    private DataverseClientFactory dataverse;
 
-    public String getName() {
-        return name;
-    }
+    @Valid
+    private VaultCatalogConfig vaultCatalog;
 
-    public void setName(String name) {
-        this.name = name;
-    }
 
+    @Valid
+    @NotNull
+    private ValidationConfig validation;
 }

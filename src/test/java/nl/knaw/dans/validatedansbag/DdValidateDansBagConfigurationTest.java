@@ -23,6 +23,7 @@ import io.dropwizard.configuration.ResourceConfigurationSourceProvider;
 import io.dropwizard.configuration.YamlConfigurationFactory;
 import io.dropwizard.jackson.Jackson;
 import io.dropwizard.jersey.validation.Validators;
+import nl.knaw.dans.validatedansbag.core.config.DdValidateDansBagConfiguration;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;

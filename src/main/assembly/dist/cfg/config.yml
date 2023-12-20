@@ -23,6 +23,11 @@ logging:
 dataverse:
   apiKey: ""
   baseUrl: "http://localhost:8080/"
+  httpClient:
+    timeout: 10s
+    connectionTimeout: 15s
+    timeToLive: 1h
+    retries: 2
 
 vaultCatalog:
 #  baseUrl: null

@@ -15,9 +15,6 @@
  */
 package nl.knaw.dans.validatedansbag.resources;
 
-import io.dropwizard.auth.AuthDynamicFeature;
-import io.dropwizard.auth.AuthValueFactoryProvider;
-import io.dropwizard.auth.basic.BasicCredentialAuthFilter;
 import io.dropwizard.testing.junit5.DropwizardExtensionsSupport;
 import io.dropwizard.testing.junit5.ResourceExtension;
 import nl.knaw.dans.lib.dataverse.DataverseException;
@@ -28,7 +25,6 @@ import nl.knaw.dans.lib.dataverse.model.search.SearchResult;
 import nl.knaw.dans.validatedansbag.api.ValidateCommandDto;
 import nl.knaw.dans.validatedansbag.api.ValidateOkDto;
 import nl.knaw.dans.validatedansbag.api.ValidateOkRuleViolationsInnerDto;
-import nl.knaw.dans.validatedansbag.core.auth.SwordUser;
 import nl.knaw.dans.validatedansbag.core.engine.RuleEngineImpl;
 import nl.knaw.dans.validatedansbag.core.rules.RuleSets;
 import nl.knaw.dans.validatedansbag.core.service.BagItMetadataReaderImpl;
@@ -44,7 +40,6 @@ import nl.knaw.dans.validatedansbag.core.validator.IdentifierValidatorImpl;
 import nl.knaw.dans.validatedansbag.core.validator.LicenseValidator;
 import nl.knaw.dans.validatedansbag.core.validator.OrganizationIdentifierPrefixValidatorImpl;
 import nl.knaw.dans.validatedansbag.core.validator.PolygonListValidatorImpl;
-import nl.knaw.dans.validatedansbag.resources.util.MockAuthorization;
 import nl.knaw.dans.validatedansbag.resources.util.MockedDataverseResponse;
 import org.glassfish.jersey.media.multipart.FormDataMultiPart;
 import org.glassfish.jersey.media.multipart.MultiPartFeature;
@@ -93,11 +88,6 @@ class ValidateResourceIntegrationTest {
         EXT = ResourceExtension.builder()
                 .addProvider(MultiPartFeature.class)
                 .addProvider(ValidateOkYamlMessageBodyWriter.class)
-                .addProvider(new AuthDynamicFeature(new BasicCredentialAuthFilter.Builder<SwordUser>()
-                        .setAuthenticator(new MockAuthorization())
-                        .setRealm("DANS")
-                        .buildAuthFilter()))
-                .addProvider(new AuthValueFactoryProvider.Binder<>(SwordUser.class))
                 .addResource(buildValidateResource())
                 .build();
     }
