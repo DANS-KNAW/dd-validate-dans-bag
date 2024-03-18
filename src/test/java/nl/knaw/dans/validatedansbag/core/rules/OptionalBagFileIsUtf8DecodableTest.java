@@ -15,7 +15,10 @@
  */
 package nl.knaw.dans.validatedansbag.core.rules;
 
+import nl.knaw.dans.validatedansbag.core.engine.RuleEngineImpl;
 import nl.knaw.dans.validatedansbag.core.engine.RuleResult;
+import nl.knaw.dans.validatedansbag.core.validator.SecurePathValidator;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
@@ -26,13 +29,18 @@ import java.nio.file.Path;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class OptionalBagFileIsUtf8DecodableTest extends RuleTestFixture {
+    SecurePathValidator pathSecurityValidator;
+    @BeforeEach
+    void InitiateRuleEngine() {
+        this.pathSecurityValidator = new SecurePathValidator( null);
+    }
 
     @Test
     void should_return_SUCCESS_when_file_is_successfully_read() throws Exception {
         Mockito.when(fileService.exists(Mockito.any())).thenReturn(true);
         Mockito.when(fileService.readFileContents(Mockito.any(), Mockito.any())).thenReturn(CharBuffer.allocate(1));
 
-        var result = new OptionalBagFileIsUtf8Decodable(Path.of("somefile.txt"), fileService).validate(Path.of("bagdir"));
+        var result = new OptionalBagFileIsUtf8Decodable(Path.of("somefile.txt"), fileService, this.pathSecurityValidator).validate(Path.of("bagdir"));
 
         assertEquals(RuleResult.Status.SUCCESS, result.getStatus());
     }
@@ -41,7 +49,7 @@ public class OptionalBagFileIsUtf8DecodableTest extends RuleTestFixture {
     void should_return_SUCCESS_when_file_does_not_exist() throws Exception {
         Mockito.when(fileService.exists(Mockito.any())).thenReturn(false);
 
-        var result = new OptionalBagFileIsUtf8Decodable(Path.of("somefile.txt"), fileService).validate(Path.of("bagdir"));
+        var result = new OptionalBagFileIsUtf8Decodable(Path.of("somefile.txt"), fileService, this.pathSecurityValidator).validate(Path.of("bagdir"));
 
         assertEquals(RuleResult.Status.SKIP_DEPENDENCIES, result.getStatus());
     }
@@ -52,7 +60,7 @@ public class OptionalBagFileIsUtf8DecodableTest extends RuleTestFixture {
         Mockito.when(fileService.readFileContents(Mockito.any(), Mockito.any()))
                 .thenThrow(new CharacterCodingException());
 
-        var result = new OptionalBagFileIsUtf8Decodable(Path.of("somefile.txt"), fileService).validate(Path.of("bagdir"));
+        var result = new OptionalBagFileIsUtf8Decodable(Path.of("somefile.txt"), fileService, this.pathSecurityValidator).validate(Path.of("bagdir"));
 
         assertEquals(RuleResult.Status.ERROR, result.getStatus());
     }

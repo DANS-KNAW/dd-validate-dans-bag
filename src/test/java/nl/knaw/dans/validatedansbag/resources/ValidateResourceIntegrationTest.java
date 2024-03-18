@@ -27,19 +27,8 @@ import nl.knaw.dans.validatedansbag.api.ValidateOkDto;
 import nl.knaw.dans.validatedansbag.api.ValidateOkRuleViolationsInnerDto;
 import nl.knaw.dans.validatedansbag.core.engine.RuleEngineImpl;
 import nl.knaw.dans.validatedansbag.core.rules.RuleSets;
-import nl.knaw.dans.validatedansbag.core.service.BagItMetadataReaderImpl;
-import nl.knaw.dans.validatedansbag.core.service.DataverseService;
-import nl.knaw.dans.validatedansbag.core.service.FileServiceImpl;
-import nl.knaw.dans.validatedansbag.core.service.FilesXmlServiceImpl;
-import nl.knaw.dans.validatedansbag.core.service.OriginalFilepathsServiceImpl;
-import nl.knaw.dans.validatedansbag.core.service.RuleEngineServiceImpl;
-import nl.knaw.dans.validatedansbag.core.service.VaultCatalogClient;
-import nl.knaw.dans.validatedansbag.core.service.XmlReaderImpl;
-import nl.knaw.dans.validatedansbag.core.service.XmlSchemaValidator;
-import nl.knaw.dans.validatedansbag.core.validator.IdentifierValidatorImpl;
-import nl.knaw.dans.validatedansbag.core.validator.LicenseValidator;
-import nl.knaw.dans.validatedansbag.core.validator.OrganizationIdentifierPrefixValidatorImpl;
-import nl.knaw.dans.validatedansbag.core.validator.PolygonListValidatorImpl;
+import nl.knaw.dans.validatedansbag.core.service.*;
+import nl.knaw.dans.validatedansbag.core.validator.*;
 import nl.knaw.dans.validatedansbag.resources.util.MockedDataverseResponse;
 import org.glassfish.jersey.media.multipart.FormDataMultiPart;
 import org.glassfish.jersey.media.multipart.MultiPartFeature;
@@ -60,9 +49,7 @@ import java.util.stream.Collectors;
 
 import static nl.knaw.dans.validatedansbag.resources.util.TestUtil.basicUsernamePassword;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 @ExtendWith(DropwizardExtensionsSupport.class)
 class ValidateResourceIntegrationTest {
@@ -70,7 +57,6 @@ class ValidateResourceIntegrationTest {
 
     private static final DataverseService dataverseService = Mockito.mock(DataverseService.class);
     private static final XmlSchemaValidator xmlSchemaValidator = Mockito.mock(XmlSchemaValidator.class);
-
     private static final LicenseValidator licenseValidator = new LicenseValidator() {
 
         @Override
@@ -93,7 +79,7 @@ class ValidateResourceIntegrationTest {
     }
 
     static ValidateResource buildValidateResource() {
-        var fileService = new FileServiceImpl();
+        var fileService = new FileServiceImpl(new SecurePathValidator(null));
         var bagItMetadataReader = new BagItMetadataReaderImpl();
         var xmlReader = new XmlReaderImpl();
         var polygonListValidator = new PolygonListValidatorImpl();
@@ -101,20 +87,21 @@ class ValidateResourceIntegrationTest {
         var filesXmlService = new FilesXmlServiceImpl(xmlReader);
         var identifierValidator = new IdentifierValidatorImpl();
         var vaultService = Mockito.mock(VaultCatalogClient.class);
+        var pathSecurityValidator = new SecurePathValidator(null);
 
         var organizationIdentifierPrefixValidator = new OrganizationIdentifierPrefixValidatorImpl(
                 List.of("u1:", "u2:")
         );
 
         // set up the engine and the service that has a default set of rules
-        var ruleEngine = new RuleEngineImpl();
+        var ruleEngine = new RuleEngineImpl(pathSecurityValidator);
         var ruleSets = new RuleSets(
                 dataverseService, fileService, filesXmlService, originalFilepathsService, xmlReader,
                 bagItMetadataReader, xmlSchemaValidator, licenseValidator, identifierValidator, polygonListValidator, organizationIdentifierPrefixValidator,
-                vaultService);
+                vaultService, pathSecurityValidator);
 
-        var ruleEngineService = new RuleEngineServiceImpl(ruleEngine, fileService, ruleSets.getDataStationSet());
-        return new ValidateResource(ruleEngineService, fileService);
+        var ruleEngineService = new RuleEngineServiceImpl(ruleEngine, fileService, ruleSets.getDataStationSet(), new SecurePathValidator(null));
+        return new ValidateResource(ruleEngineService, fileService, pathSecurityValidator);
     }
 
     @BeforeEach

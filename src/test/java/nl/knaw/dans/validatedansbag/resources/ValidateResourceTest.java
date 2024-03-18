@@ -22,6 +22,7 @@ import nl.knaw.dans.validatedansbag.api.ValidateOkDto;
 import nl.knaw.dans.validatedansbag.core.BagNotFoundException;
 import nl.knaw.dans.validatedansbag.core.service.FileService;
 import nl.knaw.dans.validatedansbag.core.service.RuleEngineService;
+import nl.knaw.dans.validatedansbag.core.validator.SecurePathValidator;
 import org.glassfish.jersey.media.multipart.FormDataMultiPart;
 import org.glassfish.jersey.media.multipart.MultiPartFeature;
 import org.junit.jupiter.api.BeforeEach;
@@ -44,9 +45,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 class ValidateResourceTest {
     private final RuleEngineService ruleEngineService = Mockito.mock(RuleEngineService.class);
     private final FileService fileService = Mockito.mock(FileService.class);
+    private static final SecurePathValidator PATH_SECURITY_VALIDATOR = new SecurePathValidator(null);
     public final ResourceExtension EXT = ResourceExtension.builder()
         .addProvider(MultiPartFeature.class)
-        .addResource(new ValidateResource(ruleEngineService, fileService))
+        .addResource(new ValidateResource(ruleEngineService, fileService, PATH_SECURITY_VALIDATOR))
         .build();
 
     @BeforeEach

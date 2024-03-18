@@ -23,6 +23,7 @@ import nl.knaw.dans.validatedansbag.core.engine.DepositType;
 import nl.knaw.dans.validatedansbag.core.engine.RuleValidationResult;
 import nl.knaw.dans.validatedansbag.core.service.FileService;
 import nl.knaw.dans.validatedansbag.core.service.RuleEngineService;
+import nl.knaw.dans.validatedansbag.core.validator.SecurePathValidator;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,10 +49,12 @@ public class ValidateResource {
     private final RuleEngineService ruleEngineService;
 
     private final FileService fileService;
+    private final SecurePathValidator pathSecurityValidator;
 
-    public ValidateResource(RuleEngineService ruleEngineService, FileService fileService) {
+    public ValidateResource(RuleEngineService ruleEngineService, FileService fileService, SecurePathValidator pathSecurityValidator) {
         this.ruleEngineService = ruleEngineService;
         this.fileService = fileService;
+        this.pathSecurityValidator = pathSecurityValidator;
     }
 
     @POST
@@ -74,6 +77,8 @@ public class ValidateResource {
             }
             else {
                 var locationPath = java.nio.file.Path.of(location);
+                if (!this.pathSecurityValidator.IsPathSecure(locationPath))
+                    throw new IllegalArgumentException(String.format("InsecurePath: %s", locationPath));
                 validateResult = validatePath(locationPath, depositType);
             }
 

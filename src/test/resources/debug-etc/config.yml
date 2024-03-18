@@ -34,6 +34,7 @@ dataverse:
 
 
 validation:
+  baseFolder: "/var/opt/dans.knaw.nl/tmp/"
   otherIdPrefixes:
     - 'EXAMPLE:'
     - 'USER01:'

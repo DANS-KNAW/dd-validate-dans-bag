@@ -15,6 +15,7 @@
  */
 package nl.knaw.dans.validatedansbag.core.engine;
 
+import nl.knaw.dans.validatedansbag.core.validator.SecurePathValidator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,6 +31,11 @@ import java.util.stream.Collectors;
 
 public class RuleEngineImpl implements RuleEngine {
     private static final Logger log = LoggerFactory.getLogger(RuleEngineImpl.class);
+    private final SecurePathValidator pathSecurityValidator;
+
+    public RuleEngineImpl(SecurePathValidator pathSecurityValidator) {
+        this.pathSecurityValidator = pathSecurityValidator;
+    }
 
     @Override
     public void validateRuleConfiguration(NumberedRule[] rules) throws RuleEngineConfigurationException {

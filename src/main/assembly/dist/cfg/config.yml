@@ -33,6 +33,7 @@ vaultCatalog:
 #  baseUrl: null
 
 validation:
+  baseFolder: "/var/opt/dans.knaw.nl/tmp/"
   otherIdPrefixes: []
 
   xmlSchemas:

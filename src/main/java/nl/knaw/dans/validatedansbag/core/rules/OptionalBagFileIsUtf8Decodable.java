@@ -19,6 +19,7 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import nl.knaw.dans.validatedansbag.core.engine.RuleResult;
 import nl.knaw.dans.validatedansbag.core.service.FileService;
+import nl.knaw.dans.validatedansbag.core.validator.SecurePathValidator;
 
 import java.nio.charset.CharacterCodingException;
 import java.nio.charset.StandardCharsets;
@@ -29,11 +30,14 @@ import java.nio.file.Path;
 public class OptionalBagFileIsUtf8Decodable implements BagValidatorRule {
     private final Path filename;
     private final FileService fileService;
+    private final SecurePathValidator pathSecurityValidator;
 
     @Override
     public RuleResult validate(Path path) throws Exception {
         try {
             var target = path.resolve(filename);
+            if (!this.pathSecurityValidator.IsPathSecure(path))
+                throw new IllegalArgumentException(String.format("InsecurePath: %s", target));
 
             if (fileService.exists(target)) {
                 fileService.readFileContents(target, StandardCharsets.UTF_8);

@@ -22,6 +22,7 @@ import nl.knaw.dans.validatedansbag.core.engine.NumberedRule;
 import nl.knaw.dans.validatedansbag.core.engine.RuleEngine;
 import nl.knaw.dans.validatedansbag.core.engine.RuleEngineConfigurationException;
 import nl.knaw.dans.validatedansbag.core.engine.RuleValidationResult;
+import nl.knaw.dans.validatedansbag.core.validator.SecurePathValidator;
 
 import java.nio.file.Path;
 import java.util.List;
@@ -32,19 +33,25 @@ public class RuleEngineServiceImpl implements RuleEngineService {
     private final RuleEngine ruleEngine;
     private final FileService fileService;
     private final NumberedRule[] ruleSet;
+    private final SecurePathValidator pathSecurityValidator;
 
     public RuleEngineServiceImpl(RuleEngine ruleEngine,
                                  FileService fileService,
-                                 NumberedRule[] ruleSet) {
+                                 NumberedRule[] ruleSet,
+                                 SecurePathValidator pathSecurityValidator) {
         this.ruleEngine = ruleEngine;
         this.fileService = fileService;
         this.ruleSet = ruleSet;
+        this.pathSecurityValidator = pathSecurityValidator;
         this.validateRuleConfiguration();
     }
 
     @Override
     public List<RuleValidationResult> validateBag(Path path, DepositType depositType) throws Exception {
         log.info("Validating bag on path '{}', deposit type is {}", path, depositType);
+
+        if (!this.pathSecurityValidator.IsPathSecure(path))
+            throw new IllegalArgumentException(String.format("InsecurePath: %s", path));
 
         if (!fileService.isReadable(path)) {
             log.warn("Path {} could not not be found or is not readable", path);

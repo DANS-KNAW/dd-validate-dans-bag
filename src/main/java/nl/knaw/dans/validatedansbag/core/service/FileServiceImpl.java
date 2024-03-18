@@ -15,6 +15,7 @@
  */
 package nl.knaw.dans.validatedansbag.core.service;
 
+import nl.knaw.dans.validatedansbag.core.validator.SecurePathValidator;
 import org.apache.commons.io.FileUtils;
 
 import java.io.FileOutputStream;
@@ -31,6 +32,11 @@ import java.util.stream.Collectors;
 import java.util.zip.ZipInputStream;
 
 public class FileServiceImpl implements FileService {
+    private final SecurePathValidator pathSecurityValidator;
+
+    public FileServiceImpl(SecurePathValidator pathSecurityValidator) {
+        this.pathSecurityValidator = pathSecurityValidator;
+    }
 
     @Override
     public boolean isDirectory(Path path) {
@@ -58,6 +64,8 @@ public class FileServiceImpl implements FileService {
 
     @Override
     public byte[] readFileContents(Path path) throws IOException {
+        if (!this.pathSecurityValidator.IsPathSecure(path))
+            throw new IllegalArgumentException(String.format("InsecurePath: %s", path));
         return Files.readAllBytes(path);
     }
 
@@ -73,6 +81,8 @@ public class FileServiceImpl implements FileService {
 
     @Override
     public CharBuffer readFileContents(Path path, Charset charset) throws IOException {
+        if (!this.pathSecurityValidator.IsPathSecure(path))
+            throw new IllegalArgumentException(String.format("InsecurePath: %s", path));
         var contents = readFileContents(path);
         return charset.newDecoder().decode(ByteBuffer.wrap(contents));
     }

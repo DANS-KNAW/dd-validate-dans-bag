@@ -21,12 +21,17 @@ import lombok.Setter;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
+import java.nio.file.Path;
 import java.util.List;
 
 @Valid
 @Getter
 @Setter
 public class ValidationConfig {
+
+    @NotNull
+    @Valid
+    Path baseFolder;
 
     @NotNull
     @Valid
