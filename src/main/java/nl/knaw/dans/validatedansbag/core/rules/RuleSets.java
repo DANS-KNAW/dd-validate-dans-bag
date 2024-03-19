@@ -57,21 +57,18 @@ public class RuleSets {
     private final OrganizationIdentifierPrefixValidator organizationIdentifierPrefixValidator;
 
     private final VaultCatalogClient vaultCatalogClient;
-    private final SecurePathValidator pathSecurityValidator;
 
     public RuleSets(DataverseService dataverseService,
-                    FileService fileService,
-                    FilesXmlService filesXmlService,
-                    OriginalFilepathsService originalFilepathService,
-                    XmlReader xmlReader,
-                    BagItMetadataReader bagItMetadataReader,
-                    XmlSchemaValidator xmlSchemaValidator,
-                    LicenseValidator licenseValidator,
-                    IdentifierValidator identifierValidator,
-                    PolygonListValidator polygonListValidator,
-                    OrganizationIdentifierPrefixValidator organizationIdentifierPrefixValidator,
-                    VaultCatalogClient vaultCatalogClient,
-                    SecurePathValidator pathSecurityValidator) {
+        FileService fileService,
+        FilesXmlService filesXmlService,
+        OriginalFilepathsService originalFilepathService,
+        XmlReader xmlReader,
+        BagItMetadataReader bagItMetadataReader,
+        XmlSchemaValidator xmlSchemaValidator,
+        LicenseValidator licenseValidator,
+        IdentifierValidator identifierValidator,
+        PolygonListValidator polygonListValidator,
+        OrganizationIdentifierPrefixValidator organizationIdentifierPrefixValidator, VaultCatalogClient vaultCatalogClient) {
         this.dataverseService = dataverseService;
         this.fileService = fileService;
         this.filesXmlService = filesXmlService;
@@ -84,7 +81,6 @@ public class RuleSets {
         this.polygonListValidator = polygonListValidator;
         this.organizationIdentifierPrefixValidator = organizationIdentifierPrefixValidator;
         this.vaultCatalogClient = vaultCatalogClient;
-        this.pathSecurityValidator = pathSecurityValidator;
     }
 
     public NumberedRule[] getDataStationSet() {
@@ -172,7 +168,7 @@ public class RuleSets {
             new NumberedRule("3.2.3", new FilesXmlNoDuplicateFilesAndEveryPayloadFileIsDescribed(filesXmlService, fileService, originalFilepathService), List.of("3.2.1")),
 
             // 3.3 original-filepaths.txt
-            new NumberedRule("3.3.1", new OptionalBagFileIsUtf8Decodable(Path.of("original-filepaths.txt"), fileService, this.pathSecurityValidator), List.of("1.1.1")),
+            new NumberedRule("3.3.1", new OptionalBagFileIsUtf8Decodable(Path.of("original-filepaths.txt"), fileService), List.of("1.1.1")),
             new NumberedRule("3.3.2", new OptionalOriginalFilePathsIsComplete(originalFilepathService, fileService, filesXmlService), List.of("3.3.1")),
 
             // 3.4 Migration-only metadata¶

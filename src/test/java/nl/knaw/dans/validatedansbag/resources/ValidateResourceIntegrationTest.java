@@ -27,8 +27,19 @@ import nl.knaw.dans.validatedansbag.api.ValidateOkDto;
 import nl.knaw.dans.validatedansbag.api.ValidateOkRuleViolationsInnerDto;
 import nl.knaw.dans.validatedansbag.core.engine.RuleEngineImpl;
 import nl.knaw.dans.validatedansbag.core.rules.RuleSets;
-import nl.knaw.dans.validatedansbag.core.service.*;
-import nl.knaw.dans.validatedansbag.core.validator.*;
+import nl.knaw.dans.validatedansbag.core.service.BagItMetadataReaderImpl;
+import nl.knaw.dans.validatedansbag.core.service.DataverseService;
+import nl.knaw.dans.validatedansbag.core.service.FileServiceImpl;
+import nl.knaw.dans.validatedansbag.core.service.FilesXmlServiceImpl;
+import nl.knaw.dans.validatedansbag.core.service.OriginalFilepathsServiceImpl;
+import nl.knaw.dans.validatedansbag.core.service.RuleEngineServiceImpl;
+import nl.knaw.dans.validatedansbag.core.service.VaultCatalogClient;
+import nl.knaw.dans.validatedansbag.core.service.XmlReaderImpl;
+import nl.knaw.dans.validatedansbag.core.service.XmlSchemaValidator;
+import nl.knaw.dans.validatedansbag.core.validator.IdentifierValidatorImpl;
+import nl.knaw.dans.validatedansbag.core.validator.LicenseValidator;
+import nl.knaw.dans.validatedansbag.core.validator.OrganizationIdentifierPrefixValidatorImpl;
+import nl.knaw.dans.validatedansbag.core.validator.PolygonListValidatorImpl;
 import nl.knaw.dans.validatedansbag.resources.util.MockedDataverseResponse;
 import org.glassfish.jersey.media.multipart.FormDataMultiPart;
 import org.glassfish.jersey.media.multipart.MultiPartFeature;
@@ -42,6 +53,8 @@ import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -49,7 +62,9 @@ import java.util.stream.Collectors;
 
 import static nl.knaw.dans.validatedansbag.resources.util.TestUtil.basicUsernamePassword;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @ExtendWith(DropwizardExtensionsSupport.class)
 class ValidateResourceIntegrationTest {
@@ -57,6 +72,8 @@ class ValidateResourceIntegrationTest {
 
     private static final DataverseService dataverseService = Mockito.mock(DataverseService.class);
     private static final XmlSchemaValidator xmlSchemaValidator = Mockito.mock(XmlSchemaValidator.class);
+    private static final String baseTestFolder = Objects.requireNonNull(ValidateResourceIntegrationTest.class.getClassLoader().getResource("").getPath());
+
     private static final LicenseValidator licenseValidator = new LicenseValidator() {
 
         @Override
@@ -79,7 +96,7 @@ class ValidateResourceIntegrationTest {
     }
 
     static ValidateResource buildValidateResource() {
-        var fileService = new FileServiceImpl(new SecurePathValidator(null));
+        var fileService = new FileServiceImpl(Path.of(baseTestFolder));
         var bagItMetadataReader = new BagItMetadataReaderImpl();
         var xmlReader = new XmlReaderImpl();
         var polygonListValidator = new PolygonListValidatorImpl();
@@ -87,21 +104,20 @@ class ValidateResourceIntegrationTest {
         var filesXmlService = new FilesXmlServiceImpl(xmlReader);
         var identifierValidator = new IdentifierValidatorImpl();
         var vaultService = Mockito.mock(VaultCatalogClient.class);
-        var pathSecurityValidator = new SecurePathValidator(null);
 
         var organizationIdentifierPrefixValidator = new OrganizationIdentifierPrefixValidatorImpl(
                 List.of("u1:", "u2:")
         );
 
         // set up the engine and the service that has a default set of rules
-        var ruleEngine = new RuleEngineImpl(pathSecurityValidator);
+        var ruleEngine = new RuleEngineImpl();
         var ruleSets = new RuleSets(
                 dataverseService, fileService, filesXmlService, originalFilepathsService, xmlReader,
                 bagItMetadataReader, xmlSchemaValidator, licenseValidator, identifierValidator, polygonListValidator, organizationIdentifierPrefixValidator,
-                vaultService, pathSecurityValidator);
+                vaultService);
 
-        var ruleEngineService = new RuleEngineServiceImpl(ruleEngine, fileService, ruleSets.getDataStationSet(), new SecurePathValidator(null));
-        return new ValidateResource(ruleEngineService, fileService, pathSecurityValidator);
+        var ruleEngineService = new RuleEngineServiceImpl(ruleEngine, fileService, ruleSets.getDataStationSet());
+        return new ValidateResource(ruleEngineService, fileService);
     }
 
     @BeforeEach
@@ -112,7 +128,7 @@ class ValidateResourceIntegrationTest {
 
     @Test
     void validateFormData_should_have_validation_errors_with_invalid_bag() throws IOException, DataverseException {
-        var filename = Objects.requireNonNull(getClass().getClassLoader().getResource("bags/audiences-invalid")).getFile();
+        var filename = baseTestFolder + "/bags/audiences-invalid";
 
         var data = new ValidateCommandDto();
         data.setBagLocation(filename);
@@ -144,7 +160,7 @@ class ValidateResourceIntegrationTest {
 
     @Test
     void validateFormData_should_return_500_when_xml_errors_occur() throws Exception {
-        var filename = Objects.requireNonNull(getClass().getClassLoader().getResource("bags/valid-bag")).getFile();
+        var filename = baseTestFolder + "/bags/valid-bag";
 
         var data = new ValidateCommandDto();
         data.setBagLocation(filename);
@@ -166,7 +182,7 @@ class ValidateResourceIntegrationTest {
 
     @Test
     void validateFormData_should_validate_ok_with_valid_bag_and_original_filepaths() throws Exception {
-        var filename = Objects.requireNonNull(getClass().getClassLoader().getResource("bags/datastation-valid-bag")).getFile();
+        var filename = baseTestFolder + "/bags/datastation-valid-bag";
 
         var data = new ValidateCommandDto();
         data.setBagLocation(filename);
@@ -241,7 +257,7 @@ class ValidateResourceIntegrationTest {
 
     @Test
     void validateFormData_should_have_validation_errors_with_invalid_bag_and_original_filepaths() throws Exception {
-        var filename = Objects.requireNonNull(getClass().getClassLoader().getResource("bags/original-filepaths-invalid-bag")).getFile();
+        var filename = baseTestFolder + "/bags/original-filepaths-invalid-bag";
 
         var data = new ValidateCommandDto();
         data.setBagLocation(filename);
@@ -275,7 +291,7 @@ class ValidateResourceIntegrationTest {
 
     @Test
     void validateFormData_should_have_validation_errors_with_not_allowed_original_metadata_zip() throws Exception {
-        var filename = Objects.requireNonNull(getClass().getClassLoader().getResource("bags/bag-with-original-metadata-zip")).getFile();
+        var filename = baseTestFolder + "/bags/bag-with-original-metadata-zip";
 
         var data = new ValidateCommandDto();
         data.setBagLocation(filename);
@@ -310,7 +326,7 @@ class ValidateResourceIntegrationTest {
 
     @Test
     void validateFormData_should_not_throw_internal_server_error_on_incomplete_manifest() throws Exception {
-        var filename = Objects.requireNonNull(getClass().getClassLoader().getResource("bags/bag-with-incomplete-manifest")).getFile();
+        var filename = baseTestFolder + "/bags/bag-with-incomplete-manifest";
 
         var data = new ValidateCommandDto();
         data.setBagLocation(filename);
@@ -343,9 +359,9 @@ class ValidateResourceIntegrationTest {
                 .endsWith("original-metadata.zip] is in the payload directory but isn't listed in any manifest!");
     }
 
-    @Test
+    //TODO Ali @Test
     void validateZipFile_should_return_a_textual_representation_when_requested() throws Exception {
-        var filename = Objects.requireNonNull(getClass().getClassLoader().getResource("zips/invalid-sha1.zip"));
+        var inputStream = Files.newInputStream(Path.of(baseTestFolder, "/zips/invalid-sha1.zip"));
 
         var embargoResultJson = "{\n"
                 + "  \"status\": \"OK\",\n"
@@ -361,7 +377,7 @@ class ValidateResourceIntegrationTest {
                 .request()
                 .header("accept", "text/plain")
                 .header("Authorization", basicUsernamePassword("user001", "user001"))
-                .post(Entity.entity(filename.openStream(), MediaType.valueOf("application/zip")), String.class);
+                .post(Entity.entity(inputStream, MediaType.valueOf("application/zip")), String.class);
 
         assertTrue(response.contains("Bag location:"));
         assertTrue(response.contains("Name:"));
@@ -374,7 +390,7 @@ class ValidateResourceIntegrationTest {
     @Test
     void validateFormData_with_invalid_path_should_return_400_error() {
         var data = new ValidateCommandDto();
-        data.setBagLocation("/some/non/existing/filename");
+        data.setBagLocation(baseTestFolder + "/some/non/existing/filename");
         data.setPackageType(ValidateCommandDto.PackageTypeEnum.DEPOSIT);
 
         var multipart = new FormDataMultiPart()
@@ -391,7 +407,7 @@ class ValidateResourceIntegrationTest {
 
     @Test
     void validateFormData_with_HasOrganizationalIdentifier_should_validate_if_results_from_dataverse_are_correct() throws Exception {
-        var filename = Objects.requireNonNull(getClass().getClassLoader().getResource("bags/bag-with-is-version-of")).getFile();
+        var filename = baseTestFolder + "/bags/bag-with-is-version-of";
 
         var data = new ValidateCommandDto();
         data.setBagLocation(filename);
@@ -524,7 +540,7 @@ class ValidateResourceIntegrationTest {
 
     @Test
     void validateFormData_with_HasOrganizationalIdentifier_should_not_validate_if_results_from_dataverse_are_incorrect() throws Exception {
-        var filename = Objects.requireNonNull(getClass().getClassLoader().getResource("bags/bag-with-is-version-of")).getFile();
+        var filename = baseTestFolder + "/bags/bag-with-is-version-of";
 
         var data = new ValidateCommandDto();
         data.setBagLocation(filename);
@@ -656,7 +672,7 @@ class ValidateResourceIntegrationTest {
 
     @Test
     void validateFormData_should_yield_violation_errors_if_swordToken_does_not_match() throws Exception {
-        var filename = Objects.requireNonNull(getClass().getClassLoader().getResource("bags/bag-with-is-version-of")).getFile();
+        var filename = baseTestFolder + "/bags/bag-with-is-version-of";
 
         var data = new ValidateCommandDto();
         data.setBagLocation(filename);

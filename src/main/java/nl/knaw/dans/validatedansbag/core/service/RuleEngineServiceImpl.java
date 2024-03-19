@@ -33,16 +33,13 @@ public class RuleEngineServiceImpl implements RuleEngineService {
     private final RuleEngine ruleEngine;
     private final FileService fileService;
     private final NumberedRule[] ruleSet;
-    private final SecurePathValidator pathSecurityValidator;
 
     public RuleEngineServiceImpl(RuleEngine ruleEngine,
                                  FileService fileService,
-                                 NumberedRule[] ruleSet,
-                                 SecurePathValidator pathSecurityValidator) {
+                                 NumberedRule[] ruleSet) {
         this.ruleEngine = ruleEngine;
         this.fileService = fileService;
         this.ruleSet = ruleSet;
-        this.pathSecurityValidator = pathSecurityValidator;
         this.validateRuleConfiguration();
     }
 
@@ -50,8 +47,7 @@ public class RuleEngineServiceImpl implements RuleEngineService {
     public List<RuleValidationResult> validateBag(Path path, DepositType depositType) throws Exception {
         log.info("Validating bag on path '{}', deposit type is {}", path, depositType);
 
-        if (!this.pathSecurityValidator.IsPathSecure(path))
-            throw new IllegalArgumentException(String.format("InsecurePath: %s", path));
+        fileService.checkBaseFolderSecurity(path);
 
         if (!fileService.isReadable(path)) {
             log.warn("Path {} could not not be found or is not readable", path);

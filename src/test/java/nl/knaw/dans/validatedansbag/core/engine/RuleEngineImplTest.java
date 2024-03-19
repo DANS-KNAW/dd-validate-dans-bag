@@ -16,8 +16,6 @@
 package nl.knaw.dans.validatedansbag.core.engine;
 
 import nl.knaw.dans.validatedansbag.core.rules.BagValidatorRule;
-import nl.knaw.dans.validatedansbag.core.validator.SecurePathValidator;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
@@ -29,11 +27,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class RuleEngineImplTest {
-    RuleEngineImpl ruleEngine;
-    @BeforeEach
-    void InitiateRuleEngine() {
-        this.ruleEngine = new RuleEngineImpl(new SecurePathValidator( null));
-    }
 
     @Test
     void validateRules_should_call_all_rules_exactly_once() throws Exception {
@@ -47,9 +40,9 @@ class RuleEngineImplTest {
             new NumberedRule("1.4", fakeRule),
         };
 
-
-        assertDoesNotThrow(() -> this.ruleEngine.validateRuleConfiguration(rules));
-        assertDoesNotThrow(() -> this.ruleEngine.validateRules(Path.of("somedir"), rules, DepositType.DEPOSIT));
+        var engine = new RuleEngineImpl();
+        assertDoesNotThrow(() -> engine.validateRuleConfiguration(rules));
+        assertDoesNotThrow(() -> engine.validateRules(Path.of("somedir"), rules, DepositType.DEPOSIT));
 
         Mockito.verify(fakeRule, Mockito.times(4)).validate(Mockito.any());
     }
@@ -70,9 +63,9 @@ class RuleEngineImplTest {
         var failedResult = new RuleResult(RuleResult.Status.ERROR, List.of());
         Mockito.when(fakeRuleSkipped.validate(Mockito.any())).thenReturn(failedResult);
 
-
-        assertDoesNotThrow(() -> this.ruleEngine.validateRuleConfiguration(rules));
-        assertDoesNotThrow(() -> this.ruleEngine.validateRules(Path.of("somedir"), rules, DepositType.DEPOSIT));
+        var engine = new RuleEngineImpl();
+        assertDoesNotThrow(() -> engine.validateRuleConfiguration(rules));
+        assertDoesNotThrow(() -> engine.validateRules(Path.of("somedir"), rules, DepositType.DEPOSIT));
 
         Mockito.verify(fakeRule, Mockito.times(2)).validate(Mockito.any());
         Mockito.verify(fakeRuleSkipped).validate(Mockito.any());
@@ -92,9 +85,9 @@ class RuleEngineImplTest {
             new NumberedRule("1.4", fakeRule),
         };
 
-
-        assertDoesNotThrow(() -> this.ruleEngine.validateRuleConfiguration(rules));
-        assertDoesNotThrow(() -> this.ruleEngine.validateRules(Path.of("somedir"), rules, DepositType.DEPOSIT));
+        var engine = new RuleEngineImpl();
+        assertDoesNotThrow(() -> engine.validateRuleConfiguration(rules));
+        assertDoesNotThrow(() -> engine.validateRules(Path.of("somedir"), rules, DepositType.DEPOSIT));
 
         Mockito.verify(fakeRule, Mockito.times(4)).validate(Mockito.any());
     }
@@ -112,10 +105,10 @@ class RuleEngineImplTest {
             new NumberedRule("1.4", fakeRule),
         };
 
-
+        var engine = new RuleEngineImpl();
 
         assertThrows(RuleEngineConfigurationException.class,
-            () -> this.ruleEngine.validateRuleConfiguration(rules));
+            () -> engine.validateRuleConfiguration(rules));
 
     }
 
@@ -132,10 +125,10 @@ class RuleEngineImplTest {
             new NumberedRule("1.4", fakeRule),
         };
 
-
+        var engine = new RuleEngineImpl();
 
         assertThrows(RuleEngineConfigurationException.class,
-            () -> this.ruleEngine.validateRuleConfiguration(rules));
+            () -> engine.validateRuleConfiguration(rules));
 
     }
 
@@ -155,10 +148,10 @@ class RuleEngineImplTest {
             new NumberedRule("1.4", fakeRule),
         };
 
-
+        var engine = new RuleEngineImpl();
 
         assertThrows(RuleEngineConfigurationException.class,
-            () -> this.ruleEngine.validateRuleConfiguration(rules));
+            () -> engine.validateRuleConfiguration(rules));
 
     }
 
@@ -179,10 +172,10 @@ class RuleEngineImplTest {
             new NumberedRule("1.4", fakeRule),
         };
 
-
+        var engine = new RuleEngineImpl();
 
         assertThrows(RuleEngineConfigurationException.class,
-            () -> this.ruleEngine.validateRuleConfiguration(rules));
+            () -> engine.validateRuleConfiguration(rules));
 
     }
 
@@ -201,10 +194,10 @@ class RuleEngineImplTest {
             new NumberedRule("1.4", fakeRule),
         };
 
-
+        var engine = new RuleEngineImpl();
 
         assertDoesNotThrow(
-            () -> this.ruleEngine.validateRuleConfiguration(rules));
+            () -> engine.validateRuleConfiguration(rules));
 
     }
 
@@ -225,10 +218,10 @@ class RuleEngineImplTest {
             new NumberedRule("1.6", fakeRule, DepositType.MIGRATION, List.of("1.3")),
         };
 
-
+        var engine = new RuleEngineImpl();
 
         assertDoesNotThrow(
-            () -> this.ruleEngine.validateRuleConfiguration(rules));
+            () -> engine.validateRuleConfiguration(rules));
 
     }
 
@@ -250,8 +243,8 @@ class RuleEngineImplTest {
             new NumberedRule("1.3", fakeErrorRule, DepositType.MIGRATION, List.of("1.2")),
         };
 
-
-        var result = this.ruleEngine.validateRules(Path.of("bagdir"), rules, DepositType.DEPOSIT);
+        var engine = new RuleEngineImpl();
+        var result = engine.validateRules(Path.of("bagdir"), rules, DepositType.DEPOSIT);
 
         assertEquals(3, result.size());
     }

@@ -15,7 +15,6 @@
  */
 package nl.knaw.dans.validatedansbag.core.service;
 
-import nl.knaw.dans.validatedansbag.core.validator.SecurePathValidator;
 import org.apache.commons.io.FileUtils;
 
 import java.io.FileOutputStream;
@@ -32,10 +31,10 @@ import java.util.stream.Collectors;
 import java.util.zip.ZipInputStream;
 
 public class FileServiceImpl implements FileService {
-    private final SecurePathValidator pathSecurityValidator;
+    private final Path baseFolder;
 
-    public FileServiceImpl(SecurePathValidator pathSecurityValidator) {
-        this.pathSecurityValidator = pathSecurityValidator;
+    public FileServiceImpl(Path baseFolder) {
+        this.baseFolder = baseFolder;
     }
 
     @Override
@@ -50,6 +49,7 @@ public class FileServiceImpl implements FileService {
 
     @Override
     public List<Path> getAllFiles(Path path) throws IOException {
+        checkBaseFolderSecurity(path);
         try (var stream = Files.walk(path)) {
             return stream.filter(Files::isRegularFile).collect(Collectors.toList());
         }
@@ -57,6 +57,7 @@ public class FileServiceImpl implements FileService {
 
     @Override
     public List<Path> getAllFilesAndDirectories(Path path) throws IOException {
+        checkBaseFolderSecurity(path);
         try (var stream = Files.walk(path)) {
             return stream.collect(Collectors.toList());
         }
@@ -64,8 +65,7 @@ public class FileServiceImpl implements FileService {
 
     @Override
     public byte[] readFileContents(Path path) throws IOException {
-        if (!this.pathSecurityValidator.IsPathSecure(path))
-            throw new IllegalArgumentException(String.format("InsecurePath: %s", path));
+        checkBaseFolderSecurity(path);
         return Files.readAllBytes(path);
     }
 
@@ -81,8 +81,7 @@ public class FileServiceImpl implements FileService {
 
     @Override
     public CharBuffer readFileContents(Path path, Charset charset) throws IOException {
-        if (!this.pathSecurityValidator.IsPathSecure(path))
-            throw new IllegalArgumentException(String.format("InsecurePath: %s", path));
+        checkBaseFolderSecurity(path);
         var contents = readFileContents(path);
         return charset.newDecoder().decode(ByteBuffer.wrap(contents));
     }
@@ -118,8 +117,17 @@ public class FileServiceImpl implements FileService {
 
     @Override
     public Optional<Path> getFirstDirectory(Path path) throws IOException {
+        checkBaseFolderSecurity(path);
         try (var s = Files.walk(path)) {
             return s.filter(this::isDirectory).skip(1).findFirst();
+        }
+    }
+
+    @Override
+    public void checkBaseFolderSecurity(Path path) throws RuntimeException {
+        Path toCheckPath = path.normalize().toAbsolutePath();
+        if (!toCheckPath.startsWith(this.baseFolder)) {
+            throw new IllegalArgumentException(String.format("InsecurePath %s", toCheckPath));
         }
     }
 

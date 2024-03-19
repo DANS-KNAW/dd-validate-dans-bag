@@ -41,12 +41,8 @@ import nl.knaw.dans.validatedansbag.resources.IllegalArgumentExceptionMapper;
 import nl.knaw.dans.validatedansbag.resources.ValidateOkYamlMessageBodyWriter;
 import nl.knaw.dans.validatedansbag.resources.ValidateResource;
 import nl.knaw.dans.vaultcatalog.client.resources.DefaultApi;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class DdValidateDansBagApplication extends Application<DdValidateDansBagConfiguration> {
-
-    private static final Logger log = LoggerFactory.getLogger(DdValidateDansBagApplication.class);
 
     public static void main(final String[] args) throws Exception {
         new DdValidateDansBagApplication().run(args);
@@ -72,9 +68,8 @@ public class DdValidateDansBagApplication extends Application<DdValidateDansBagC
             dataverseService = new DataverseServiceImpl(configuration.getDataverse().build(environment, "dd-validate-dans-bag/dataverse"));
         }
 
-        var pathSecurityValidator = new SecurePathValidator(configuration.getValidation().getBaseFolder());
         var vaultService = getVaultService(configuration);
-        var fileService = new FileServiceImpl(pathSecurityValidator);
+        var fileService = new FileServiceImpl(configuration.getValidation().getBaseFolder());
         var bagItMetadataReader = new BagItMetadataReaderImpl();
         var xmlReader = new XmlReaderImpl();
         var polygonListValidator = new PolygonListValidatorImpl();
@@ -86,28 +81,26 @@ public class DdValidateDansBagApplication extends Application<DdValidateDansBagC
         var identifierValidator = new IdentifierValidatorImpl();
         var organizationIdentifierPrefixValidator = new OrganizationIdentifierPrefixValidatorImpl(configuration.getValidation().getOtherIdPrefixes());
 
-        var ruleEngine = new RuleEngineImpl(pathSecurityValidator);
+        var ruleEngine = new RuleEngineImpl();
         var ruleSets = new RuleSets(dataverseService,
-            fileService,
-            filesXmlService,
-            originalFilepathsService,
-            xmlReader,
-            bagItMetadataReader,
-            xmlSchemaValidator,
-            licenseValidator,
-            identifierValidator,
-            polygonListValidator,
-            organizationIdentifierPrefixValidator,
-            vaultService,
-            pathSecurityValidator
+                fileService,
+                filesXmlService,
+                originalFilepathsService,
+                xmlReader,
+                bagItMetadataReader,
+                xmlSchemaValidator,
+                licenseValidator,
+                identifierValidator,
+                polygonListValidator,
+                organizationIdentifierPrefixValidator,
+                vaultService
         );
 
         var ruleEngineService = new RuleEngineServiceImpl(ruleEngine, fileService,
-            configuration.getDataverse() != null ? ruleSets.getDataStationSet() : ruleSets.getVaasSet(),
-                pathSecurityValidator);
+                configuration.getDataverse() != null ? ruleSets.getDataStationSet() : ruleSets.getVaasSet());
 
         environment.jersey().register(new IllegalArgumentExceptionMapper());
-        environment.jersey().register(new ValidateResource(ruleEngineService, fileService, pathSecurityValidator));
+        environment.jersey().register(new ValidateResource(ruleEngineService, fileService));
         environment.jersey().register(new ValidateOkYamlMessageBodyWriter());
 
         environment.healthChecks().register("xml-schemas", new XmlSchemaHealthCheck(xmlSchemaValidator));

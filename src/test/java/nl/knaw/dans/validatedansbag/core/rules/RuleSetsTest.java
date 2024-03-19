@@ -24,7 +24,10 @@ import nl.knaw.dans.validatedansbag.core.service.OriginalFilepathsService;
 import nl.knaw.dans.validatedansbag.core.service.VaultCatalogClient;
 import nl.knaw.dans.validatedansbag.core.service.XmlReader;
 import nl.knaw.dans.validatedansbag.core.service.XmlSchemaValidator;
-import nl.knaw.dans.validatedansbag.core.validator.*;
+import nl.knaw.dans.validatedansbag.core.validator.IdentifierValidator;
+import nl.knaw.dans.validatedansbag.core.validator.LicenseValidator;
+import nl.knaw.dans.validatedansbag.core.validator.OrganizationIdentifierPrefixValidator;
+import nl.knaw.dans.validatedansbag.core.validator.PolygonListValidator;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
@@ -54,7 +57,7 @@ public class RuleSetsTest {
 
     private static final VaultCatalogClient VAULT_CATALOG_CLIENT = Mockito.mock(VaultCatalogClient.class);
 
-    private static final SecurePathValidator PATH_SECURITY_VALIDATOR = Mockito.mock(SecurePathValidator.class);
+
     /*
      * The services in this test are never called; the only thing we want to test is whether the rule sets are consistent in terms of dependencies.
      * Therefore, the services are all mocked.
@@ -65,8 +68,8 @@ public class RuleSetsTest {
         var ruleSets = new RuleSets(
                 dataverseService, fileService, filesXmlService, originalFilepathsService, xmlReader,
                 bagItMetadataReader, xmlSchemaValidator, licenseValidator, identifierValidator, polygonListValidator, organizationIdentifierPrefixValidator,
-            VAULT_CATALOG_CLIENT, PATH_SECURITY_VALIDATOR);
-        new RuleEngineImpl(new SecurePathValidator(null)).validateRuleConfiguration(ruleSets.getDataStationSet());
+            VAULT_CATALOG_CLIENT);
+        new RuleEngineImpl().validateRuleConfiguration(ruleSets.getDataStationSet());
         assertTrue(true); // if we get here, the rule set is consistent
     }
 
@@ -75,8 +78,8 @@ public class RuleSetsTest {
         var ruleSets = new RuleSets(
                 dataverseService, fileService, filesXmlService, originalFilepathsService, xmlReader,
                 bagItMetadataReader, xmlSchemaValidator, licenseValidator, identifierValidator, polygonListValidator, organizationIdentifierPrefixValidator,
-            VAULT_CATALOG_CLIENT, PATH_SECURITY_VALIDATOR);
-        new RuleEngineImpl(new SecurePathValidator(null)).validateRuleConfiguration(ruleSets.getVaasSet());
+            VAULT_CATALOG_CLIENT);
+        new RuleEngineImpl().validateRuleConfiguration(ruleSets.getVaasSet());
         assertTrue(true); // if we get here, the rule set is consistent
     }
 

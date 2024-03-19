@@ -45,4 +45,6 @@ public interface FileService {
     void deleteDirectoryAndContents(Path path) throws IOException;
 
     Optional<Path> getFirstDirectory(Path path) throws IOException;
+
+    void checkBaseFolderSecurity(Path path) throws RuntimeException;
 }
