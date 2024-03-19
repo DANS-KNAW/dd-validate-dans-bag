@@ -22,7 +22,6 @@ import nl.knaw.dans.validatedansbag.core.engine.NumberedRule;
 import nl.knaw.dans.validatedansbag.core.engine.RuleEngine;
 import nl.knaw.dans.validatedansbag.core.engine.RuleEngineConfigurationException;
 import nl.knaw.dans.validatedansbag.core.engine.RuleValidationResult;
-import nl.knaw.dans.validatedansbag.core.validator.SecurePathValidator;
 
 import java.nio.file.Path;
 import java.util.List;
