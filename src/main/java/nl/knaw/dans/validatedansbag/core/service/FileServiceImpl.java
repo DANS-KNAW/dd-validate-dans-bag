@@ -88,7 +88,7 @@ public class FileServiceImpl implements FileService {
 
     @Override
     public Path extractZipFile(InputStream inputStream) throws IOException {
-        var tempPath = Files.createTempDirectory("bag-");
+        var tempPath = Files.createTempDirectory(this.baseFolder, "bag-");
 
         try (var input = new ZipInputStream(inputStream)) {
             var entry = input.getNextEntry();

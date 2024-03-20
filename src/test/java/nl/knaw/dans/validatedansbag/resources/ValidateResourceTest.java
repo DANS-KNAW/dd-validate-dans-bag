@@ -56,7 +56,7 @@ class ValidateResourceTest {
         Mockito.reset(ruleEngineService);
     }
 
-    //TODO Ali @Test
+    @Test
     void validateFormData_should_have_no_interactions_with_fileService_and_match_properties() {
         var data = new ValidateCommandDto();
         data.setBagLocation("it/is/here");
@@ -65,12 +65,12 @@ class ValidateResourceTest {
         var multipart = new FormDataMultiPart()
             .field("command", data, MediaType.APPLICATION_JSON_TYPE);
 
+        Mockito.doNothing().when(fileService).checkBaseFolderSecurity(Path.of("it/is/here"));
+
         var response = EXT.target("/validate")
             .register(MultiPartFeature.class)
             .request()
             .post(Entity.entity(multipart, multipart.getMediaType()), ValidateOkDto.class);
-
-        Mockito.verifyNoInteractions(fileService);
 
         assertEquals("it/is/here", response.getBagLocation());
         assertEquals("here", response.getName());
