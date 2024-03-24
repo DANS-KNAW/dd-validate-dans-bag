@@ -39,11 +39,13 @@ public class FileServiceImpl implements FileService {
 
     @Override
     public boolean isDirectory(Path path) {
+        checkBaseFolderSecurity(path);
         return Files.exists(path) && Files.isDirectory(path);
     }
 
     @Override
     public boolean isFile(Path path) {
+        checkBaseFolderSecurity(path);
         return Files.exists(path) && Files.isRegularFile(path);
     }
 
@@ -95,6 +97,7 @@ public class FileServiceImpl implements FileService {
 
             while (entry != null) {
                 var targetPath = tempPath.resolve(entry.getName());
+                checkBaseFolderSecurity(targetPath);
 
                 if (entry.isDirectory()) {
                     Files.createDirectories(targetPath);
