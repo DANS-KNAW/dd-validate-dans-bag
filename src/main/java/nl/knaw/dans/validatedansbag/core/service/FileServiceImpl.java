@@ -73,11 +73,13 @@ public class FileServiceImpl implements FileService {
 
     @Override
     public boolean exists(Path path) {
+        checkBaseFolderSecurity(path);
         return Files.exists(path);
     }
 
     @Override
     public boolean isReadable(Path path) {
+        checkBaseFolderSecurity(path);
         return Files.exists(path) && Files.isReadable(path);
     }
 
