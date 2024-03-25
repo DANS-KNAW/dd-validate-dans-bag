@@ -96,7 +96,7 @@ public class FileServiceImpl implements FileService {
             var entry = input.getNextEntry();
 
             while (entry != null) {
-                var targetPath = tempPath.resolve(entry.getName());
+                var targetPath = tempPath.resolve(entry.getName()).normalize().toAbsolutePath();
                 checkBaseFolderSecurity(targetPath);
 
                 if (entry.isDirectory()) {
