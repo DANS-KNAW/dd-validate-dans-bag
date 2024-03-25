@@ -61,12 +61,12 @@ public class ValidateResource {
         @Valid @NotNull @FormDataParam(value = "command") ValidateCommandDto command,
         @FormDataParam(value = "zip") InputStream zipInputStream
     ) {
-        var location = command.getBagLocation();
-        var depositType = toDepositType(command.getPackageType());
-
         log.info("Received request to validate bag: {}", command);
 
         try {
+            var location = command.getBagLocation();
+            var depositType = toDepositType(command.getPackageType());
+
             ValidateOkDto validateResult;
 
             if (location == null) {
