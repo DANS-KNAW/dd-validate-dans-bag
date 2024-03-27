@@ -139,7 +139,7 @@ public class ValidateResource {
         result.setBagLocation(null);
         result.setIsCompliant(isValid);
         result.setName(bagDir.getFileName().toString());
-        result.setProfileVersion("1.0.0");
+        result.setProfileVersion("1.1.0");
         result.setInformationPackageType(toInfoPackageType(depositType));
         result.setRuleViolations(results.stream()
             .filter(r -> r.getStatus().equals(RuleValidationResult.RuleValidationResultStatus.FAILURE))
