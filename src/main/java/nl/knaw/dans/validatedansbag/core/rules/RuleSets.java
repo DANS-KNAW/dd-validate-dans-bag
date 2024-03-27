@@ -103,9 +103,7 @@ public class RuleSets {
 
             // 1.2 bag-info.txt
             new NumberedRule("1.2.1", new BagInfoExistsAndIsWellformed(bagItMetadataReader, fileService)),
-            new NumberedRule("1.2.2(a)", new BagInfoContainsExactlyOneOf("Created", bagItMetadataReader), List.of("1.2.1")),
-            new NumberedRule("1.2.2(b)", new BagInfoCreatedElementIsIso8601Date(bagItMetadataReader), List.of("1.2.2(a)")),
-            // 1.2.2(c) SHOULD-requirement, so not validated
+            // 1.2.2 MAY/SHOULD-requirement, so not validated
             new NumberedRule("1.2.3(a)", new BagInfoContainsAtMostOneOf("Is-Version-Of", bagItMetadataReader), List.of("1.2.1")),
             new NumberedRule("1.2.3(b)", new BagInfoIsVersionOfIsValidUrnUuid(bagItMetadataReader), List.of("1.2.3(a)")),
             new NumberedRule("1.2.4(a)", new BagInfoContainsAtMostOneOf("Has-Organizational-Identifier", bagItMetadataReader), List.of("1.2.1")),
@@ -120,7 +118,7 @@ public class RuleSets {
             new NumberedRule("2.2(a)", new BagContainsFile(metadataPath.resolve("dataset.xml"), fileService), List.of("2.1")),
             new NumberedRule("2.2(b)", new BagContainsFile(metadataPath.resolve("files.xml"), fileService), List.of("2.1")),
 
-            // this also covers 2.3 and 2.4 for MIGRATION status deposits
+            // this also covers 2.3 and 2.4 for MIGRATION type deposits
             new NumberedRule("2.2-MIGRATION", new BagDirContainsNothingElseThan(metadataPath, new String[] {
                 "dataset.xml",
                 "files.xml",

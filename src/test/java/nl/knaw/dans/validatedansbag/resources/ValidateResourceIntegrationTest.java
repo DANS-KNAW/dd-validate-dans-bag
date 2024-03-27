@@ -153,7 +153,7 @@ class ValidateResourceIntegrationTest {
                 .post(Entity.entity(multipart, multipart.getMediaType()), ValidateOkDto.class);
 
         assertFalse(response.getIsCompliant());
-        assertEquals("1.0.0", response.getProfileVersion());
+        assertEquals("1.1.0", response.getProfileVersion());
         assertEquals(ValidateOkDto.InformationPackageTypeEnum.DEPOSIT, response.getInformationPackageType());
         assertEquals(filename, response.getBagLocation());
         assertFalse(response.getRuleViolations().isEmpty());
@@ -253,7 +253,7 @@ class ValidateResourceIntegrationTest {
                 .post(Entity.entity(multipart, multipart.getMediaType()), ValidateOkDto.class);
 
         assertTrue(response.getIsCompliant());
-        assertEquals("1.0.0", response.getProfileVersion());
+        assertEquals("1.1.0", response.getProfileVersion());
         assertEquals(ValidateOkDto.InformationPackageTypeEnum.MIGRATION, response.getInformationPackageType());
         assertEquals(filename, response.getBagLocation());
         assertEquals(0, response.getRuleViolations().size());
@@ -289,7 +289,7 @@ class ValidateResourceIntegrationTest {
                 .post(Entity.entity(multipart, multipart.getMediaType()), ValidateOkDto.class);
 
         assertFalse(response.getIsCompliant());
-        assertEquals("1.0.0", response.getProfileVersion());
+        assertEquals("1.1.0", response.getProfileVersion());
         assertEquals(ValidateOkDto.InformationPackageTypeEnum.MIGRATION, response.getInformationPackageType());
         assertEquals(filename, response.getBagLocation());
     }
@@ -321,7 +321,7 @@ class ValidateResourceIntegrationTest {
                 .post(Entity.entity(multipart, multipart.getMediaType()), ValidateOkDto.class);
 
         assertFalse(response.getIsCompliant());
-        assertEquals("1.0.0", response.getProfileVersion());
+        assertEquals("1.1.0", response.getProfileVersion());
         assertEquals(ValidateOkDto.InformationPackageTypeEnum.DEPOSIT, response.getInformationPackageType());
         assertEquals(filename, response.getBagLocation());
         assertThat(response.getRuleViolations().size()).isEqualTo(1);
@@ -357,7 +357,7 @@ class ValidateResourceIntegrationTest {
                 .post(Entity.entity(multipart, multipart.getMediaType()), ValidateOkDto.class);
 
         assertFalse(response.getIsCompliant());
-        assertEquals("1.0.0", response.getProfileVersion());
+        assertEquals("1.1.0", response.getProfileVersion());
         assertEquals(ValidateOkDto.InformationPackageTypeEnum.DEPOSIT, response.getInformationPackageType());
         assertEquals(filename, response.getBagLocation());
         assertThat(response.getRuleViolations().size()).isEqualTo(1);
