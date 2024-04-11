@@ -13,35 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package nl.knaw.dans.validatedansbag.core.config;
+package nl.knaw.dans.validatedansbag.config;
 
-import io.dropwizard.client.HttpClientConfiguration;
-import lombok.Getter;
-import lombok.Setter;
+import io.dropwizard.client.JerseyClientConfiguration;
+import lombok.Data;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
-import java.nio.file.Path;
-import java.util.List;
+import java.net.URI;
 
-@Valid
-@Getter
-@Setter
-public class ValidationConfig {
-
+@Data
+public class VaultCatalogConfig {
     @NotNull
     @Valid
-    Path baseFolder;
-
-    @NotNull
-    @Valid
-    private List<String> otherIdPrefixes;
+    private URI baseUrl;
 
     @Valid
     @NotNull
-    private XmlSchemaConfig xmlSchemas;
-
-    @Valid
-    private HttpClientConfiguration httpClient = new HttpClientConfiguration();
+    private JerseyClientConfiguration httpClient = new JerseyClientConfiguration();
 }
-

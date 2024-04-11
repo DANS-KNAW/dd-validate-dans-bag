@@ -13,22 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package nl.knaw.dans.validatedansbag.core.config;
+package nl.knaw.dans.validatedansbag.config;
 
-import io.dropwizard.client.JerseyClientConfiguration;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
-import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
-import java.net.URI;
+import javax.validation.constraints.NotEmpty;
 
-@Data
-public class VaultCatalogConfig {
-    @NotNull
-    @Valid
-    private URI baseUrl;
-
-    @Valid
-    @NotNull
-    private JerseyClientConfiguration httpClient = new JerseyClientConfiguration();
+@Getter
+@Setter
+public class SwordDepositorRoles {
+    @NotEmpty
+    private String datasetCreator;
+    @NotEmpty
+    private String datasetEditor;
 }

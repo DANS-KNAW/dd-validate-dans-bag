@@ -14,12 +14,10 @@
  * limitations under the License.
  */
 
-package nl.knaw.dans.validatedansbag.core.config;
+package nl.knaw.dans.validatedansbag.config;
 
 import io.dropwizard.core.Configuration;
 import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
 import nl.knaw.dans.lib.util.DataverseClientFactory;
 import nl.knaw.dans.validation.AtLeastOneOf;
 import nl.knaw.dans.validation.MutuallyExclusive;

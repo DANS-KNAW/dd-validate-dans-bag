@@ -13,18 +13,35 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package nl.knaw.dans.validatedansbag.core.config;
+package nl.knaw.dans.validatedansbag.config;
 
+import io.dropwizard.client.HttpClientConfiguration;
 import lombok.Getter;
 import lombok.Setter;
 
-import javax.validation.constraints.NotEmpty;
+import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
+import java.nio.file.Path;
+import java.util.List;
 
+@Valid
 @Getter
 @Setter
-public class SwordDepositorRoles {
-    @NotEmpty
-    private String datasetCreator;
-    @NotEmpty
-    private String datasetEditor;
+public class ValidationConfig {
+
+    @NotNull
+    @Valid
+    Path baseFolder;
+
+    @NotNull
+    @Valid
+    private List<String> otherIdPrefixes;
+
+    @Valid
+    @NotNull
+    private XmlSchemaConfig xmlSchemas;
+
+    @Valid
+    private HttpClientConfiguration httpClient = new HttpClientConfiguration();
 }
+
