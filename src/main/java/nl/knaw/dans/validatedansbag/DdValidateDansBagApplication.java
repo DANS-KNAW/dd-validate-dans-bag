@@ -20,6 +20,7 @@ import io.dropwizard.core.Application;
 import io.dropwizard.core.setup.Bootstrap;
 import io.dropwizard.core.setup.Environment;
 import io.dropwizard.forms.MultiPartBundle;
+import nl.knaw.dans.lib.util.ClientProxyBuilder;
 import nl.knaw.dans.validatedansbag.client.VaultCatalogClientImpl;
 import nl.knaw.dans.validatedansbag.core.config.DdValidateDansBagConfiguration;
 import nl.knaw.dans.validatedansbag.core.engine.RuleEngineImpl;
@@ -43,6 +44,7 @@ import nl.knaw.dans.validatedansbag.health.XmlSchemaHealthCheck;
 import nl.knaw.dans.validatedansbag.resources.IllegalArgumentExceptionMapper;
 import nl.knaw.dans.validatedansbag.resources.ValidateOkYamlMessageBodyWriter;
 import nl.knaw.dans.validatedansbag.resources.ValidateResource;
+import nl.knaw.dans.vaultcatalog.client.invoker.ApiClient;
 import nl.knaw.dans.vaultcatalog.client.resources.DefaultApi;
 
 public class DdValidateDansBagApplication extends Application<DdValidateDansBagConfiguration> {
@@ -72,6 +74,13 @@ public class DdValidateDansBagApplication extends Application<DdValidateDansBagC
         }
 
         var vaultService = getVaultService(configuration);
+        var vaultCatalogProxy = new ClientProxyBuilder<ApiClient, DefaultApi>()
+            .apiClient(new ApiClient())
+            .basePath(configuration.getVaultCatalog().getBaseUrl())
+            .httpClient(configuration.getVaultCatalog().getHttpClient())
+            .defaultApiCtor(DefaultApi::new)
+            .build();
+        
         var fileService = new FileServiceImpl(configuration.getValidation().getBaseFolder());
         var bagItMetadataReader = new BagItMetadataReaderImpl();
         var xmlReader = new XmlReaderImpl();

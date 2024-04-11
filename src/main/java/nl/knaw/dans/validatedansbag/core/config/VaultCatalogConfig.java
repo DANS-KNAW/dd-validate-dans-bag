@@ -15,17 +15,20 @@
  */
 package nl.knaw.dans.validatedansbag.core.config;
 
-import lombok.Getter;
-import lombok.Setter;
+import io.dropwizard.client.JerseyClientConfiguration;
+import lombok.Data;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import java.net.URI;
 
-@Getter
-@Setter
+@Data
 public class VaultCatalogConfig {
     @NotNull
     @Valid
     private URI baseUrl;
+
+    @Valid
+    @NotNull
+    private JerseyClientConfiguration httpClient = new JerseyClientConfiguration();
 }

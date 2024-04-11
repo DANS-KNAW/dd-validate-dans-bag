@@ -30,8 +30,19 @@ dataverse:
     retries: 2
 
 vaultCatalog:
+# Uncomment the following lines to enable the Vault as a Service context  
 #  baseUrl: null
-
+#  httpClient:
+#    timeout: 10s
+#    connectionTimeout: 1min
+#    timeToLive: 1h
+#    cookiesEnabled: false
+#    maxConnections: 128
+#    maxConnectionsPerRoute: 128
+#    keepAlive: 0ms
+#    retries: 0
+#    userAgent: dd-validate-dans-bag
+    
 validation:
   baseFolder: "/var/opt/dans.knaw.nl/tmp/"
   otherIdPrefixes: []

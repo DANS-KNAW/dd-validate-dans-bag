@@ -48,13 +48,12 @@
         <dependency>
             <groupId>nl.knaw.dans</groupId>
             <artifactId>dans-java-utils</artifactId>
-            <version>0.10.1</version>
         </dependency>
 
         <dependency>
             <groupId>nl.knaw.dans</groupId>
             <artifactId>dans-validation-lib</artifactId>
-            <version>0.1.0</version>
+            <version>0.2.1-SNAPSHOT</version>
         </dependency>
 
         <dependency>
