@@ -73,14 +73,8 @@ public class DdValidateDansBagApplication extends Application<DdValidateDansBagC
             dataverseService = new DataverseServiceImpl(configuration.getDataverse().build(environment, "dd-validate-dans-bag/dataverse"));
         }
 
-        var vaultService = getVaultService(configuration);
-        var vaultCatalogProxy = new ClientProxyBuilder<ApiClient, DefaultApi>()
-            .apiClient(new ApiClient())
-            .basePath(configuration.getVaultCatalog().getBaseUrl())
-            .httpClient(configuration.getVaultCatalog().getHttpClient())
-            .defaultApiCtor(DefaultApi::new)
-            .build();
-        
+        var vaultCatalogClient = getVaultCatalogClient(configuration);
+
         var fileService = new FileServiceImpl(configuration.getValidation().getBaseFolder());
         var bagItMetadataReader = new BagItMetadataReaderImpl();
         var xmlReader = new XmlReaderImpl();
@@ -95,21 +89,21 @@ public class DdValidateDansBagApplication extends Application<DdValidateDansBagC
 
         var ruleEngine = new RuleEngineImpl();
         var ruleSets = new RuleSets(dataverseService,
-                fileService,
-                filesXmlService,
-                originalFilepathsService,
-                xmlReader,
-                bagItMetadataReader,
-                xmlSchemaValidator,
-                licenseValidator,
-                identifierValidator,
-                polygonListValidator,
-                organizationIdentifierPrefixValidator,
-                vaultService
+            fileService,
+            filesXmlService,
+            originalFilepathsService,
+            xmlReader,
+            bagItMetadataReader,
+            xmlSchemaValidator,
+            licenseValidator,
+            identifierValidator,
+            polygonListValidator,
+            organizationIdentifierPrefixValidator,
+            vaultCatalogClient
         );
 
         var ruleEngineService = new RuleEngineServiceImpl(ruleEngine, fileService,
-                configuration.getDataverse() != null ? ruleSets.getDataStationSet() : ruleSets.getVaasSet());
+            configuration.getDataverse() != null ? ruleSets.getDataStationSet() : ruleSets.getVaasSet());
 
         environment.jersey().register(new IllegalArgumentExceptionMapper());
         environment.jersey().register(new ValidateResource(ruleEngineService, fileService));
@@ -125,11 +119,16 @@ public class DdValidateDansBagApplication extends Application<DdValidateDansBagC
         }
     }
 
-    private VaultCatalogClient getVaultService(DdValidateDansBagConfiguration configuration) {
+    private VaultCatalogClient getVaultCatalogClient(DdValidateDansBagConfiguration configuration) {
         if (configuration.getVaultCatalog() != null) {
-            var api = new DefaultApi();
-            api.getApiClient().setBasePath(configuration.getVaultCatalog().getBaseUrl().toASCIIString());
-            return new VaultCatalogClientImpl(api);
+            var vaultCatalogProxy = new ClientProxyBuilder<ApiClient, DefaultApi>()
+                .apiClient(new ApiClient())
+                .basePath(configuration.getVaultCatalog().getBaseUrl())
+                .httpClient(configuration.getVaultCatalog().getHttpClient())
+                .defaultApiCtor(DefaultApi::new)
+                .build();
+
+            return new VaultCatalogClientImpl(vaultCatalogProxy);
         }
 
         return null;

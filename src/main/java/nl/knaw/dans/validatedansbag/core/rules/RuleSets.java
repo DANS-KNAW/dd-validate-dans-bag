@@ -71,7 +71,8 @@ public class RuleSets {
         LicenseValidator licenseValidator,
         IdentifierValidator identifierValidator,
         PolygonListValidator polygonListValidator,
-        OrganizationIdentifierPrefixValidator organizationIdentifierPrefixValidator, VaultCatalogClient vaultCatalogClient) {
+        OrganizationIdentifierPrefixValidator organizationIdentifierPrefixValidator,
+        VaultCatalogClient vaultCatalogClient) {
         this.dataverseService = dataverseService;
         this.fileService = fileService;
         this.filesXmlService = filesXmlService;
