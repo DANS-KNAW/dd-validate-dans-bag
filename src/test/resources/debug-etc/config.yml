@@ -26,8 +26,16 @@ logging:
 
 # Set dataverse: null when running for VaaS
 dataverse:
-  apiKey: ""
-  baseUrl: "http://localhost:8080/"
+  apiKey: "changeme"
+  unblockKey: 's3kretKey'
+  baseUrl: "http://dev.archaeology.datastations.nl:8080/"
+  httpClient:
+    timeout: 30s
+    connectionTimeout: 15s
+    connectionRequestTimeout: 15s
+    timeToLive: 1h
+    retries: 2
+    userAgent: dd-validate-dans-bag
 
 # Uncomment when running for VaaS
 #vaultCatalog:
@@ -35,10 +43,11 @@ dataverse:
 
 
 validation:
-  baseFolder: "/var/opt/dans.knaw.nl/tmp/"
+  baseFolder: # Fill in absolute path to the folder un which the deposit are located
   otherIdPrefixes:
     - 'EXAMPLE:'
     - 'USER01:'
+    - 'TESTPREFIX:'
 
   xmlSchemas:
       dataset.xml: file:../dans-schema/lib/src/main/resources/md/ddm/v2/ddm.xsd
