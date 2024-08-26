@@ -28,42 +28,43 @@ public class DatasetXmlGmlPolygonPosListIsWellFormedTest extends RuleTestFixture
 
     @Test
     void should_return_SUCCESS_when_list_is_wellformed() throws Exception {
-        var xml = "<ddm:DDM\n"
-                + "        xmlns:dc=\"http://purl.org/dc/elements/1.1/\"\n"
-                + "        xmlns:dcx-dai=\"http://easy.dans.knaw.nl/schemas/dcx/dai/\"\n"
-                + "        xmlns:ddm=\"http://schemas.dans.knaw.nl/dataset/ddm-v2/\"\n"
-                + "        xmlns:dcterms=\"http://purl.org/dc/terms/\"\n"
-                + "        xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n"
-                + "        xmlns:dcx-gml=\"http://easy.dans.knaw.nl/schemas/dcx/gml/\"\n"
-                + "        xmlns:id-type=\"http://easy.dans.knaw.nl/schemas/vocab/identifier-type/\">\n"
-                + "    <ddm:dcmiMetadata>\n"
-                + "          <dcx-gml:spatial>\n"
-                + "            <MultiSurface xmlns=\"http://www.opengis.net/gml\">\n"
-                + "                <name>A random surface with multiple polygons</name>\n"
-                + "                <surfaceMember>\n"
-                + "                    <Polygon>\n"
-                + "                        <description>A triangle between BP, De Horeca Academie en the railway station</description>\n"
-                + "                        <exterior>\n"
-                + "                            <LinearRing>\n"
-                + "                                <posList>52.079710 4.342778 52.079710 4.342778 52.07913 4.34332 52.079710 4.342778</posList>\n"
-                + "                            </LinearRing>\n"
-                + "                        </exterior>\n"
-                + "                    </Polygon>\n"
-                + "\t\t        </surfaceMember>\n"
-                + "                <surfaceMember>\n"
-                + "                    <Polygon>\n"
-                + "                        <description>A triangle between BP, De Horeca Academie en the railway station</description>\n"
-                + "                        <exterior>\n"
-                + "                            <LinearRing>\n"
-                + "                                <posList>52.079710 4.342778 52.079710 4.342778 52.07913 4.34332 52.079710 4.342778</posList>\n"
-                + "                            </LinearRing>\n"
-                + "                        </exterior>\n"
-                + "                    </Polygon>\n"
-                + "\t\t        </surfaceMember>\n"
-                + "            </MultiSurface>\n"
-                + "\t</dcx-gml:spatial>"
-                + "    </ddm:dcmiMetadata>\n"
-                + "</ddm:DDM>";
+        var xml = """
+            <ddm:DDM
+                    xmlns:dc="http://purl.org/dc/elements/1.1/"
+                    xmlns:dcx-dai="http://easy.dans.knaw.nl/schemas/dcx/dai/"
+                    xmlns:ddm="http://schemas.dans.knaw.nl/dataset/ddm-v2/"
+                    xmlns:dcterms="http://purl.org/dc/terms/"
+                    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                    xmlns:dcx-gml="http://easy.dans.knaw.nl/schemas/dcx/gml/"
+                    xmlns:id-type="http://easy.dans.knaw.nl/schemas/vocab/identifier-type/">
+                <ddm:dcmiMetadata>
+                      <dcx-gml:spatial>
+                        <MultiSurface xmlns="http://www.opengis.net/gml">
+                            <name>A random surface with multiple polygons</name>
+                            <surfaceMember>
+                                <Polygon>
+                                    <description>A triangle between BP, De Horeca Academie en the railway station</description>
+                                    <exterior>
+                                        <LinearRing>
+                                            <posList>52.079710 4.342778 52.079710 4.342778 52.07913 4.34332 52.079710 4.342778</posList>
+                                        </LinearRing>
+                                    </exterior>
+                                </Polygon>
+                            </surfaceMember>
+                            <surfaceMember>
+                                <Polygon>
+                                    <description>A triangle between BP, De Horeca Academie en the railway station</description>
+                                    <exterior>
+                                        <LinearRing>
+                                            <posList>52.079710 4.342778 52.079710 4.342778 52.07913 4.34332 52.079710 4.342778</posList>
+                                        </LinearRing>
+                                    </exterior>
+                                </Polygon>
+                        </surfaceMember>
+                        </MultiSurface>
+              </dcx-gml:spatial>\
+                </ddm:dcmiMetadata>
+            </ddm:DDM>""";
 
         var document = parseXmlString(xml);
         var reader = Mockito.spy(new XmlReaderImpl());
@@ -76,42 +77,43 @@ public class DatasetXmlGmlPolygonPosListIsWellFormedTest extends RuleTestFixture
 
     @Test
     void should_return_ERROR_when_list_is_malformed() throws Exception {
-        var xml = "<ddm:DDM\n"
-                + "        xmlns:dc=\"http://purl.org/dc/elements/1.1/\"\n"
-                + "        xmlns:dcx-dai=\"http://easy.dans.knaw.nl/schemas/dcx/dai/\"\n"
-                + "        xmlns:ddm=\"http://schemas.dans.knaw.nl/dataset/ddm-v2/\"\n"
-                + "        xmlns:dcterms=\"http://purl.org/dc/terms/\"\n"
-                + "        xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n"
-                + "        xmlns:dcx-gml=\"http://easy.dans.knaw.nl/schemas/dcx/gml/\"\n"
-                + "        xmlns:id-type=\"http://easy.dans.knaw.nl/schemas/vocab/identifier-type/\">\n"
-                + "    <ddm:dcmiMetadata>\n"
-                + "          <dcx-gml:spatial>\n"
-                + "            <MultiSurface xmlns=\"http://www.opengis.net/gml\">\n"
-                + "                <name>A random surface with multiple polygons</name>\n"
-                + "                <surfaceMember>\n"
-                + "                    <Polygon>\n"
-                + "                        <description>A triangle between BP, De Horeca Academie en the railway station</description>\n"
-                + "                        <exterior>\n"
-                + "                            <LinearRing>\n"
-                + "                                <posList>52.079710 4.342778 52.079710 4.342778 52.079710 4.342778</posList>\n"
-                + "                            </LinearRing>\n"
-                + "                        </exterior>\n"
-                + "                    </Polygon>\n"
-                + "\t\t        </surfaceMember>\n"
-                + "                <surfaceMember>\n"
-                + "                    <Polygon>\n"
-                + "                        <description>A triangle between BP, De Horeca Academie en the railway station</description>\n"
-                + "                        <exterior>\n"
-                + "                            <LinearRing>\n"
-                + "                                <posList>52.079710 4.342778 52.079710 4.342778 52.07913 4.34332 52.079710 4.342778</posList>\n"
-                + "                            </LinearRing>\n"
-                + "                        </exterior>\n"
-                + "                    </Polygon>\n"
-                + "\t\t        </surfaceMember>\n"
-                + "            </MultiSurface>\n"
-                + "\t</dcx-gml:spatial>"
-                + "    </ddm:dcmiMetadata>\n"
-                + "</ddm:DDM>";
+        var xml = """
+            <ddm:DDM
+                    xmlns:dc="http://purl.org/dc/elements/1.1/"
+                    xmlns:dcx-dai="http://easy.dans.knaw.nl/schemas/dcx/dai/"
+                    xmlns:ddm="http://schemas.dans.knaw.nl/dataset/ddm-v2/"
+                    xmlns:dcterms="http://purl.org/dc/terms/"
+                    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                    xmlns:dcx-gml="http://easy.dans.knaw.nl/schemas/dcx/gml/"
+                    xmlns:id-type="http://easy.dans.knaw.nl/schemas/vocab/identifier-type/">
+                <ddm:dcmiMetadata>
+                      <dcx-gml:spatial>
+                        <MultiSurface xmlns="http://www.opengis.net/gml">
+                            <name>A random surface with multiple polygons</name>
+                            <surfaceMember>
+                                <Polygon>
+                                    <description>A triangle between BP, De Horeca Academie en the railway station</description>
+                                    <exterior>
+                                        <LinearRing>
+                                            <posList>52.079710 4.342778 52.079710 4.342778 52.079710 4.342778</posList>
+                                        </LinearRing>
+                                    </exterior>
+                                </Polygon>
+                            </surfaceMember>
+                            <surfaceMember>
+                                <Polygon>
+                                    <description>A triangle between BP, De Horeca Academie en the railway station</description>
+                                    <exterior>
+                                        <LinearRing>
+                                            <posList>52.079710 4.342778 52.079710 4.342778 52.07913 4.34332 52.079710 4.342778</posList>
+                                        </LinearRing>
+                                    </exterior>
+                                </Polygon>
+                            </surfaceMember>
+                        </MultiSurface>
+                </dcx-gml:spatial>
+                </ddm:dcmiMetadata>
+            </ddm:DDM>""";
 
         var document = parseXmlString(xml);
         var reader = Mockito.spy(new XmlReaderImpl());

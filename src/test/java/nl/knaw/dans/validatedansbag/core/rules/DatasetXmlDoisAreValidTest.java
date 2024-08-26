@@ -27,18 +27,19 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 public class DatasetXmlDoisAreValidTest extends RuleTestFixture {
     @Test
     void should_return_SUCCESS_when_dois_are_valid() throws Exception {
-        final String xml = "<ddm:DDM\n"
-                + "        xmlns:dc=\"http://purl.org/dc/elements/1.1/\"\n"
-                + "        xmlns:dcx-dai=\"http://easy.dans.knaw.nl/schemas/dcx/dai/\"\n"
-                + "        xmlns:ddm=\"http://schemas.dans.knaw.nl/dataset/ddm-v2/\"\n"
-                + "        xmlns:dcterms=\"http://purl.org/dc/terms/\"\n"
-                + "        xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n"
-                + "        xmlns:id-type=\"http://easy.dans.knaw.nl/schemas/vocab/identifier-type/\">\n"
-                + "    <ddm:dcmiMetadata>\n"
-                + "        <dcterms:identifier xsi:type=\"id-type:DOI\">10.1234/fantasy-doi-id</dcterms:identifier>\n"
-                + "        <dcterms:identifier xsi:type=\"id-type:DOI\">10.1234.567/issn-987-654</dcterms:identifier>\n"
-                + "    </ddm:dcmiMetadata>\n"
-                + "</ddm:DDM>";
+        final String xml = """
+            <ddm:DDM
+                    xmlns:dc="http://purl.org/dc/elements/1.1/"
+                    xmlns:dcx-dai="http://easy.dans.knaw.nl/schemas/dcx/dai/"
+                    xmlns:ddm="http://schemas.dans.knaw.nl/dataset/ddm-v2/"
+                    xmlns:dcterms="http://purl.org/dc/terms/"
+                    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                    xmlns:id-type="http://easy.dans.knaw.nl/schemas/vocab/identifier-type/">
+                <ddm:dcmiMetadata>
+                    <dcterms:identifier xsi:type="id-type:DOI">10.1234/fantasy-doi-id</dcterms:identifier>
+                    <dcterms:identifier xsi:type="id-type:DOI">10.1234.567/issn-987-654</dcterms:identifier>
+                </ddm:dcmiMetadata>
+            </ddm:DDM>""";
 
         var document = parseXmlString(xml);
         var reader = Mockito.spy(new XmlReaderImpl());
@@ -51,18 +52,19 @@ public class DatasetXmlDoisAreValidTest extends RuleTestFixture {
 
     @Test
     void should_return_ERROR_when_dois_are_invalid() throws Exception {
-        final String xml = "<ddm:DDM\n"
-                + "        xmlns:dc=\"http://purl.org/dc/elements/1.1/\"\n"
-                + "        xmlns:dcx-dai=\"http://easy.dans.knaw.nl/schemas/dcx/dai/\"\n"
-                + "        xmlns:ddm=\"http://schemas.dans.knaw.nl/dataset/ddm-v2/\"\n"
-                + "        xmlns:dcterms=\"http://purl.org/dc/terms/\"\n"
-                + "        xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n"
-                + "        xmlns:id-type=\"http://easy.dans.knaw.nl/schemas/vocab/identifier-type/\">\n"
-                + "    <ddm:dcmiMetadata>\n"
-                + "        <dcterms:identifier xsi:type=\"id-type:DOI\">11.1234/fantasy-doi-id</dcterms:identifier>\n"
-                + "        <dcterms:identifier xsi:type=\"id-type:DOI\">11.1234.567/issn-987-654</dcterms:identifier>\n"
-                + "    </ddm:dcmiMetadata>\n"
-                + "</ddm:DDM>";
+        final String xml = """
+            <ddm:DDM
+                    xmlns:dc="http://purl.org/dc/elements/1.1/"
+                    xmlns:dcx-dai="http://easy.dans.knaw.nl/schemas/dcx/dai/"
+                    xmlns:ddm="http://schemas.dans.knaw.nl/dataset/ddm-v2/"
+                    xmlns:dcterms="http://purl.org/dc/terms/"
+                    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                    xmlns:id-type="http://easy.dans.knaw.nl/schemas/vocab/identifier-type/">
+                <ddm:dcmiMetadata>
+                    <dcterms:identifier xsi:type="id-type:DOI">11.1234/fantasy-doi-id</dcterms:identifier>
+                    <dcterms:identifier xsi:type="id-type:DOI">11.1234.567/issn-987-654</dcterms:identifier>
+                </ddm:dcmiMetadata>
+            </ddm:DDM>""";
 
         var document = parseXmlString(xml);
         var reader = Mockito.spy(new XmlReaderImpl());

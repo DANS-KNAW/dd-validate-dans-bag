@@ -28,23 +28,25 @@ public class DatasetXmlHasRightsHolderInElementOrInAuthorRoleTest extends RuleTe
 
     @Test
     void ddmMustHaveRightsHolderMigration() throws Exception {
-        var xml = "<ddm:DDM xmlns:ddm=\"http://schemas.dans.knaw.nl/dataset/ddm-v2/\"\n"
-                + "         xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n"
-                + "         xmlns:dc=\"http://purl.org/dc/elements/1.1/\"\n"
-                + "         xmlns:dct=\"http://purl.org/dc/terms/\"\n"
-                + "         xmlns:dcx-dai=\"http://easy.dans.knaw.nl/schemas/dcx/dai/\">\n"
-                + "    <ddm:profile>\n"
-                + "        <dcx-dai:creatorDetails>\n"
-                + "            <dcx-dai:author>\n"
-                + "                <dcx-dai:role>RightsHolder</dcx-dai:role>\n"
-                + "            </dcx-dai:author>\n"
-                + "        </dcx-dai:creatorDetails>\n"
-                + "        <ddm:accessRights>OPEN_ACCESS_FOR_REGISTERED_USERS</ddm:accessRights>\n"
-                + "    </ddm:profile>\n"
-                + "    <ddm:dcmiMetadata>\n"
-                + "        <dct:license xsi:type=\"dct:URI\">http://creativecommons.org/licenses/by-sa/4.0</dct:license>\n"
-                + "    </ddm:dcmiMetadata>\n"
-                + "</ddm:DDM>\n";
+        var xml = """
+            <ddm:DDM xmlns:ddm="http://schemas.dans.knaw.nl/dataset/ddm-v2/"
+                     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                     xmlns:dc="http://purl.org/dc/elements/1.1/"
+                     xmlns:dct="http://purl.org/dc/terms/"
+                     xmlns:dcx-dai="http://easy.dans.knaw.nl/schemas/dcx/dai/">
+                <ddm:profile>
+                    <dcx-dai:creatorDetails>
+                        <dcx-dai:author>
+                            <dcx-dai:role>RightsHolder</dcx-dai:role>
+                        </dcx-dai:author>
+                    </dcx-dai:creatorDetails>
+                    <ddm:accessRights>OPEN_ACCESS_FOR_REGISTERED_USERS</ddm:accessRights>
+                </ddm:profile>
+                <ddm:dcmiMetadata>
+                    <dct:license xsi:type="dct:URI">http://creativecommons.org/licenses/by-sa/4.0</dct:license>
+                </ddm:dcmiMetadata>
+            </ddm:DDM>
+            """;
 
         var document = parseXmlString(xml);
         var reader = Mockito.spy(new XmlReaderImpl());
@@ -57,23 +59,25 @@ public class DatasetXmlHasRightsHolderInElementOrInAuthorRoleTest extends RuleTe
 
     @Test
     void ddmMustHaveRightsHolderMigrationButItDoesntExist() throws Exception {
-        var xml = "<ddm:DDM xmlns:ddm=\"http://schemas.dans.knaw.nl/dataset/ddm-v2/\"\n"
-                + "         xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n"
-                + "         xmlns:dc=\"http://purl.org/dc/elements/1.1/\"\n"
-                + "         xmlns:dct=\"http://purl.org/dc/terms/\"\n"
-                + "         xmlns:dcx-dai=\"http://easy.dans.knaw.nl/schemas/dcx/dai/\">\n"
-                + "    <ddm:profile>\n"
-                + "        <dcx-dai:creatorDetails>\n"
-                + "            <dcx-dai:author>\n"
-                + "                <dcx-dai:role>Distributor</dcx-dai:role>\n"
-                + "            </dcx-dai:author>\n"
-                + "        </dcx-dai:creatorDetails>\n"
-                + "        <ddm:accessRights>OPEN_ACCESS_FOR_REGISTERED_USERS</ddm:accessRights>\n"
-                + "    </ddm:profile>\n"
-                + "    <ddm:dcmiMetadata>\n"
-                + "        <dct:license xsi:type=\"dct:URI\">http://creativecommons.org/licenses/by-sa/4.0</dct:license>\n"
-                + "    </ddm:dcmiMetadata>\n"
-                + "</ddm:DDM>\n";
+        var xml = """
+            <ddm:DDM xmlns:ddm="http://schemas.dans.knaw.nl/dataset/ddm-v2/"
+                     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                     xmlns:dc="http://purl.org/dc/elements/1.1/"
+                     xmlns:dct="http://purl.org/dc/terms/"
+                     xmlns:dcx-dai="http://easy.dans.knaw.nl/schemas/dcx/dai/">
+                <ddm:profile>
+                    <dcx-dai:creatorDetails>
+                        <dcx-dai:author>
+                            <dcx-dai:role>Distributor</dcx-dai:role>
+                        </dcx-dai:author>
+                    </dcx-dai:creatorDetails>
+                    <ddm:accessRights>OPEN_ACCESS_FOR_REGISTERED_USERS</ddm:accessRights>
+                </ddm:profile>
+                <ddm:dcmiMetadata>
+                    <dct:license xsi:type="dct:URI">http://creativecommons.org/licenses/by-sa/4.0</dct:license>
+                </ddm:dcmiMetadata>
+            </ddm:DDM>
+            """;
 
         var document = parseXmlString(xml);
         var reader = Mockito.spy(new XmlReaderImpl());

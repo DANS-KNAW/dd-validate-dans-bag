@@ -79,39 +79,41 @@ public class RuleTestFixture {
     }
 
     protected String getSearchResult(String globalId) {
-        return String.format("{\n"
-                + "  \"status\": \"OK\",\n"
-                + "  \"data\": {\n"
-                + "    \"q\": \"NBN:urn:nbn:nl:ui:13-025de6e2-bdcf-4622-b134-282b4c590f42\",\n"
-                + "    \"total_count\": 1,\n"
-                + "    \"start\": 0,\n"
-                + "    \"spelling_alternatives\": {},\n"
-                + "    \"items\": [\n"
-                + "      {\n"
-                + "        \"name\": \"Manual Test\",\n"
-                + "        \"type\": \"dataset\",\n"
-                + "        \"url\": \"https://doi.org/10.5072/FK2/QZZSST\",\n"
-                + "        \"global_id\": \"%s\"\n"
-                + "      }\n"
-                + "    ],\n"
-                + "    \"count_in_response\": 1\n"
-                + "  }\n"
-                + "}", globalId);
+        return String.format("""
+            {
+              "status": "OK",
+              "data": {
+                "q": "NBN:urn:nbn:nl:ui:13-025de6e2-bdcf-4622-b134-282b4c590f42",
+                "total_count": 1,
+                "start": 0,
+                "spelling_alternatives": {},
+                "items": [
+                  {
+                    "name": "Manual Test",
+                    "type": "dataset",
+                    "url": "https://doi.org/10.5072/FK2/QZZSST",
+                    "global_id": "%s"
+                  }
+                ],
+                "count_in_response": 1
+              }
+            }""", globalId);
     }
 
     protected String getEmptySearchResult() {
-        return "{\n"
-                + "  \"status\": \"OK\",\n"
-                + "  \"data\": {\n"
-                + "    \"q\": \"NBN:urn:nbn:nl:ui:13-025de6e2-bdcf-4622-b134-282b4c590f42\",\n"
-                + "    \"total_count\": 1,\n"
-                + "    \"start\": 0,\n"
-                + "    \"spelling_alternatives\": {},\n"
-                + "    \"items\": [\n"
-                + "    ],\n"
-                + "    \"count_in_response\": 0\n"
-                + "  }\n"
-                + "}";
+        return """
+            {
+              "status": "OK",
+              "data": {
+                "q": "NBN:urn:nbn:nl:ui:13-025de6e2-bdcf-4622-b134-282b4c590f42",
+                "total_count": 1,
+                "start": 0,
+                "spelling_alternatives": {},
+                "items": [
+                ],
+                "count_in_response": 0
+              }
+            }""";
     }
 
     protected String getLatestVersion(String persistentId, String dansOtherId) {
@@ -126,41 +128,42 @@ public class RuleTestFixture {
             dansOtherId = "\"" + dansOtherId + "\"";
         }
 
-        return String.format("{\n"
-                + "  \"status\": \"OK\",\n"
-                + "  \"data\": {\n"
-                + "    \"id\": 2,\n"
-                + "    \"identifier\": \"FK2/QZZSST\",\n"
-                + "    \"persistentUrl\": \"https://doi.org/10.5072/FK2/QZZSST\",\n"
-                + "    \"latestVersion\": {\n"
-                + "      \"id\": 2,\n"
-                + "      \"datasetId\": 2,\n"
-                + "      \"datasetPersistentId\": \"%s\",\n"
-                + "      \"storageIdentifier\": \"file://10.5072/FK2/QZZSST\",\n"
-                + "      \"fileAccessRequest\": false,\n"
-                + "      \"metadataBlocks\": {\n"
-                + "        \"dansDataVaultMetadata\": {\n"
-                + "          \"displayName\": \"Data Vault Metadata\",\n"
-                + "          \"name\": \"dansDataVaultMetadata\",\n"
-                + "          \"fields\": [\n"
-                + "            {\n"
-                + "              \"typeName\": \"dansSwordToken\",\n"
-                + "              \"multiple\": false,\n"
-                + "              \"typeClass\": \"primitive\",\n"
-                + "              \"value\": \"urn:uuid:2cd3745a-8b42-44a7-b1ca-5c93aa6f4e32\"\n"
-                + "            },\n"
-                + "            {\n"
-                + "              \"typeName\": \"dansOtherId\",\n"
-                + "              \"multiple\": false,\n"
-                + "              \"typeClass\": \"primitive\",\n"
-                + "              \"value\": %s\n"
-                + "            }\n"
-                + "          ]\n"
-                + "        }\n"
-                + "      }\n"
-                + "    }\n"
-                + "  }\n"
-                + "}", persistentId, dansOtherId);
+        return String.format("""
+            {
+              "status": "OK",
+              "data": {
+                "id": 2,
+                "identifier": "FK2/QZZSST",
+                "persistentUrl": "https://doi.org/10.5072/FK2/QZZSST",
+                "latestVersion": {
+                  "id": 2,
+                  "datasetId": 2,
+                  "datasetPersistentId": "%s",
+                  "storageIdentifier": "file://10.5072/FK2/QZZSST",
+                  "fileAccessRequest": false,
+                  "metadataBlocks": {
+                    "dansDataVaultMetadata": {
+                      "displayName": "Data Vault Metadata",
+                      "name": "dansDataVaultMetadata",
+                      "fields": [
+                        {
+                          "typeName": "dansSwordToken",
+                          "multiple": false,
+                          "typeClass": "primitive",
+                          "value": "urn:uuid:2cd3745a-8b42-44a7-b1ca-5c93aa6f4e32"
+                        },
+                        {
+                          "typeName": "dansOtherId",
+                          "multiple": false,
+                          "typeClass": "primitive",
+                          "value": %s
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            }""", persistentId, dansOtherId);
     }
 
 

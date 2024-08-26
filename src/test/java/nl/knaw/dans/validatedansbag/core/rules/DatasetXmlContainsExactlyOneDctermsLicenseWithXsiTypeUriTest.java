@@ -28,16 +28,17 @@ public class DatasetXmlContainsExactlyOneDctermsLicenseWithXsiTypeUriTest extend
 
     @Test
     void should_return_ERROR_for_zero_licenses() throws Exception {
-        final String xml = "<ddm:DDM\n"
-                + "        xmlns:dc=\"http://purl.org/dc/elements/1.1/\"\n"
-                + "        xmlns:dcx-dai=\"http://easy.dans.knaw.nl/schemas/dcx/dai/\"\n"
-                + "        xmlns:ddm=\"http://schemas.dans.knaw.nl/dataset/ddm-v2/\"\n"
-                + "        xmlns:dcterms=\"http://purl.org/dc/terms/\"\n"
-                + "        xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n"
-                + "        xmlns:id-type=\"http://easy.dans.knaw.nl/schemas/vocab/identifier-type/\">\n"
-                + "    <ddm:dcmiMetadata>\n"
-                + "    </ddm:dcmiMetadata>\n"
-                + "</ddm:DDM>";
+        final String xml = """
+            <ddm:DDM
+                    xmlns:dc="http://purl.org/dc/elements/1.1/"
+                    xmlns:dcx-dai="http://easy.dans.knaw.nl/schemas/dcx/dai/"
+                    xmlns:ddm="http://schemas.dans.knaw.nl/dataset/ddm-v2/"
+                    xmlns:dcterms="http://purl.org/dc/terms/"
+                    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                    xmlns:id-type="http://easy.dans.knaw.nl/schemas/vocab/identifier-type/">
+                <ddm:dcmiMetadata>
+                </ddm:dcmiMetadata>
+            </ddm:DDM>""";
 
         var document = parseXmlString(xml);
         var reader = Mockito.spy(new XmlReaderImpl());
@@ -50,18 +51,19 @@ public class DatasetXmlContainsExactlyOneDctermsLicenseWithXsiTypeUriTest extend
 
     @Test
     void should_return_ERROR_for_multiple_licenses() throws Exception {
-        final String xml = "<ddm:DDM\n"
-                + "        xmlns:dc=\"http://purl.org/dc/elements/1.1/\"\n"
-                + "        xmlns:dcx-dai=\"http://easy.dans.knaw.nl/schemas/dcx/dai/\"\n"
-                + "        xmlns:ddm=\"http://schemas.dans.knaw.nl/dataset/ddm-v2/\"\n"
-                + "        xmlns:dcterms=\"http://purl.org/dc/terms/\"\n"
-                + "        xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n"
-                + "        xmlns:id-type=\"http://easy.dans.knaw.nl/schemas/vocab/identifier-type/\">\n"
-                + "    <ddm:dcmiMetadata>\n"
-                + "        <dcterms:license xsi:type=\"dcterms:URI\">http://opensource.org/licenses/MIT</dcterms:license>\n"
-                + "        <dcterms:license xsi:type=\"dcterms:URI\">http://opensource.org/licenses/MIT</dcterms:license>\n"
-                + "    </ddm:dcmiMetadata>\n"
-                + "</ddm:DDM>";
+        final String xml = """
+            <ddm:DDM
+                    xmlns:dc="http://purl.org/dc/elements/1.1/"
+                    xmlns:dcx-dai="http://easy.dans.knaw.nl/schemas/dcx/dai/"
+                    xmlns:ddm="http://schemas.dans.knaw.nl/dataset/ddm-v2/"
+                    xmlns:dcterms="http://purl.org/dc/terms/"
+                    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                    xmlns:id-type="http://easy.dans.knaw.nl/schemas/vocab/identifier-type/">
+                <ddm:dcmiMetadata>
+                    <dcterms:license xsi:type="dcterms:URI">http://opensource.org/licenses/MIT</dcterms:license>
+                    <dcterms:license xsi:type="dcterms:URI">http://opensource.org/licenses/MIT</dcterms:license>
+                </ddm:dcmiMetadata>
+            </ddm:DDM>""";
 
         var document = parseXmlString(xml);
         var reader = Mockito.spy(new XmlReaderImpl());
@@ -74,17 +76,18 @@ public class DatasetXmlContainsExactlyOneDctermsLicenseWithXsiTypeUriTest extend
 
     @Test
     void should_return_SUCCESS_for_valid_URI() throws Exception {
-        final String xml = "<ddm:DDM\n"
-                + "        xmlns:dc=\"http://purl.org/dc/elements/1.1/\"\n"
-                + "        xmlns:dcx-dai=\"http://easy.dans.knaw.nl/schemas/dcx/dai/\"\n"
-                + "        xmlns:ddm=\"http://schemas.dans.knaw.nl/dataset/ddm-v2/\"\n"
-                + "        xmlns:dcterms=\"http://purl.org/dc/terms/\"\n"
-                + "        xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n"
-                + "        xmlns:id-type=\"http://easy.dans.knaw.nl/schemas/vocab/identifier-type/\">\n"
-                + "    <ddm:dcmiMetadata>\n"
-                + "        <dcterms:license xsi:type=\"dcterms:URI\">http://random.org/licenses/MIT</dcterms:license>\n"
-                + "    </ddm:dcmiMetadata>\n"
-                + "</ddm:DDM>";
+        final String xml = """
+            <ddm:DDM
+                    xmlns:dc="http://purl.org/dc/elements/1.1/"
+                    xmlns:dcx-dai="http://easy.dans.knaw.nl/schemas/dcx/dai/"
+                    xmlns:ddm="http://schemas.dans.knaw.nl/dataset/ddm-v2/"
+                    xmlns:dcterms="http://purl.org/dc/terms/"
+                    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                    xmlns:id-type="http://easy.dans.knaw.nl/schemas/vocab/identifier-type/">
+                <ddm:dcmiMetadata>
+                    <dcterms:license xsi:type="dcterms:URI">http://random.org/licenses/MIT</dcterms:license>
+                </ddm:dcmiMetadata>
+            </ddm:DDM>""";
 
         var document = parseXmlString(xml);
         var reader = Mockito.spy(new XmlReaderImpl());
@@ -98,18 +101,19 @@ public class DatasetXmlContainsExactlyOneDctermsLicenseWithXsiTypeUriTest extend
 
     @Test
     void should_return_SUCCESS_for_valid_URI_and_extra_license_without_attribute() throws Exception {
-        final String xml = "<ddm:DDM\n"
-                + "        xmlns:dc=\"http://purl.org/dc/elements/1.1/\"\n"
-                + "        xmlns:dcx-dai=\"http://easy.dans.knaw.nl/schemas/dcx/dai/\"\n"
-                + "        xmlns:ddm=\"http://schemas.dans.knaw.nl/dataset/ddm-v2/\"\n"
-                + "        xmlns:dcterms=\"http://purl.org/dc/terms/\"\n"
-                + "        xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n"
-                + "        xmlns:id-type=\"http://easy.dans.knaw.nl/schemas/vocab/identifier-type/\">\n"
-                + "    <ddm:dcmiMetadata>\n"
-                + "        <dcterms:license xsi:type=\"dcterms:URI\">http://random.org/licenses/MIT</dcterms:license>\n"
-                + "        <dcterms:license>NOT MARKED WITH XSI TYPE, SO SHOULD BE IGNORED</dcterms:license>\n"
-                + "    </ddm:dcmiMetadata>\n"
-                + "</ddm:DDM>";
+        final String xml = """
+            <ddm:DDM
+                    xmlns:dc="http://purl.org/dc/elements/1.1/"
+                    xmlns:dcx-dai="http://easy.dans.knaw.nl/schemas/dcx/dai/"
+                    xmlns:ddm="http://schemas.dans.knaw.nl/dataset/ddm-v2/"
+                    xmlns:dcterms="http://purl.org/dc/terms/"
+                    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                    xmlns:id-type="http://easy.dans.knaw.nl/schemas/vocab/identifier-type/">
+                <ddm:dcmiMetadata>
+                    <dcterms:license xsi:type="dcterms:URI">http://random.org/licenses/MIT</dcterms:license>
+                    <dcterms:license>NOT MARKED WITH XSI TYPE, SO SHOULD BE IGNORED</dcterms:license>
+                </ddm:dcmiMetadata>
+            </ddm:DDM>""";
 
         var document = parseXmlString(xml);
         var reader = Mockito.spy(new XmlReaderImpl());
@@ -124,17 +128,18 @@ public class DatasetXmlContainsExactlyOneDctermsLicenseWithXsiTypeUriTest extend
 
     @Test
     void should_return_ERROR_for_nondcterms_uri() throws Exception {
-        final String xml = "<ddm:DDM\n"
-                + "        xmlns:dc=\"http://purl.org/dc/elements/1.1/\"\n"
-                + "        xmlns:dcx-dai=\"http://easy.dans.knaw.nl/schemas/dcx/dai/\"\n"
-                + "        xmlns:ddm=\"http://schemas.dans.knaw.nl/dataset/ddm-v2/\"\n"
-                + "        xmlns:dcterms=\"http://purl.org/dc/terms/\"\n"
-                + "        xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n"
-                + "        xmlns:id-type=\"http://easy.dans.knaw.nl/schemas/vocab/identifier-type/\">\n"
-                + "    <ddm:dcmiMetadata>\n"
-                + "        <dcterms:license xsi:type=\"dcterms:SOMETHING_ELSE\">http://random.org/licenses/MIT</dcterms:license>\n"
-                + "    </ddm:dcmiMetadata>\n"
-                + "</ddm:DDM>";
+        final String xml = """
+            <ddm:DDM
+                    xmlns:dc="http://purl.org/dc/elements/1.1/"
+                    xmlns:dcx-dai="http://easy.dans.knaw.nl/schemas/dcx/dai/"
+                    xmlns:ddm="http://schemas.dans.knaw.nl/dataset/ddm-v2/"
+                    xmlns:dcterms="http://purl.org/dc/terms/"
+                    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                    xmlns:id-type="http://easy.dans.knaw.nl/schemas/vocab/identifier-type/">
+                <ddm:dcmiMetadata>
+                    <dcterms:license xsi:type="dcterms:SOMETHING_ELSE">http://random.org/licenses/MIT</dcterms:license>
+                </ddm:dcmiMetadata>
+            </ddm:DDM>""";
 
         var document = parseXmlString(xml);
         var reader = Mockito.spy(new XmlReaderImpl());
@@ -147,17 +152,18 @@ public class DatasetXmlContainsExactlyOneDctermsLicenseWithXsiTypeUriTest extend
 
     @Test
     void should_return_ERROR_for_invalid_uri() throws Exception {
-        final String xml = "<ddm:DDM\n"
-                + "        xmlns:dc=\"http://purl.org/dc/elements/1.1/\"\n"
-                + "        xmlns:dcx-dai=\"http://easy.dans.knaw.nl/schemas/dcx/dai/\"\n"
-                + "        xmlns:ddm=\"http://schemas.dans.knaw.nl/dataset/ddm-v2/\"\n"
-                + "        xmlns:dcterms=\"http://purl.org/dc/terms/\"\n"
-                + "        xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n"
-                + "        xmlns:id-type=\"http://easy.dans.knaw.nl/schemas/vocab/identifier-type/\">\n"
-                + "    <ddm:dcmiMetadata>\n"
-                + "        <dcterms:license xsi:type=\"dcterms:URI\">invalid uri</dcterms:license>\n"
-                + "    </ddm:dcmiMetadata>\n"
-                + "</ddm:DDM>";
+        final String xml = """
+            <ddm:DDM
+                    xmlns:dc="http://purl.org/dc/elements/1.1/"
+                    xmlns:dcx-dai="http://easy.dans.knaw.nl/schemas/dcx/dai/"
+                    xmlns:ddm="http://schemas.dans.knaw.nl/dataset/ddm-v2/"
+                    xmlns:dcterms="http://purl.org/dc/terms/"
+                    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                    xmlns:id-type="http://easy.dans.knaw.nl/schemas/vocab/identifier-type/">
+                <ddm:dcmiMetadata>
+                    <dcterms:license xsi:type="dcterms:URI">invalid uri</dcterms:license>
+                </ddm:dcmiMetadata>
+            </ddm:DDM>""";
 
         var document = parseXmlString(xml);
         var reader = Mockito.spy(new XmlReaderImpl());

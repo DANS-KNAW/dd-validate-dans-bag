@@ -43,7 +43,7 @@ dataverse:
 
 
 validation:
-  baseFolder: # Fill in absolute path to the folder un which the deposit are located
+  baseFolder: "changeme" # Fill in absolute path to the folder un which the deposit are located
   otherIdPrefixes:
     - 'EXAMPLE:'
     - 'USER01:'

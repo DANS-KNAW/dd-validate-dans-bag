@@ -30,12 +30,14 @@ public class OptionalBagFileConformsToXmlSchemaTest extends RuleTestFixture {
 
     @Test
     void should_return_ERROR_status_if_file_exists_but_does_not_validate() throws Exception {
-        var xml = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>\n"
-                + "<ddm:DDM xmlns:ddm=\"http://schemas.dans.knaw.nl/dataset/ddm-v2/\" xmlns=\"http://easy.dans.knaw.nl/schemas/bag/metadata/files/\" xmlns:abr=\"http://www.den.nl/standaard/166/Archeologisch-Basisregister/\" xmlns:dc=\"http://purl.org/dc/elements/1.1/\" xmlns:dcterms=\"http://purl.org/dc/terms/\" xmlns:dcx-dai=\"http://easy.dans.knaw.nl/schemas/dcx/dai/\" xmlns:dcx-gml=\"http://easy.dans.knaw.nl/schemas/dcx/gml/\" xmlns:id-type=\"http://easy.dans.knaw.nl/schemas/vocab/identifier-type/\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">\n"
-                + "    <ddm:profile>\n"
-                + "        <dcterms:description xml:lang=\"en\">This find is registered at Portable Antiquities of the Netherlands with number PAN-00008136</dcterms:description>\n"
-                + "    </ddm:profile>\n"
-                + "</ddm:DDM>\n";
+        var xml = """
+            <?xml version="1.0" encoding="UTF-8" standalone="no"?>
+            <ddm:DDM xmlns:ddm="http://schemas.dans.knaw.nl/dataset/ddm-v2/" xmlns="http://easy.dans.knaw.nl/schemas/bag/metadata/files/" xmlns:abr="http://www.den.nl/standaard/166/Archeologisch-Basisregister/" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:dcx-dai="http://easy.dans.knaw.nl/schemas/dcx/dai/" xmlns:dcx-gml="http://easy.dans.knaw.nl/schemas/dcx/gml/" xmlns:id-type="http://easy.dans.knaw.nl/schemas/vocab/identifier-type/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+                <ddm:profile>
+                    <dcterms:description xml:lang="en">This find is registered at Portable Antiquities of the Netherlands with number PAN-00008136</dcterms:description>
+                </ddm:profile>
+            </ddm:DDM>
+            """;
 
         var document = parseXmlString(xml);
         var reader = Mockito.spy(new XmlReaderImpl());

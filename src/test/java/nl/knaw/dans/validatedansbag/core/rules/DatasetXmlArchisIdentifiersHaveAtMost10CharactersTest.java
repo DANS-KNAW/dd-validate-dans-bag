@@ -28,18 +28,20 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 public class DatasetXmlArchisIdentifiersHaveAtMost10CharactersTest extends RuleTestFixture {
     @Test
     void should_return_SUCCESS_if_all_ok() throws Exception {
-        var xml = "<ddm:DDM xmlns:ddm=\"http://schemas.dans.knaw.nl/dataset/ddm-v2/\"\n"
-                + "         xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n"
-                + "         xmlns:dc=\"http://purl.org/dc/elements/1.1/\"\n"
-                + "         xmlns:dct=\"http://purl.org/dc/terms/\"\n"
-                + "         xmlns:dcx-dai=\"http://easy.dans.knaw.nl/schemas/dcx/dai/\">\n"
-                + "    <ddm:dcmiMetadata>\n"
-                + "        <dct:license xsi:type=\"dct:URI\">http://creativecommons.org/licenses/by-sa/4.0</dct:license>\n"
-                + "        <dct:rightsHolder>Mr. Rights</dct:rightsHolder>\n"
-                + "        <dct:identifier xsi:type=\"id-type:ARCHIS-ZAAK-IDENTIFICATIE\">id1</dct:identifier>\n"
-                + "        <dct:identifier xsi:type=\"id-type:ARCHIS-ZAAK-IDENTIFICATIE\">id2</dct:identifier>\n"
-                + "    </ddm:dcmiMetadata>\n"
-                + "</ddm:DDM>\n";
+        var xml = """
+            <ddm:DDM xmlns:ddm="http://schemas.dans.knaw.nl/dataset/ddm-v2/"
+                     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                     xmlns:dc="http://purl.org/dc/elements/1.1/"
+                     xmlns:dct="http://purl.org/dc/terms/"
+                     xmlns:dcx-dai="http://easy.dans.knaw.nl/schemas/dcx/dai/">
+                <ddm:dcmiMetadata>
+                    <dct:license xsi:type="dct:URI">http://creativecommons.org/licenses/by-sa/4.0</dct:license>
+                    <dct:rightsHolder>Mr. Rights</dct:rightsHolder>
+                    <dct:identifier xsi:type="id-type:ARCHIS-ZAAK-IDENTIFICATIE">id1</dct:identifier>
+                    <dct:identifier xsi:type="id-type:ARCHIS-ZAAK-IDENTIFICATIE">id2</dct:identifier>
+                </ddm:dcmiMetadata>
+            </ddm:DDM>
+            """;
 
         var document = parseXmlString(xml);
         var reader = Mockito.spy(new XmlReaderImpl());
@@ -52,18 +54,20 @@ public class DatasetXmlArchisIdentifiersHaveAtMost10CharactersTest extends RuleT
 
     @Test
     void should_return_ERROR_if_some_too_long() throws Exception {
-        var xml = "<ddm:DDM xmlns:ddm=\"http://schemas.dans.knaw.nl/dataset/ddm-v2/\"\n"
-                + "         xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n"
-                + "         xmlns:dc=\"http://purl.org/dc/elements/1.1/\"\n"
-                + "         xmlns:dct=\"http://purl.org/dc/terms/\"\n"
-                + "         xmlns:dcx-dai=\"http://easy.dans.knaw.nl/schemas/dcx/dai/\">\n"
-                + "    <ddm:dcmiMetadata>\n"
-                + "        <dct:license xsi:type=\"dct:URI\">http://creativecommons.org/licenses/by-sa/4.0</dct:license>\n"
-                + "        <dct:rightsHolder>Mr. Rights</dct:rightsHolder>\n"
-                + "        <dct:identifier xsi:type=\"id-type:ARCHIS-ZAAK-IDENTIFICATIE\">niet kunnen vinden1</dct:identifier>\n"
-                + "        <dct:identifier xsi:type=\"id-type:ARCHIS-ZAAK-IDENTIFICATIE\">niet kunnen vinden2</dct:identifier>\n"
-                + "    </ddm:dcmiMetadata>\n"
-                + "</ddm:DDM>\n";
+        var xml = """
+            <ddm:DDM xmlns:ddm="http://schemas.dans.knaw.nl/dataset/ddm-v2/"
+                     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                     xmlns:dc="http://purl.org/dc/elements/1.1/"
+                     xmlns:dct="http://purl.org/dc/terms/"
+                     xmlns:dcx-dai="http://easy.dans.knaw.nl/schemas/dcx/dai/">
+                <ddm:dcmiMetadata>
+                    <dct:license xsi:type="dct:URI">http://creativecommons.org/licenses/by-sa/4.0</dct:license>
+                    <dct:rightsHolder>Mr. Rights</dct:rightsHolder>
+                    <dct:identifier xsi:type="id-type:ARCHIS-ZAAK-IDENTIFICATIE">niet kunnen vinden1</dct:identifier>
+                    <dct:identifier xsi:type="id-type:ARCHIS-ZAAK-IDENTIFICATIE">niet kunnen vinden2</dct:identifier>
+                </ddm:dcmiMetadata>
+            </ddm:DDM>
+            """;
 
         var document = parseXmlString(xml);
         var reader = Mockito.spy(new XmlReaderImpl());

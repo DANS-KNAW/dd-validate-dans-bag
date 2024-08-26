@@ -163,6 +163,7 @@ public class RuleSets {
             new NumberedRule("3.1.9", new DatasetXmlHasRightsHolderInElement(xmlReader), DepositType.DEPOSIT, List.of("3.1.1")),
             new NumberedRule("3.1.9-MIGRATION", new DatasetXmlHasRightsHolderInElement(xmlReader), DepositType.MIGRATION, List.of("3.1.1")),
             new NumberedRule("3.1.10", new DatasetXmlDoesNotHaveRightHolderInAuthorRole(xmlReader), DepositType.DEPOSIT, List.of("3.1.1")),
+            new NumberedRule("3.1.11", new DatasetXmlExactlyOneOfValueUriAndValueCode(xmlReader), List.of("3.1.1")),
 
             // 3.2 metadata/files.xml
             new NumberedRule("3.2.1", new BagFileConformsToXmlSchema(metadataFilesPath, xmlReader, "files.xml", xmlSchemaValidator), List.of("1.1.1", "2.2(b)")),
