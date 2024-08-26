@@ -28,23 +28,23 @@ import java.util.Objects;
 import java.util.Set;
 
 @AllArgsConstructor
-public class DatasetXmlValueUrisAreValid implements BagValidatorRule {
+public class DatasetXmlValueCodesAreValid implements BagValidatorRule {
     private final XmlReader xmlReader;
-    private final Map<URI, Set<URI>> schemeUriToValidTermUris;
+    private final Map<URI, Set<String>> schemeUriToValidTermCodes;
 
     @Override
     public RuleResult validate(Path path) throws Exception {
         var document = xmlReader.readXmlFile(path.resolve("metadata/dataset.xml"));
         List<String> allErrors = new LinkedList<>();
 
-        for (var schemeUri : schemeUriToValidTermUris.keySet()) {
+        for (var schemeUri : schemeUriToValidTermCodes.keySet()) {
             var errors = xmlReader.xpathToStream(document, "/ddm:DDM/*/*[@schemeURI='" + schemeUri + "']")
                 .map(node -> {
-                    var valueUri = node.getAttributes().getNamedItem("valueURI").getTextContent();
+                    var valueCode = node.getAttributes().getNamedItem("valueCode").getTextContent();
                     var subjectScheme = node.getAttributes().getNamedItem("subjectScheme").getTextContent();
 
-                    if (!schemeUriToValidTermUris.get(schemeUri).contains(URI.create(valueUri))) {
-                        return String.format("Invalid term for %s: %s", subjectScheme, valueUri);
+                    if (!schemeUriToValidTermCodes.get(schemeUri).contains(valueCode)) {
+                        return String.format("Invalid term for %s: %s", subjectScheme, valueCode);
                     }
                     return null;
                 }).filter(Objects::nonNull).toList();
