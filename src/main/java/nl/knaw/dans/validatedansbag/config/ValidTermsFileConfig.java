@@ -15,35 +15,18 @@
  */
 package nl.knaw.dans.validatedansbag.config;
 
-import io.dropwizard.client.HttpClientConfiguration;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
 
-import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
+import java.net.URI;
 import java.nio.file.Path;
-import java.util.List;
 
-@Valid
-@Getter
-@Setter
-public class ValidationConfig {
-
+@Data
+public class ValidTermsFileConfig {
     @NotNull
-    Path baseFolder;
-
+    private URI schemeUri;
     @NotNull
-    private List<String> otherIdPrefixes;
-
-    @Valid
-    @NotNull
-    private ValidTermsConfig validTerms;
-
-    @Valid
-    @NotNull
-    private XmlSchemaConfig xmlSchemas;
-
-    @Valid
-    private HttpClientConfiguration httpClient = new HttpClientConfiguration();
+    private Path termsFile;
+    // Can be null
+    private Path codesFile;
 }
-

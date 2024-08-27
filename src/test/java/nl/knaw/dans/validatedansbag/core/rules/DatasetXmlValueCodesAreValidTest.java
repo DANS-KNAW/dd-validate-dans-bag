@@ -59,7 +59,7 @@ public class DatasetXmlValueCodesAreValidTest extends RuleTestFixture {
                     <ddm:subject subjectScheme="Vocab2" schemeURI="https://vocab2.com" valueCode="CODE.2B"/>
                     <ddm:subject subjectScheme="Vocab3" schemeURI="https://vocab3.com" valueCode="CODE.3A"/>
                 </ddm:dcmiMetadata>
-            </ddm:DDM> 
+            </ddm:DDM>
             """;
 
         var document = parseXmlString(xml);

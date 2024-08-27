@@ -15,6 +15,7 @@
  */
 package nl.knaw.dans.validatedansbag.core.rules;
 
+import lombok.AllArgsConstructor;
 import nl.knaw.dans.validatedansbag.core.engine.DepositType;
 import nl.knaw.dans.validatedansbag.core.engine.NumberedRule;
 import nl.knaw.dans.validatedansbag.core.service.BagItMetadataReader;
@@ -31,9 +32,13 @@ import nl.knaw.dans.validatedansbag.core.validator.OrganizationIdentifierPrefixV
 import nl.knaw.dans.validatedansbag.core.validator.PolygonListValidator;
 import org.apache.commons.collections4.ListUtils;
 
+import java.net.URI;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
+@AllArgsConstructor
 public class RuleSets {
     private static final Path metadataPath = Path.of("metadata");
     private static final Path payloadPath = Path.of("data");
@@ -61,31 +66,7 @@ public class RuleSets {
 
     private final VaultCatalogClient vaultCatalogClient;
 
-    public RuleSets(DataverseService dataverseService,
-        FileService fileService,
-        FilesXmlService filesXmlService,
-        OriginalFilepathsService originalFilepathService,
-        XmlReader xmlReader,
-        BagItMetadataReader bagItMetadataReader,
-        XmlSchemaValidator xmlSchemaValidator,
-        LicenseValidator licenseValidator,
-        IdentifierValidator identifierValidator,
-        PolygonListValidator polygonListValidator,
-        OrganizationIdentifierPrefixValidator organizationIdentifierPrefixValidator,
-        VaultCatalogClient vaultCatalogClient) {
-        this.dataverseService = dataverseService;
-        this.fileService = fileService;
-        this.filesXmlService = filesXmlService;
-        this.originalFilepathService = originalFilepathService;
-        this.xmlReader = xmlReader;
-        this.bagItMetadataReader = bagItMetadataReader;
-        this.xmlSchemaValidator = xmlSchemaValidator;
-        this.licenseValidator = licenseValidator;
-        this.identifierValidator = identifierValidator;
-        this.polygonListValidator = polygonListValidator;
-        this.organizationIdentifierPrefixValidator = organizationIdentifierPrefixValidator;
-        this.vaultCatalogClient = vaultCatalogClient;
-    }
+    private final Map<URI, Set<URI>> schemeUriToValidTermUris;
 
     public NumberedRule[] getDataStationSet() {
         return ListUtils.union(getCommonRules(), getDataStationOnlyRules()).toArray(new NumberedRule[0]);
@@ -164,6 +145,7 @@ public class RuleSets {
             new NumberedRule("3.1.9-MIGRATION", new DatasetXmlHasRightsHolderInElement(xmlReader), DepositType.MIGRATION, List.of("3.1.1")),
             new NumberedRule("3.1.10", new DatasetXmlDoesNotHaveRightHolderInAuthorRole(xmlReader), DepositType.DEPOSIT, List.of("3.1.1")),
             new NumberedRule("3.1.11", new DatasetXmlExactlyOneOfValueUriAndValueCode(xmlReader), List.of("3.1.1")),
+            new NumberedRule("3.1.12 (a)", new DatasetXmlValueUrisAreValid(xmlReader, schemeUriToValidTermUris), List.of("3.1.1")),
 
             // 3.2 metadata/files.xml
             new NumberedRule("3.2.1", new BagFileConformsToXmlSchema(metadataFilesPath, xmlReader, "files.xml", xmlSchemaValidator), List.of("1.1.1", "2.2(b)")),

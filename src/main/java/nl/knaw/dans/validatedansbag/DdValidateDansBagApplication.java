@@ -16,6 +16,7 @@
 
 package nl.knaw.dans.validatedansbag;
 
+import io.dropwizard.configuration.FileConfigurationSourceProvider;
 import io.dropwizard.core.Application;
 import io.dropwizard.core.setup.Bootstrap;
 import io.dropwizard.core.setup.Environment;
@@ -24,6 +25,8 @@ import nl.knaw.dans.lib.util.ClientProxyBuilder;
 import nl.knaw.dans.lib.util.DataverseHealthCheck;
 import nl.knaw.dans.validatedansbag.client.VaultCatalogClientImpl;
 import nl.knaw.dans.validatedansbag.config.DdValidateDansBagConfiguration;
+import nl.knaw.dans.validatedansbag.config.ValidTermsConfig;
+import nl.knaw.dans.validatedansbag.config.ValidTermsFileConfig;
 import nl.knaw.dans.validatedansbag.core.engine.RuleEngineImpl;
 import nl.knaw.dans.validatedansbag.core.rules.RuleSets;
 import nl.knaw.dans.validatedansbag.core.service.BagItMetadataReaderImpl;
@@ -47,8 +50,18 @@ import nl.knaw.dans.validatedansbag.resources.ValidateResource;
 import nl.knaw.dans.vaultcatalog.client.invoker.ApiClient;
 import nl.knaw.dans.vaultcatalog.client.resources.DefaultApi;
 
-public class DdValidateDansBagApplication extends Application<DdValidateDansBagConfiguration> {
+import java.io.IOException;
+import java.net.URI;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
+public class DdValidateDansBagApplication extends Application<DdValidateDansBagConfiguration> {
     public static void main(final String[] args) throws Exception {
         new DdValidateDansBagApplication().run(args);
     }
@@ -65,10 +78,8 @@ public class DdValidateDansBagApplication extends Application<DdValidateDansBagC
 
     @Override
     public void run(final DdValidateDansBagConfiguration configuration, final Environment environment) {
-        validateContextConfiguration(configuration);
-
         DataverseService dataverseService = null;
-        
+
         if (configuration.getDataverse() != null) {
             var dataverseClient = configuration.getDataverse().build(environment, "dd-validate-dans-bag/dataverse");
             dataverseService = new DataverseServiceImpl(dataverseClient);
@@ -89,6 +100,9 @@ public class DdValidateDansBagApplication extends Application<DdValidateDansBagC
         var identifierValidator = new IdentifierValidatorImpl();
         var organizationIdentifierPrefixValidator = new OrganizationIdentifierPrefixValidatorImpl(configuration.getValidation().getOtherIdPrefixes());
 
+        var schemeUriToValidTerms = loadSchemeUriToValidValues(configuration.getValidation().getValidTerms(), URI::create, ValidTermsFileConfig::getTermsFile);
+        var schemeUriToValidCodes = loadSchemeUriToValidValues(configuration.getValidation().getValidTerms(), Function.identity(), ValidTermsFileConfig::getCodesFile);
+
         var ruleEngine = new RuleEngineImpl();
         var ruleSets = new RuleSets(dataverseService,
             fileService,
@@ -101,7 +115,8 @@ public class DdValidateDansBagApplication extends Application<DdValidateDansBagC
             identifierValidator,
             polygonListValidator,
             organizationIdentifierPrefixValidator,
-            vaultCatalogClient
+            vaultCatalogClient,
+            schemeUriToValidTerms
         );
 
         var ruleEngineService = new RuleEngineServiceImpl(ruleEngine, fileService,
@@ -112,12 +127,6 @@ public class DdValidateDansBagApplication extends Application<DdValidateDansBagC
         environment.jersey().register(new ValidateOkYamlMessageBodyWriter());
 
         environment.healthChecks().register("xml-schemas", new XmlSchemaHealthCheck(xmlSchemaValidator));
-    }
-
-    private void validateContextConfiguration(DdValidateDansBagConfiguration configuration) {
-        if ((configuration.getDataverse() != null) == (configuration.getVaultCatalog() != null)) {
-            throw new IllegalArgumentException("Exactly one of dataverse and vaultCatalog must be configured");
-        }
     }
 
     private VaultCatalogClient getVaultCatalogClient(DdValidateDansBagConfiguration configuration) {
@@ -133,5 +142,32 @@ public class DdValidateDansBagApplication extends Application<DdValidateDansBagC
         }
 
         return null;
+    }
+
+    private <T> Map<URI, Set<T>> loadSchemeUriToValidValues(ValidTermsConfig validTermsConfig, Function<String, T> converter, Function<ValidTermsFileConfig, Path> filePathExtractor) {
+        Map<URI, Set<T>> schemeUriToValidValues = new HashMap<>();
+
+        for (ValidTermsFileConfig validTermsFile : validTermsConfig.getValidTermsFiles()) {
+            schemeUriToValidValues.put(
+                validTermsFile.getSchemeUri(),
+                loadLinesFromFile(validTermsConfig.getConfigDir().resolve(filePathExtractor.apply(validTermsFile))).stream()
+                    .map(converter)
+                    .collect(Collectors.toSet()));
+        }
+        return schemeUriToValidValues;
+    }
+
+    private Set<String> loadLinesFromFile(Path file) {
+        try {
+            return Files.readAllLines(file)
+                .stream()
+                .skip(1) // skip header
+                .map(String::trim)
+                .filter(s -> !s.isEmpty())
+                .collect(Collectors.toSet());
+        }
+        catch (IOException e) {
+            throw new IllegalStateException("Could not read file " + file, e);
+        }
     }
 }

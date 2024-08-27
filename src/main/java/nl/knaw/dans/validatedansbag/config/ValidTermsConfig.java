@@ -15,16 +15,18 @@
  */
 package nl.knaw.dans.validatedansbag.config;
 
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
 
-import javax.validation.constraints.NotEmpty;
+import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
+import java.nio.file.Path;
+import java.util.List;
 
-@Getter
-@Setter
-public class SwordDepositorRoles {
-    @NotEmpty
-    private String datasetCreator;
-    @NotEmpty
-    private String datasetEditor;
+@Data
+public class ValidTermsConfig {
+    @NotNull
+    private Path configDir;
+    @Valid
+    @NotNull
+    private List<ValidTermsFileConfig> validTermsFiles;
 }

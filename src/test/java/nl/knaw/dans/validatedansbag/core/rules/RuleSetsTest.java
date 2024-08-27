@@ -31,6 +31,8 @@ import nl.knaw.dans.validatedansbag.core.validator.PolygonListValidator;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
+import java.util.Map;
+
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class RuleSetsTest {
@@ -68,7 +70,7 @@ public class RuleSetsTest {
         var ruleSets = new RuleSets(
                 dataverseService, fileService, filesXmlService, originalFilepathsService, xmlReader,
                 bagItMetadataReader, xmlSchemaValidator, licenseValidator, identifierValidator, polygonListValidator, organizationIdentifierPrefixValidator,
-            VAULT_CATALOG_CLIENT);
+            VAULT_CATALOG_CLIENT, Map.of());
         new RuleEngineImpl().validateRuleConfiguration(ruleSets.getDataStationSet());
         assertTrue(true); // if we get here, the rule set is consistent
     }
@@ -78,7 +80,7 @@ public class RuleSetsTest {
         var ruleSets = new RuleSets(
                 dataverseService, fileService, filesXmlService, originalFilepathsService, xmlReader,
                 bagItMetadataReader, xmlSchemaValidator, licenseValidator, identifierValidator, polygonListValidator, organizationIdentifierPrefixValidator,
-            VAULT_CATALOG_CLIENT);
+            VAULT_CATALOG_CLIENT, Map.of());
         new RuleEngineImpl().validateRuleConfiguration(ruleSets.getVaasSet());
         assertTrue(true); // if we get here, the rule set is consistent
     }
