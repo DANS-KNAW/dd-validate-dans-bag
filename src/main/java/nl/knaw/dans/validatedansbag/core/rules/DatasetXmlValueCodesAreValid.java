@@ -40,11 +40,14 @@ public class DatasetXmlValueCodesAreValid implements BagValidatorRule {
         for (var schemeUri : schemeUriToValidTermCodes.keySet()) {
             var errors = xmlReader.xpathToStream(document, "/ddm:DDM/*/*[@schemeURI='" + schemeUri + "']")
                 .map(node -> {
-                    var valueCode = node.getAttributes().getNamedItem("valueCode").getTextContent();
-                    var subjectScheme = node.getAttributes().getNamedItem("subjectScheme").getTextContent();
+                    var valueCodeAttr = node.getAttributes().getNamedItem("valueCode");
+                    if (valueCodeAttr != null) {
+                        var valueCode = valueCodeAttr.getTextContent();
+                        var subjectScheme = node.getAttributes().getNamedItem("subjectScheme").getTextContent();
 
-                    if (!schemeUriToValidTermCodes.get(schemeUri).contains(valueCode)) {
-                        return String.format("Invalid term for %s: %s", subjectScheme, valueCode);
+                        if (!schemeUriToValidTermCodes.get(schemeUri).contains(valueCode)) {
+                            return String.format("Invalid term for %s: %s", subjectScheme, valueCode);
+                        }
                     }
                     return null;
                 }).filter(Objects::nonNull).toList();
