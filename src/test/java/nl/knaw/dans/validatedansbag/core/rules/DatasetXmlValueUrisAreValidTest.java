@@ -212,4 +212,41 @@ public class DatasetXmlValueUrisAreValidTest extends RuleTestFixture {
         assertThat(result.getStatus()).isEqualTo(RuleResult.Status.SUCCESS);
     }
 
+    @Test
+    public void should_convert_old_ABR_terms_to_new_ones() throws Exception {
+        var supportedVocabs = Map.of(
+            URI.create("https://data.cultureelerfgoed.nl/term/id/abr/"),
+            Set.of(URI.create("https://data.cultureelerfgoed.nl/term/id/abr/term1"), URI.create("https://data.cultureelerfgoed.nl/term/id/abr/term2"))
+        );
+
+        var xml = """
+            <?xml version="1.0" encoding="UTF-8" standalone="no"?>
+            <ddm:DDM xmlns:ddm="http://schemas.dans.knaw.nl/dataset/ddm-v2/" xmlns="http://easy.dans.knaw.nl/schemas/bag/metadata/files/" xmlns:abr="http://www.den.nl/standaard/166/Archeologisch-Basisregister/" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:dcx-dai="http://easy.dans.knaw.nl/schemas/dcx/dai/" xmlns:dcx-gml="http://easy.dans.knaw.nl/schemas/dcx/gml/" xmlns:id-type="http://easy.dans.knaw.nl/schemas/vocab/identifier-type/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" >
+                <ddm:profile>
+                    <dc:title>PAN-00008136 - knobbed sickle</dc:title>
+                    <dcterms:description xml:lang="en">This find is registered at Portable Antiquities of the Netherlands with number PAN-00008136</dcterms:description>
+                    <dcx-dai:creatorDetails>
+                        <dcx-dai:organization>
+                            <dcx-dai:name xml:lang="en">Portable Antiquities of the Netherlands</dcx-dai:name>
+                            <dcx-dai:role>DataCurator</dcx-dai:role>
+                        </dcx-dai:organization>
+                    </dcx-dai:creatorDetails>
+                    <ddm:created>2017-10-23T17:06:11+02:00</ddm:created>
+                    <ddm:available>2017-10-23T17:06:11+02:00</ddm:available>
+                    <ddm:audience>D37000</ddm:audience>
+                    <ddm:accessRights>OPEN_ACCESS</ddm:accessRights>
+                </ddm:profile>
+                <ddm:dcmiMetadata>
+                    <ddm:subject subjectScheme="Vocab1" schemeURI="https://vocab1.com" valueURI="https://data.cultureelerfgoed.nl/term/id/rn/term1"/>
+                    </ddm:dcmiMetadata>
+            </ddm:DDM>
+            """;
+        var document = parseXmlString(xml);
+        var reader = spy(new XmlReaderImpl());
+        Mockito.doReturn(document).when(reader).readXmlFile(Mockito.any());
+
+        var result = new DatasetXmlValueUrisAreValid(reader, supportedVocabs).validate(Path.of("bagdir"));
+        assertThat(result.getStatus()).isEqualTo(RuleResult.Status.SUCCESS);
+    }
+
 }

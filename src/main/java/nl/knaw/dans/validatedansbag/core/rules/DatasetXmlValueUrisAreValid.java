@@ -29,6 +29,9 @@ import java.util.Set;
 
 @AllArgsConstructor
 public class DatasetXmlValueUrisAreValid implements BagValidatorRule {
+    private static final String ABR_OLD_BASE_URL = "https://data.cultureelerfgoed.nl/term/id/rn/";
+    private static final String ABR_NEW_BASE_URL = "https://data.cultureelerfgoed.nl/term/id/abr/";
+
     private final XmlReader xmlReader;
     private final Map<URI, Set<URI>> schemeUriToValidTermUris;
 
@@ -43,7 +46,7 @@ public class DatasetXmlValueUrisAreValid implements BagValidatorRule {
                     var valueUriAttr = node.getAttributes().getNamedItem("valueURI");
 
                     if (valueUriAttr != null) {
-                        var valueUri = valueUriAttr.getTextContent();
+                        var valueUri = convertOldAbrToNew(valueUriAttr.getTextContent());
                         var subjectScheme = node.getAttributes().getNamedItem("subjectScheme").getTextContent();
 
                         if (!schemeUriToValidTermUris.get(schemeUri).contains(URI.create(valueUri))) {
@@ -59,5 +62,12 @@ public class DatasetXmlValueUrisAreValid implements BagValidatorRule {
             return RuleResult.ok();
         else
             return RuleResult.error(allErrors);
+    }
+
+    private String convertOldAbrToNew(String uri) {
+        if (uri.startsWith(ABR_OLD_BASE_URL)) {
+            return uri.replace(ABR_OLD_BASE_URL, ABR_NEW_BASE_URL);
+        }
+        return uri;
     }
 }
