@@ -68,6 +68,8 @@ public class RuleSets {
 
     private final Map<URI, Set<URI>> schemeUriToValidTermUris;
 
+    private final Map<URI, Set<String>> schemeUriToValidCodes;
+
     public NumberedRule[] getDataStationSet() {
         return ListUtils.union(getCommonRules(), getDataStationOnlyRules()).toArray(new NumberedRule[0]);
     }
@@ -146,6 +148,7 @@ public class RuleSets {
             new NumberedRule("3.1.10", new DatasetXmlDoesNotHaveRightHolderInAuthorRole(xmlReader), DepositType.DEPOSIT, List.of("3.1.1")),
             new NumberedRule("3.1.11", new DatasetXmlExactlyOneOfValueUriAndValueCode(xmlReader), List.of("3.1.1")),
             new NumberedRule("3.1.12 (a)", new DatasetXmlValueUrisAreValid(xmlReader, schemeUriToValidTermUris), List.of("3.1.1")),
+            new NumberedRule("3.1.12 (b)", new DatasetXmlValueCodesAreValid(xmlReader, schemeUriToValidCodes), List.of("3.1.1")),
 
             // 3.2 metadata/files.xml
             new NumberedRule("3.2.1", new BagFileConformsToXmlSchema(metadataFilesPath, xmlReader, "files.xml", xmlSchemaValidator), List.of("1.1.1", "2.2(b)")),

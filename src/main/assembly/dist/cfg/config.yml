@@ -52,10 +52,8 @@ validation:
   validTerms:
     configDir: "/etc/opt/dans.knaw.nl/dd-validate-dans-bag"
     validTermsFiles:
-      # TODO: genereer file voor dans-collections-terms.csv
-      #    - schemeUri: 'https://vocabularies.dans.knaw.nl/collections/'
-      #      termsFile: 'dans-collections-terms.csv'
-      #      hasCodes: no
+      - schemeUri: 'https://vocabularies.dans.knaw.nl/collections/'
+        termsFile: 'DansCollections-valid-terms.txt'
       - schemeUri: 'https://data.cultureelerfgoed.nl/term/id/rn/a4a7933c-e096-4bcf-a921-4f70a78749fe'
         termsFile: 'artefacten-valid-terms.txt'
         codesFile: 'artefacten-valid-codes.txt'
@@ -77,8 +75,6 @@ validation:
       - schemeUri: 'https://data.cultureelerfgoed.nl/term/id/abr/554ca1ec-3ed8-42d3-ae4b-47bcb848b238'
         termsFile: 'verwervingswijzen-valid-terms.txt'
         codesFile: 'verwervingswijzen-valid-codes.txt'
-
-
 
   xmlSchemas:
       dataset.xml:  "https://easy.dans.knaw.nl/schemas/md/ddm/ddm.xsd"

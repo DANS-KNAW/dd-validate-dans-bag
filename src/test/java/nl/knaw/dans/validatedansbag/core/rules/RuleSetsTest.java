@@ -70,7 +70,7 @@ public class RuleSetsTest {
         var ruleSets = new RuleSets(
                 dataverseService, fileService, filesXmlService, originalFilepathsService, xmlReader,
                 bagItMetadataReader, xmlSchemaValidator, licenseValidator, identifierValidator, polygonListValidator, organizationIdentifierPrefixValidator,
-            VAULT_CATALOG_CLIENT, Map.of());
+            VAULT_CATALOG_CLIENT, Map.of(), Map.of());
         new RuleEngineImpl().validateRuleConfiguration(ruleSets.getDataStationSet());
         assertTrue(true); // if we get here, the rule set is consistent
     }
@@ -80,7 +80,7 @@ public class RuleSetsTest {
         var ruleSets = new RuleSets(
                 dataverseService, fileService, filesXmlService, originalFilepathsService, xmlReader,
                 bagItMetadataReader, xmlSchemaValidator, licenseValidator, identifierValidator, polygonListValidator, organizationIdentifierPrefixValidator,
-            VAULT_CATALOG_CLIENT, Map.of());
+            VAULT_CATALOG_CLIENT, Map.of(), Map.of());
         new RuleEngineImpl().validateRuleConfiguration(ruleSets.getVaasSet());
         assertTrue(true); // if we get here, the rule set is consistent
     }

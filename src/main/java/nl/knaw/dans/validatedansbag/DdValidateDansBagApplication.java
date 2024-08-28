@@ -116,7 +116,8 @@ public class DdValidateDansBagApplication extends Application<DdValidateDansBagC
             polygonListValidator,
             organizationIdentifierPrefixValidator,
             vaultCatalogClient,
-            schemeUriToValidTerms
+            schemeUriToValidTerms,
+            schemeUriToValidCodes
         );
 
         var ruleEngineService = new RuleEngineServiceImpl(ruleEngine, fileService,
@@ -148,6 +149,10 @@ public class DdValidateDansBagApplication extends Application<DdValidateDansBagC
         Map<URI, Set<T>> schemeUriToValidValues = new HashMap<>();
 
         for (ValidTermsFileConfig validTermsFile : validTermsConfig.getValidTermsFiles()) {
+            if (filePathExtractor.apply(validTermsFile) == null) {
+                continue;
+            }
+
             schemeUriToValidValues.put(
                 validTermsFile.getSchemeUri(),
                 loadLinesFromFile(validTermsConfig.getConfigDir().resolve(filePathExtractor.apply(validTermsFile))).stream()

@@ -115,7 +115,7 @@ class ValidateResourceIntegrationTest {
         var ruleSets = new RuleSets(
                 dataverseService, fileService, filesXmlService, originalFilepathsService, xmlReader,
                 bagItMetadataReader, xmlSchemaValidator, licenseValidator, identifierValidator, polygonListValidator, organizationIdentifierPrefixValidator,
-                vaultService, Map.of());
+                vaultService, Map.of(), Map.of());
 
         var ruleEngineService = new RuleEngineServiceImpl(ruleEngine, fileService, ruleSets.getDataStationSet());
         return new ValidateResource(ruleEngineService, fileService);
