@@ -22,7 +22,7 @@
     <parent>
         <groupId>nl.knaw.dans</groupId>
         <artifactId>dd-parent</artifactId>
-        <version>1.9.0</version>
+        <version>1.9.1-SNAPSHOT</version>
         <relativePath />
     </parent>
 
@@ -37,11 +37,6 @@
 
     <properties>
         <main-class>nl.knaw.dans.validatedansbag.DdValidateDansBagApplication</main-class>
-        <!--TODO: move to parent pom-->
-        <dd-validate-dans-bag-api.version>1.0.0</dd-validate-dans-bag-api.version>
-        <!--TODO: move to parent pom-->
-        <dd-vault-catalog-api.version>0.9.0</dd-vault-catalog-api.version>
-        <dans-build-resources-maven-plugin.version>0.7.0</dans-build-resources-maven-plugin.version>
     </properties>
 
     <scm>
@@ -94,7 +89,6 @@
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-collections4</artifactId>
-            <version>4.4</version>
         </dependency>
 
         <dependency>
