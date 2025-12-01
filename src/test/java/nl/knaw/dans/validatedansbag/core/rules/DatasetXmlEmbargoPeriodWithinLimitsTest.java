@@ -16,7 +16,8 @@
 package nl.knaw.dans.validatedansbag.core.rules;
 
 import nl.knaw.dans.lib.dataverse.model.DataMessage;
-import nl.knaw.dans.validatedansbag.core.engine.RuleResult;
+
+import nl.knaw.dans.lib.util.ruleengine.RuleResult;
 import nl.knaw.dans.validatedansbag.core.service.XmlReaderImpl;
 import nl.knaw.dans.validatedansbag.resources.util.MockedDataverseResponse;
 import org.joda.time.DateTime;

@@ -17,7 +17,8 @@ package nl.knaw.dans.validatedansbag.core.rules;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import nl.knaw.dans.validatedansbag.core.engine.RuleResult;
+import nl.knaw.dans.lib.util.ruleengine.BagValidatorRule;
+import nl.knaw.dans.lib.util.ruleengine.RuleResult;
 import nl.knaw.dans.validatedansbag.core.service.XmlReader;
 
 import java.nio.file.Path;
@@ -38,13 +39,13 @@ public class DatasetXmlDoisAreValid implements BagValidatorRule {
         var expr = String.format("/ddm:DDM/ddm:dcmiMetadata/dcterms:identifier[@xsi:type=\"%s:DOI\"]", idTypePrefix);
         var nodes = xmlReader.xpathToStreamOfStrings(document, expr);
         var invalidDois = nodes
-                .peek(node -> log.trace("Validating if {} matches pattern {}", node, doiPattern))
+                .peek(node -> log.debug("Validating if {} matches pattern {}", node, doiPattern))
                 .filter((text) -> !doiPattern.matcher(text).matches())
                 .collect(Collectors.joining(", "));
 
         log.debug("Identifiers (DOI) that do not match the pattern: {}", invalidDois);
 
-        if (invalidDois.length() > 0) {
+        if (!invalidDois.isEmpty()) {
             return RuleResult.error(String.format(
                     "dataset.xml: Invalid DOIs: %s", invalidDois
             ));

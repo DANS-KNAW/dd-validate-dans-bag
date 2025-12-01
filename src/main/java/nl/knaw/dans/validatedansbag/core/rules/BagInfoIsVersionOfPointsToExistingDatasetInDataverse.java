@@ -16,7 +16,8 @@
 package nl.knaw.dans.validatedansbag.core.rules;
 
 import lombok.extern.slf4j.Slf4j;
-import nl.knaw.dans.validatedansbag.core.engine.RuleResult;
+import nl.knaw.dans.lib.util.ruleengine.BagValidatorRule;
+import nl.knaw.dans.lib.util.ruleengine.RuleResult;
 import nl.knaw.dans.validatedansbag.core.service.BagItMetadataReader;
 import nl.knaw.dans.validatedansbag.core.service.DataverseService;
 
@@ -36,7 +37,7 @@ public class BagInfoIsVersionOfPointsToExistingDatasetInDataverse extends Datave
     public RuleResult validate(Path path) throws Exception {
         var isVersionOf = bagItMetadataReader.getSingleField(path, "Is-Version-Of");
 
-        log.trace("Using Is-Version-Of value '{}' to find a matching dataset", isVersionOf);
+        log.debug("Using Is-Version-Of value '{}' to find a matching dataset", isVersionOf);
 
         if (isVersionOf != null) {
             var dataset = getDatasetIsVersionOf(isVersionOf);

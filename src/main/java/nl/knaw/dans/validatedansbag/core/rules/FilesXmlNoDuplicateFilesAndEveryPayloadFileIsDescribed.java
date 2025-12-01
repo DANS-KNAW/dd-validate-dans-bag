@@ -17,7 +17,8 @@ package nl.knaw.dans.validatedansbag.core.rules;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import nl.knaw.dans.validatedansbag.core.engine.RuleResult;
+import nl.knaw.dans.lib.util.ruleengine.BagValidatorRule;
+import nl.knaw.dans.lib.util.ruleengine.RuleResult;
 import nl.knaw.dans.validatedansbag.core.service.FileService;
 import nl.knaw.dans.validatedansbag.core.service.FilesXmlService;
 import nl.knaw.dans.validatedansbag.core.service.OriginalFilepathsService;
@@ -49,7 +50,7 @@ public class FilesXmlNoDuplicateFilesAndEveryPayloadFileIsDescribed implements B
         var duplicates = filesXmlNoDuplicates(path);
 
         // There MUST NOT be more than one file element corresponding to a payload file
-        if (duplicates.size() > 0) {
+        if (!duplicates.isEmpty()) {
             var paths = duplicates.stream().map(Path::toString).collect(Collectors.joining(", "));
             errors.add(String.format("files.xml: duplicate entries found: {%s}", paths));
         }
@@ -57,12 +58,12 @@ public class FilesXmlNoDuplicateFilesAndEveryPayloadFileIsDescribed implements B
         var missingPayloadFiles = filesXmlDescribesAllPayloadFiles(path);
 
         // every payload file MUST be described by a file element.
-        if (missingPayloadFiles.size() > 0) {
+        if (!missingPayloadFiles.isEmpty()) {
             var paths = missingPayloadFiles.stream().map(Path::toString).collect(Collectors.joining(", "));
             errors.add(String.format("files.xml: does not describe all payload files: {%s}", paths));
         }
 
-        if (errors.size() > 0) {
+        if (!errors.isEmpty()) {
             return RuleResult.error(errors);
         }
 
@@ -72,12 +73,12 @@ public class FilesXmlNoDuplicateFilesAndEveryPayloadFileIsDescribed implements B
     Set<Path> filesXmlNoDuplicates(Path path) throws IOException, XPathExpressionException, ParserConfigurationException, SAXException {
         // list all duplicate entries in files.xml
         return filesXmlService.readFilepaths(path)
-                .collect(Collectors.groupingBy(Path::normalize))
-                .entrySet()
-                .stream()
-                .filter(item -> item.getValue().size() > 1)
-                .map(Map.Entry::getKey)
-                .collect(Collectors.toSet());
+            .collect(Collectors.groupingBy(Path::normalize))
+            .entrySet()
+            .stream()
+            .filter(item -> item.getValue().size() > 1)
+            .map(Map.Entry::getKey)
+            .collect(Collectors.toSet());
     }
 
     Set<Path> filesXmlDescribesAllPayloadFiles(Path path) throws ParserConfigurationException, IOException, SAXException, XPathExpressionException {
@@ -85,20 +86,20 @@ public class FilesXmlNoDuplicateFilesAndEveryPayloadFileIsDescribed implements B
 
         // find all files that exist on disk
         var bagPaths = fileService.getAllFiles(dataPath)
-                .stream()
-                .map(path::relativize)
-                .collect(Collectors.toSet());
+            .stream()
+            .map(path::relativize)
+            .collect(Collectors.toSet());
 
-        log.trace("Paths that exist on path {}: {}", dataPath, bagPaths);
+        log.debug("Paths that exist on path {}: {}", dataPath, bagPaths);
 
         var bagPathMapping = originalFilepathsService.getMappingsFromOriginalToRenamed(path);
 
         var xmlPaths = filesXmlService.readFilepaths(path)
-                .map(Path::normalize)
-                .map(p -> Optional.ofNullable(bagPathMapping.get(p)).orElse(p))
-                .collect(Collectors.toSet());
+            .map(Path::normalize)
+            .map(p -> Optional.ofNullable(bagPathMapping.get(p)).orElse(p))
+            .collect(Collectors.toSet());
 
-        log.trace("Paths that defined in files.xml: {}", xmlPaths);
+        log.debug("Paths that defined in files.xml: {}", xmlPaths);
 
         var result = CollectionUtils.subtract(bagPaths, xmlPaths);
 

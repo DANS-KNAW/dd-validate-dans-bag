@@ -62,10 +62,10 @@ public class BagItMetadataReaderImpl implements BagItMetadataReader {
         try (var verifier = new BagVerifier()) {
             var ignoreHiddenFiles = false;
 
-            log.trace("Verifying bag is complete on path {}", path);
+            log.debug("Verifying bag is complete on path {}", path);
             verifier.isComplete(bag, ignoreHiddenFiles);
 
-            log.trace("Verifying bag is valid on path {}", path);
+            log.debug("Verifying bag is valid on path {}", path);
             verifier.isValid(bag, ignoreHiddenFiles);
         }
     }

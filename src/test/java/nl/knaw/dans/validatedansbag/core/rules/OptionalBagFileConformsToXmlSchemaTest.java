@@ -15,12 +15,15 @@
  */
 package nl.knaw.dans.validatedansbag.core.rules;
 
-import nl.knaw.dans.validatedansbag.core.engine.RuleResult;
+
+import nl.knaw.dans.lib.util.ruleengine.RuleResult;
 import nl.knaw.dans.validatedansbag.core.service.XmlReaderImpl;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.xml.sax.SAXParseException;
 
+import javax.xml.transform.Source;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.List;
 
@@ -39,24 +42,20 @@ public class OptionalBagFileConformsToXmlSchemaTest extends RuleTestFixture {
             </ddm:DDM>
             """;
 
-        var document = parseXmlString(xml);
-        var reader = Mockito.spy(new XmlReaderImpl());
+        Mockito.doReturn(xml.getBytes(StandardCharsets.UTF_8)).when(fileService).readFileContents(Path.of("bagdir/metadata/dataset.xml"));
 
         Mockito.doReturn(true).when(fileService).exists(Path.of("bagdir/metadata/dataset.xml"));
-        Mockito.doReturn(document).when(reader).readXmlFile(Mockito.any());
         Mockito.doReturn(List.of(new SAXParseException("msg", null)))
-                .when(xmlSchemaValidator).validateDocument(Mockito.any(), Mockito.anyString());
+                .when(xmlSchemaValidator).validateDocument(Mockito.any(Source.class), Mockito.anyString());
 
-        var result = new OptionalBagFileConformsToXmlSchema(Path.of("metadata/dataset.xml"), reader, "ddm", xmlSchemaValidator, fileService).validate(Path.of("bagdir"));
+        var result = new OptionalBagFileConformsToXmlSchema(Path.of("metadata/dataset.xml"), "ddm", xmlSchemaValidator, fileService).validate(Path.of("bagdir"));
         assertEquals(RuleResult.Status.ERROR, result.getStatus());
     }
 
     @Test
     void should_return_SKIP_DEPENDENCIES_status_if_file_does_not_exist() throws Exception {
-        var reader = Mockito.spy(new XmlReaderImpl());
-
         Mockito.doReturn(false).when(fileService).exists(Path.of("bagdir/metadata/dataset.xml"));
-        var result = new OptionalBagFileConformsToXmlSchema(Path.of("metadata/dataset.xml"), reader, "ddm", xmlSchemaValidator, fileService).validate(Path.of("bagdir"));
+        var result = new OptionalBagFileConformsToXmlSchema(Path.of("metadata/dataset.xml"),  "ddm", xmlSchemaValidator, fileService).validate(Path.of("bagdir"));
         assertEquals(RuleResult.Status.SKIP_DEPENDENCIES, result.getStatus());
 
     }

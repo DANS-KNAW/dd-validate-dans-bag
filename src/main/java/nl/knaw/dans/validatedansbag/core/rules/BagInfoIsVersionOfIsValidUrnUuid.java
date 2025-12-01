@@ -17,7 +17,8 @@ package nl.knaw.dans.validatedansbag.core.rules;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import nl.knaw.dans.validatedansbag.core.engine.RuleResult;
+import nl.knaw.dans.lib.util.ruleengine.BagValidatorRule;
+import nl.knaw.dans.lib.util.ruleengine.RuleResult;
 import nl.knaw.dans.validatedansbag.core.service.BagItMetadataReader;
 
 import java.net.URI;
@@ -51,11 +52,10 @@ public class BagInfoIsVersionOfIsValidUrnUuid implements BagValidatorRule {
                         return true;
                     }
 
-                    //noinspection ResultOfMethodCallIgnored
                     UUID.fromString(uri.getSchemeSpecificPart().substring("uuid:".length()));
                 }
                 catch (URISyntaxException | IllegalArgumentException e) {
-                    log.trace("{} could not be parsed", item, e);
+                    log.debug("{} could not be parsed", item, e);
                     return true;
                 }
 

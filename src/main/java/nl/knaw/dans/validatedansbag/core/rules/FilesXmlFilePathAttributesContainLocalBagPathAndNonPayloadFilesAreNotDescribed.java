@@ -17,7 +17,8 @@ package nl.knaw.dans.validatedansbag.core.rules;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import nl.knaw.dans.validatedansbag.core.engine.RuleResult;
+import nl.knaw.dans.lib.util.ruleengine.BagValidatorRule;
+import nl.knaw.dans.lib.util.ruleengine.RuleResult;
 import nl.knaw.dans.validatedansbag.core.service.FileService;
 import nl.knaw.dans.validatedansbag.core.service.FilesXmlService;
 import nl.knaw.dans.validatedansbag.core.service.OriginalFilepathsService;
@@ -44,7 +45,7 @@ public class FilesXmlFilePathAttributesContainLocalBagPathAndNonPayloadFilesAreN
     public RuleResult validate(Path path) throws Exception {
         var missingInFilesXml = filesXmlDescribesOnlyPayloadFiles(path);
 
-        if (missingInFilesXml.size() > 0) {
+        if (!missingInFilesXml.isEmpty()) {
             var paths = missingInFilesXml.stream().map(Path::toString).collect(Collectors.joining(", "));
             return RuleResult.error(String.format("files.xml: duplicate entries found: {%s}", paths));
         }
@@ -57,20 +58,20 @@ public class FilesXmlFilePathAttributesContainLocalBagPathAndNonPayloadFilesAreN
 
         // find all files that exist on disk
         var bagPaths = fileService.getAllFiles(dataPath)
-                .stream()
-                .map(path::relativize)
-                .collect(Collectors.toSet());
+            .stream()
+            .map(path::relativize)
+            .collect(Collectors.toSet());
 
-        log.trace("Paths that exist on path {}: {}", dataPath, bagPaths);
+        log.debug("Paths that exist on path {}: {}", dataPath, bagPaths);
 
         var bagPathMapping = originalFilepathsService.getMappingsFromOriginalToRenamed(path);
 
         var xmlPaths = filesXmlService.readFilepaths(path)
-                .map(Path::normalize)
-                .map(p -> Optional.ofNullable(bagPathMapping.get(p)).orElse(p))
-                .collect(Collectors.toSet());
+            .map(Path::normalize)
+            .map(p -> Optional.ofNullable(bagPathMapping.get(p)).orElse(p))
+            .collect(Collectors.toSet());
 
-        log.trace("Paths that defined in files.xml: {}", xmlPaths);
+        log.debug("Paths that defined in files.xml: {}", xmlPaths);
         // compare the 2 sets. If elements exist in files.xml that are not in the bag dir
         // throw an exception
         var onlyInXml = CollectionUtils.subtract(xmlPaths, bagPaths);

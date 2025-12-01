@@ -48,7 +48,7 @@ public class DataverseServiceImpl implements DataverseService {
         var options = new SearchOptions();
         options.setTypes(List.of(SearchItemType.dataset));
 
-        log.trace("Searching dataverse with query {}", query);
+        log.debug("Searching dataverse with query {}", query);
 
         return dataverseClient.search().find(query);
     }
@@ -67,25 +67,25 @@ public class DataverseServiceImpl implements DataverseService {
 
     @Override
     public DataverseResponse<List<RoleAssignmentReadOnly>> getDatasetRoleAssignments(String identifier) throws IOException, DataverseException {
-        log.trace("Getting dataset role assigmnents from dataverse for dataset {}", identifier);
+        log.debug("Getting dataset role assigmnents from dataverse for dataset {}", identifier);
         return dataverseClient.dataset(identifier).listRoleAssignments();
     }
 
     @Override
     public DataverseResponse<DatasetLatestVersion> getDataset(String globalId) throws IOException, DataverseException {
-        log.trace("Getting dataset from dataverse with id {}", globalId);
+        log.debug("Getting dataset from dataverse with id {}", globalId);
         return dataverseClient.dataset(globalId).getLatestVersion();
     }
 
     @Override
     public DataverseResponse<List<RoleAssignmentReadOnly>> getDataverseRoleAssignments(String itemId) throws IOException, DataverseException {
-        log.trace("Getting dataset role assignments from dataverse for dataset with id {}", itemId);
+        log.debug("Getting dataset role assignments from dataverse for dataset with id {}", itemId);
         return dataverseClient.dataverse("root").listRoleAssignments();
     }
 
     @Override
     public void checkConnection() throws IOException, DataverseException {
-        log.trace("Checking dataverse connection");
+        log.debug("Checking dataverse connection");
         dataverseClient.checkConnection();
     }
 

@@ -16,20 +16,16 @@
 package nl.knaw.dans.validatedansbag.core.rules;
 
 import lombok.extern.slf4j.Slf4j;
-import nl.knaw.dans.validatedansbag.core.engine.RuleResult;
+import nl.knaw.dans.lib.util.XmlSchemaValidator;
+import nl.knaw.dans.lib.util.ruleengine.RuleResult;
 import nl.knaw.dans.validatedansbag.core.service.FileService;
-import nl.knaw.dans.validatedansbag.core.service.XmlReader;
-import nl.knaw.dans.validatedansbag.core.service.XmlSchemaValidator;
 
 import java.nio.file.Path;
 
 @Slf4j
 public class OptionalBagFileConformsToXmlSchema extends BagFileConformsToXmlSchema {
-    private final FileService fileService;
-
-    public OptionalBagFileConformsToXmlSchema(Path file, XmlReader reader, String schema, XmlSchemaValidator validator, FileService fileService) {
-        super(file, reader, schema, validator);
-        this.fileService = fileService;
+    public OptionalBagFileConformsToXmlSchema(Path file, String schema, XmlSchemaValidator validator, FileService fileService) {
+        super(file, fileService, schema, validator);
     }
 
     @Override
@@ -39,7 +35,8 @@ public class OptionalBagFileConformsToXmlSchema extends BagFileConformsToXmlSche
         if (fileService.exists(fileName)) {
             log.debug("Validating {} against schema {}", fileName, schema);
             return super.validate(path);
-        } else {
+        }
+        else {
             return RuleResult.skipDependencies();
         }
     }

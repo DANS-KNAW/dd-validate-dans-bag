@@ -16,13 +16,13 @@
 package nl.knaw.dans.validatedansbag.core.rules;
 
 import lombok.extern.slf4j.Slf4j;
-import nl.knaw.dans.validatedansbag.core.engine.RuleResult;
+import nl.knaw.dans.lib.util.ruleengine.BagValidatorRule;
+import nl.knaw.dans.lib.util.ruleengine.RuleResult;
 import nl.knaw.dans.validatedansbag.core.service.DataverseService;
 import nl.knaw.dans.validatedansbag.core.service.XmlReader;
 import org.joda.time.DateTime;
 
 import java.nio.file.Path;
-import java.util.stream.Collectors;
 
 @Slf4j
 public class DatasetXmlEmbargoPeriodWithinLimits extends DataverseRuleBase implements BagValidatorRule {
@@ -39,7 +39,7 @@ public class DatasetXmlEmbargoPeriodWithinLimits extends DataverseRuleBase imple
         var document = xmlReader.readXmlFile(path.resolve("metadata/dataset.xml"));
         var expr = "/ddm:DDM/ddm:profile/ddm:available";
 
-        var nodes = xmlReader.xpathToStream(document, expr).collect(Collectors.toList());
+        var nodes = xmlReader.xpathToStream(document, expr).toList();
         if (nodes.isEmpty()) {
             return RuleResult.ok();
         }

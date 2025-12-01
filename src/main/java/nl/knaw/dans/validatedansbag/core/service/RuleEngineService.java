@@ -16,15 +16,9 @@
 package nl.knaw.dans.validatedansbag.core.service;
 
 import nl.knaw.dans.validatedansbag.api.ValidateOkDto;
-import nl.knaw.dans.validatedansbag.core.engine.DepositType;
-import nl.knaw.dans.validatedansbag.core.engine.RuleValidationResult;
 
 import java.nio.file.Path;
-import java.util.List;
 
 public interface RuleEngineService {
-
-    List<RuleValidationResult> validateBag(Path path, DepositType depositType) throws Exception;
-
-    ValidateOkDto validateBag(Path path, DepositType depositType, String bagLocation) throws Exception;
+    ValidateOkDto validateBag(Path path, String bagLocation) throws Exception;
 }

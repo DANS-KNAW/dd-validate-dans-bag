@@ -17,7 +17,8 @@ package nl.knaw.dans.validatedansbag.core.rules;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import nl.knaw.dans.validatedansbag.core.engine.RuleResult;
+import nl.knaw.dans.lib.util.ruleengine.BagValidatorRule;
+import nl.knaw.dans.lib.util.ruleengine.RuleResult;
 import nl.knaw.dans.validatedansbag.core.service.XmlReader;
 import nl.knaw.dans.validatedansbag.core.validator.IdentifierValidator;
 
@@ -35,9 +36,9 @@ public class DatasetXmlDaisAreValid implements BagValidatorRule {
         var document = xmlReader.readXmlFile(path.resolve("metadata/dataset.xml"));
         var expr = "//dcx-dai:DAI";
         var invalidDais = xmlReader.xpathToStreamOfStrings(document, expr)
-                .peek(dai -> log.debug("Validating if {} is a valid DAI", dai))
-                .filter((dai) -> !identifierValidator.validateDai(dai))
-                .collect(Collectors.toList());
+            .peek(dai -> log.debug("Validating if {} is a valid DAI", dai))
+            .filter((dai) -> !identifierValidator.validateDai(dai))
+            .collect(Collectors.toList());
 
         log.debug("Identifiers (DAI) that do not match the pattern: {}", invalidDais);
 

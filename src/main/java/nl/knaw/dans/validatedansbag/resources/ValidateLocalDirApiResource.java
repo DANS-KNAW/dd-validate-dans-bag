@@ -18,7 +18,6 @@ package nl.knaw.dans.validatedansbag.resources;
 import lombok.AllArgsConstructor;
 import nl.knaw.dans.validatedansbag.api.ValidateCommandDto;
 import nl.knaw.dans.validatedansbag.core.BagNotFoundException;
-import nl.knaw.dans.validatedansbag.core.engine.DepositType;
 import nl.knaw.dans.validatedansbag.core.service.RuleEngineService;
 
 import javax.ws.rs.core.Response;
@@ -33,7 +32,6 @@ public class ValidateLocalDirApiResource implements ValidateLocalDirApi {
     public Response validateLocalDirPost(ValidateCommandDto validateCommandDto) {
         try {
             var result = ruleEngineService.validateBag(Path.of(validateCommandDto.getBagLocation()),
-                DepositType.valueOf(validateCommandDto.getPackageType().toString()),
                 validateCommandDto.getBagLocation());
             return Response.ok(result).build();
         }

@@ -17,7 +17,8 @@ package nl.knaw.dans.validatedansbag.core.rules;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import nl.knaw.dans.validatedansbag.core.engine.RuleResult;
+import nl.knaw.dans.lib.util.ruleengine.BagValidatorRule;
+import nl.knaw.dans.lib.util.ruleengine.RuleResult;
 import nl.knaw.dans.validatedansbag.core.service.FileService;
 
 import java.nio.file.Path;
@@ -48,7 +49,7 @@ public class BagDirDoesNotContain implements BagValidatorRule {
 
         log.debug("Found items that are not allowed in path {}: {} ", basePath, foundButNotAllowedItems);
 
-        if (foundButNotAllowedItems.size() > 0) {
+        if (!foundButNotAllowedItems.isEmpty()) {
             var filenames = foundButNotAllowedItems.stream().map(Path::toString).collect(Collectors.joining(", "));
 
             return RuleResult.error(String.format(

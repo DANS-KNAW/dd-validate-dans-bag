@@ -14,6 +14,7 @@
 # limitations under the License.
 #
 
+# Fail on error
 set -e
 
 mvn dans-build-resources:get-helper-script
@@ -21,5 +22,5 @@ mvn initialize # To ensure API definition is downloaded
 
 echo "Deploying Swagger UI and API definition..."
 sh target/add-swagger-ui.sh
-cp target/openapi/*.yml docs/api.yml
+cp target/openapi/dd-validate-dans-bag-api.yml docs/api.yml
 echo "DONE"

@@ -15,7 +15,8 @@
  */
 package nl.knaw.dans.validatedansbag.core.rules;
 
-import nl.knaw.dans.validatedansbag.core.engine.RuleResult;
+
+import nl.knaw.dans.lib.util.ruleengine.RuleResult;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 

@@ -25,7 +25,8 @@ import gov.loc.repository.bagit.exceptions.MissingPayloadManifestException;
 import gov.loc.repository.bagit.exceptions.VerificationException;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import nl.knaw.dans.validatedansbag.core.engine.RuleResult;
+import nl.knaw.dans.lib.util.ruleengine.BagValidatorRule;
+import nl.knaw.dans.lib.util.ruleengine.RuleResult;
 import nl.knaw.dans.validatedansbag.core.service.BagItMetadataReader;
 
 import java.nio.file.NoSuchFileException;
@@ -35,7 +36,6 @@ import java.nio.file.Path;
 @AllArgsConstructor
 public class BagIsValid implements BagValidatorRule {
     private final BagItMetadataReader bagItMetadataReader;
-
 
     @Override
     public RuleResult validate(Path path) throws Exception {
@@ -53,7 +53,7 @@ public class BagIsValid implements BagValidatorRule {
                CorruptChecksumException | VerificationException | NoSuchFileException e) {
 
             return RuleResult.error(String.format(
-                    "Bag is not valid: %s", e.getMessage()
+                "Bag is not valid: %s", e.getMessage()
             ), e);
         }
     }

@@ -17,12 +17,12 @@ package nl.knaw.dans.validatedansbag.core.rules;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import nl.knaw.dans.validatedansbag.core.engine.RuleResult;
+import nl.knaw.dans.lib.util.ruleengine.BagValidatorRule;
+import nl.knaw.dans.lib.util.ruleengine.RuleResult;
 import nl.knaw.dans.validatedansbag.core.service.XmlReader;
 import nl.knaw.dans.validatedansbag.core.validator.LicenseValidator;
 
 import java.nio.file.Path;
-import java.util.stream.Collectors;
 
 @Slf4j
 @AllArgsConstructor
@@ -38,8 +38,8 @@ public class DatasetXmlContainsExactlyOneDctermsLicenseWithXsiTypeUri implements
         var expr = String.format("/ddm:DDM/ddm:dcmiMetadata/dcterms:license[@xsi:type='%s:URI']", prefix);
 
         var validNodes = xmlReader.xpathToStream(document, expr)
-                .filter(item -> licenseValidator.isValidUri(item.getTextContent()))
-                .collect(Collectors.toList());
+            .filter(item -> licenseValidator.isValidUri(item.getTextContent()))
+            .toList();
 
         log.debug("Found {} nodes with correct licenses", validNodes.size());
 
@@ -47,9 +47,11 @@ public class DatasetXmlContainsExactlyOneDctermsLicenseWithXsiTypeUri implements
 
         if (numLicensesFound == 1) {
             return RuleResult.ok();
-        } else if (numLicensesFound == 0) {
+        }
+        else if (numLicensesFound == 0) {
             return RuleResult.error("No license with xsi:type=\"dcterms:URI\"");
-        } else {
+        }
+        else {
             return RuleResult.error("More than one license with xsi:type=\"dcterms:URI\"");
         }
     }

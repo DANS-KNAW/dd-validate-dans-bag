@@ -17,7 +17,8 @@ package nl.knaw.dans.validatedansbag.core.rules;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import nl.knaw.dans.validatedansbag.core.engine.RuleResult;
+import nl.knaw.dans.lib.util.ruleengine.BagValidatorRule;
+import nl.knaw.dans.lib.util.ruleengine.RuleResult;
 import nl.knaw.dans.validatedansbag.core.service.XmlReader;
 
 import java.net.URI;
@@ -59,7 +60,7 @@ public class DatasetXmlAllUrlsAreValid implements BagValidatorRule {
         var errors = Stream.of(hrefNodes, schemeURINodes, valueURINodes, elementSelectors)
                 .flatMap(i -> i)
                 .map(value -> {
-                    log.trace("Validating URI '{}'", value);
+                    log.debug("Validating URI '{}'", value);
 
                     try {
                         var uri = new URI(value);
@@ -81,7 +82,7 @@ public class DatasetXmlAllUrlsAreValid implements BagValidatorRule {
 
         log.debug("Invalid URI's found: {}", errors);
 
-        if (errors.size() > 0) {
+        if (!errors.isEmpty()) {
             return RuleResult.error(errors);
         }
 

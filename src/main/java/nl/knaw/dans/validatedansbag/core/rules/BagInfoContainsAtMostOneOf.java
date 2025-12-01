@@ -17,7 +17,8 @@ package nl.knaw.dans.validatedansbag.core.rules;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import nl.knaw.dans.validatedansbag.core.engine.RuleResult;
+import nl.knaw.dans.lib.util.ruleengine.BagValidatorRule;
+import nl.knaw.dans.lib.util.ruleengine.RuleResult;
 import nl.knaw.dans.validatedansbag.core.service.BagItMetadataReader;
 
 import java.nio.file.Path;
@@ -33,16 +34,12 @@ public class BagInfoContainsAtMostOneOf implements BagValidatorRule {
         var items = bagItMetadataReader.getField(path, key);
         log.debug("Found {} results in bag {} for field {}", items, path, key);
 
-        switch (items.size()) {
-            case 0:
-                return RuleResult.skipDependencies();
-            case 1:
-                return RuleResult.ok();
-            default:
-                return RuleResult.error(
-                        String.format("bag-info.txt may contain at most one element: '%s'", key)
-                );
-
-        }
+        return switch (items.size()) {
+            case 0 -> RuleResult.skipDependencies();
+            case 1 -> RuleResult.ok();
+            default -> RuleResult.error(
+                String.format("bag-info.txt may contain at most one element: '%s'", key)
+            );
+        };
     }
 }

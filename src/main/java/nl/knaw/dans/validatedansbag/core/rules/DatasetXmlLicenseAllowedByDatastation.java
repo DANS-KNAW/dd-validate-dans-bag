@@ -18,14 +18,14 @@ package nl.knaw.dans.validatedansbag.core.rules;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import nl.knaw.dans.lib.dataverse.DataverseException;
-import nl.knaw.dans.validatedansbag.core.engine.RuleResult;
+import nl.knaw.dans.lib.util.ruleengine.BagValidatorRule;
+import nl.knaw.dans.lib.util.ruleengine.RuleResult;
 import nl.knaw.dans.validatedansbag.core.service.XmlReader;
 import nl.knaw.dans.validatedansbag.core.validator.LicenseValidator;
 
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.stream.Collectors;
 
 @Slf4j
 @AllArgsConstructor
@@ -41,8 +41,8 @@ public class DatasetXmlLicenseAllowedByDatastation implements BagValidatorRule {
         var expr = String.format("/ddm:DDM/ddm:dcmiMetadata/dcterms:license[@xsi:type='%s:URI']", prefix);
 
         var validNodes = xmlReader.xpathToStream(document, expr)
-                .filter(item -> licenseValidator.isValidUri(item.getTextContent()))
-                .collect(Collectors.toList());
+            .filter(item -> licenseValidator.isValidUri(item.getTextContent()))
+            .toList();
 
         log.debug("Nodes found with valid URI's: {}", validNodes.size());
 
@@ -55,7 +55,8 @@ public class DatasetXmlLicenseAllowedByDatastation implements BagValidatorRule {
             log.debug("Validating if {} is a valid license in data station", text);
             try {
                 isValid = licenseValidator.isValidLicense(text);
-            } catch (IOException | DataverseException e) {
+            }
+            catch (IOException | DataverseException e) {
                 log.error("Unable to validate licenses with dataverse", e);
             }
 
@@ -64,9 +65,9 @@ public class DatasetXmlLicenseAllowedByDatastation implements BagValidatorRule {
             }
         }
 
-        if (invalidLicenses.size() > 0) {
+        if (!invalidLicenses.isEmpty()) {
             return RuleResult.error(String.format(
-                    "Invalid licenses found that are not available in the data station: %s", invalidLicenses
+                "Invalid licenses found that are not available in the data station: %s", invalidLicenses
             ));
         }
 

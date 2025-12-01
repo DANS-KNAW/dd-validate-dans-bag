@@ -16,14 +16,13 @@
 package nl.knaw.dans.validatedansbag.core.service;
 
 import lombok.extern.slf4j.Slf4j;
+import nl.knaw.dans.lib.util.ruleengine.NumberedRule;
+import nl.knaw.dans.lib.util.ruleengine.RuleEngine;
+import nl.knaw.dans.lib.util.ruleengine.RuleEngineConfigurationException;
+import nl.knaw.dans.lib.util.ruleengine.RuleValidationResult;
 import nl.knaw.dans.validatedansbag.api.ValidateOkDto;
 import nl.knaw.dans.validatedansbag.api.ValidateOkRuleViolationsInnerDto;
 import nl.knaw.dans.validatedansbag.core.BagNotFoundException;
-import nl.knaw.dans.validatedansbag.core.engine.DepositType;
-import nl.knaw.dans.validatedansbag.core.engine.NumberedRule;
-import nl.knaw.dans.validatedansbag.core.engine.RuleEngine;
-import nl.knaw.dans.validatedansbag.core.engine.RuleEngineConfigurationException;
-import nl.knaw.dans.validatedansbag.core.engine.RuleValidationResult;
 
 import java.nio.file.Path;
 import java.util.List;
@@ -34,11 +33,11 @@ public class RuleEngineServiceImpl implements RuleEngineService {
 
     private final RuleEngine ruleEngine;
     private final FileService fileService;
-    private final NumberedRule[] ruleSet;
+    private final List<NumberedRule> ruleSet;
 
     public RuleEngineServiceImpl(RuleEngine ruleEngine,
         FileService fileService,
-        NumberedRule[] ruleSet) {
+        List<NumberedRule> ruleSet) {
         this.ruleEngine = ruleEngine;
         this.fileService = fileService;
         this.ruleSet = ruleSet;
@@ -46,19 +45,7 @@ public class RuleEngineServiceImpl implements RuleEngineService {
     }
 
     @Override
-    public List<RuleValidationResult> validateBag(Path path, DepositType depositType) throws Exception {
-        log.info("Validating bag on path '{}', deposit type is {}", path, depositType);
-
-        if (!fileService.isReadable(path)) {
-            log.warn("Path {} could not not be found or is not readable", path);
-            throw new BagNotFoundException(String.format("Bag on path '%s' could not be found or read", path));
-        }
-
-        return ruleEngine.validateRules(path, this.ruleSet, depositType);
-    }
-
-    @Override
-    public ValidateOkDto validateBag(Path path, DepositType depositType, String bagLocation) throws Exception {
+    public ValidateOkDto validateBag(Path path, String bagLocation) throws Exception {
         log.info("Validating bag on path '{}'", path);
 
         if (!fileService.isReadable(path)) {
@@ -66,7 +53,7 @@ public class RuleEngineServiceImpl implements RuleEngineService {
             throw new BagNotFoundException(String.format("Bag on path '%s' could not be found or read", path));
         }
 
-        var results = ruleEngine.validateRules(path, this.ruleSet, depositType);
+        var results = ruleEngine.validateBag(path, this.ruleSet);
         var isValid = results.stream().noneMatch(r -> r.getStatus().equals(RuleValidationResult.RuleValidationResultStatus.FAILURE));
 
         var result = new ValidateOkDto();
@@ -74,7 +61,7 @@ public class RuleEngineServiceImpl implements RuleEngineService {
         result.setIsCompliant(isValid);
         result.setName(path.getFileName().toString());
         result.setProfileVersion("1.2.0");
-        result.setInformationPackageType(toInfoPackageType(depositType));
+        result.setInformationPackageType(ValidateOkDto.InformationPackageTypeEnum.DEPOSIT);
         result.setRuleViolations(results.stream()
             .filter(r -> r.getStatus().equals(RuleValidationResult.RuleValidationResultStatus.FAILURE))
             .map(rule -> {
@@ -97,16 +84,9 @@ public class RuleEngineServiceImpl implements RuleEngineService {
         return result;
     }
 
-    private ValidateOkDto.InformationPackageTypeEnum toInfoPackageType(DepositType value) {
-        if (DepositType.MIGRATION.equals(value)) {
-            return ValidateOkDto.InformationPackageTypeEnum.MIGRATION;
-        }
-        return ValidateOkDto.InformationPackageTypeEnum.DEPOSIT;
-    }
-
     public void validateRuleConfiguration() {
         try {
-            this.ruleEngine.validateRuleConfiguration(this.ruleSet);
+            this.ruleEngine.validateRuleSet(this.ruleSet);
         }
         catch (RuleEngineConfigurationException e) {
             throw new RuntimeException("Rule configuration is not valid", e);

@@ -95,15 +95,6 @@ health:
         downtimeInterval: 10s
         failureAttempts: 1
         successAttempts: 1
-    - name: xml-schemas
-      critical: true
-      initialState: false
-      schedule:
-        checkInterval: 60s
-        initialDelay: 1s
-        downtimeInterval: 30s
-        failureAttempts: 1
-        successAttempts: 1
     - name: dataverse
       critical: false
       initialState: true

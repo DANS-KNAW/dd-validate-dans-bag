@@ -17,7 +17,8 @@ package nl.knaw.dans.validatedansbag.core.rules;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import nl.knaw.dans.validatedansbag.core.engine.RuleResult;
+import nl.knaw.dans.lib.util.ruleengine.BagValidatorRule;
+import nl.knaw.dans.lib.util.ruleengine.RuleResult;
 import nl.knaw.dans.validatedansbag.core.service.FileService;
 
 import java.nio.charset.CharacterCodingException;
@@ -37,10 +38,12 @@ public class OptionalBagFileIsUtf8Decodable implements BagValidatorRule {
             if (fileService.exists(target)) {
                 fileService.readFileContents(target, StandardCharsets.UTF_8);
                 return RuleResult.ok();
-            } else {
+            }
+            else {
                 return RuleResult.skipDependencies();
             }
-        } catch (CharacterCodingException e) {
+        }
+        catch (CharacterCodingException e) {
             return RuleResult.error("Input not valid UTF-8: " + e.getMessage());
         }
     }

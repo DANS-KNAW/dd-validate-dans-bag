@@ -17,7 +17,8 @@ package nl.knaw.dans.validatedansbag.core.rules;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import nl.knaw.dans.validatedansbag.core.engine.RuleResult;
+import nl.knaw.dans.lib.util.ruleengine.BagValidatorRule;
+import nl.knaw.dans.lib.util.ruleengine.RuleResult;
 import nl.knaw.dans.validatedansbag.core.service.FileService;
 import nl.knaw.dans.validatedansbag.core.service.FilesXmlService;
 import nl.knaw.dans.validatedansbag.core.service.OriginalFilepathsService;
@@ -43,30 +44,30 @@ public class OptionalOriginalFilePathsIsComplete implements BagValidatorRule {
 
         // the files defined in metadata/files.xml
         var fileXmlPaths = filesXmlService.readFilepaths(path)
-                .collect(Collectors.toSet());
+            .collect(Collectors.toSet());
 
-        log.trace("Paths in files.xml: {}", fileXmlPaths);
+        log.debug("Paths in files.xml: {}", fileXmlPaths);
 
         // the files on disk
         var dataPath = path.resolve("data");
         var actualFiles = fileService.getAllFiles(dataPath)
-                .stream()
-                .filter(i -> !dataPath.equals(i))
-                .map(path::relativize)
-                .collect(Collectors.toSet());
+            .stream()
+            .filter(i -> !dataPath.equals(i))
+            .map(path::relativize)
+            .collect(Collectors.toSet());
 
-        log.trace("Paths inside {}: {}", dataPath, fileXmlPaths);
+        log.debug("Paths inside {}: {}", dataPath, fileXmlPaths);
 
         var renamedFiles = mapping.stream().map(OriginalFilepathsService.OriginalFilePathItem::getRenamedFilename).collect(Collectors.toSet());
         var originalFiles = mapping.stream().map(OriginalFilepathsService.OriginalFilePathItem::getOriginalFilename).collect(Collectors.toSet());
 
         // disjunction returns the difference between 2 sets
         // so {1,2,3} disjunction {2,3,4} would return {1,4}
-        var physicalFileSetsDiffer = CollectionUtils.disjunction(actualFiles, renamedFiles).size() > 0;
-        log.trace("Disjunction between files on disk and files referenced in original-filepaths.txt: {}", physicalFileSetsDiffer);
+        var physicalFileSetsDiffer = !CollectionUtils.disjunction(actualFiles, renamedFiles).isEmpty();
+        log.debug("Disjunction between files on disk and files referenced in original-filepaths.txt: {}", physicalFileSetsDiffer);
 
-        var originalFileSetsDiffer = CollectionUtils.disjunction(fileXmlPaths, originalFiles).size() > 0;
-        log.trace("Disjunction between files.xml and files referenced in original-filepaths.txt: {}", originalFiles);
+        var originalFileSetsDiffer = !CollectionUtils.disjunction(fileXmlPaths, originalFiles).isEmpty();
+        log.debug("Disjunction between files.xml and files referenced in original-filepaths.txt: {}", originalFiles);
 
         if (physicalFileSetsDiffer || originalFileSetsDiffer) {
             log.debug("File sets are not equal, physicalFileSetsDiffer = {} and originalFileSetsDiffer = {}", physicalFileSetsDiffer, originalFileSetsDiffer);
@@ -88,29 +89,30 @@ public class OptionalOriginalFilePathsIsComplete implements BagValidatorRule {
             if (physicalFileSetsDiffer) {
                 message.append("  - Physical file paths in original-filepaths.txt not equal to payload in data dir. Difference - ");
                 message.append("only in payload: {")
-                        .append(onlyInBag.stream().map(Path::toString).collect(Collectors.joining(", ")))
-                        .append("}");
+                    .append(onlyInBag.stream().map(Path::toString).collect(Collectors.joining(", ")))
+                    .append("}");
                 message.append(", only in physical-bag-relative-path: {")
-                        .append(onlyInFilepathsPhysical.stream().map(Path::toString).collect(Collectors.joining(", ")))
-                        .append("}");
+                    .append(onlyInFilepathsPhysical.stream().map(Path::toString).collect(Collectors.joining(", ")))
+                    .append("}");
                 message.append("\n");
             }
 
             if (originalFileSetsDiffer) {
                 message.append("  - Original file paths in original-filepaths.txt not equal to filepaths in files.xml. Difference - ");
                 message.append("only in files.xml: {")
-                        .append(onlyInFilesXml.stream().map(Path::toString).collect(Collectors.joining(", ")))
-                        .append("}");
+                    .append(onlyInFilesXml.stream().map(Path::toString).collect(Collectors.joining(", ")))
+                    .append("}");
                 message.append(", only in original-bag-relative-path: {")
-                        .append(onlyInFilepathsOriginal.stream().map(Path::toString).collect(Collectors.joining(", ")))
-                        .append("}");
+                    .append(onlyInFilepathsOriginal.stream().map(Path::toString).collect(Collectors.joining(", ")))
+                    .append("}");
                 message.append("\n");
             }
 
             return RuleResult.error(String.format(
-                    "original-filepaths.txt errors: \n%s", message
+                "original-filepaths.txt errors: \n%s", message
             ));
         }
 
-        return RuleResult.ok();    }
+        return RuleResult.ok();
+    }
 }

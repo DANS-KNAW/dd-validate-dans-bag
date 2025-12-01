@@ -17,7 +17,8 @@ package nl.knaw.dans.validatedansbag.core.rules;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import nl.knaw.dans.validatedansbag.core.engine.RuleResult;
+import nl.knaw.dans.lib.util.ruleengine.BagValidatorRule;
+import nl.knaw.dans.lib.util.ruleengine.RuleResult;
 import nl.knaw.dans.validatedansbag.core.service.XmlReader;
 import nl.knaw.dans.validatedansbag.core.validator.PolygonListValidator;
 
@@ -37,7 +38,7 @@ public class DatasetXmlGmlPolygonPosListIsWellFormed implements BagValidatorRule
         var nodes = xmlReader.xpathToStreamOfStrings(document, expr);
 
         var match = nodes
-                .peek(posList -> log.trace("Validation posList value {}", posList))
+                .peek(posList -> log.debug("Validation posList value {}", posList))
                 .map(polygonListValidator::validatePolygonList)
                 .filter(e -> !e.isValid())
                 .map(PolygonListValidator.PolygonValidationResult::getMessage)

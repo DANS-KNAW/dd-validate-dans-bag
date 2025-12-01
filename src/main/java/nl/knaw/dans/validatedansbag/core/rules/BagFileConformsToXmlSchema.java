@@ -17,13 +17,15 @@ package nl.knaw.dans.validatedansbag.core.rules;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import nl.knaw.dans.validatedansbag.core.engine.RuleResult;
-import nl.knaw.dans.validatedansbag.core.service.XmlReader;
-import nl.knaw.dans.validatedansbag.core.service.XmlSchemaValidator;
+import nl.knaw.dans.lib.util.XmlSchemaValidator;
+import nl.knaw.dans.lib.util.ruleengine.BagValidatorRule;
+import nl.knaw.dans.lib.util.ruleengine.RuleResult;
+import nl.knaw.dans.validatedansbag.core.service.FileService;
 import org.xml.sax.SAXException;
-import org.xml.sax.SAXParseException;
 
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.stream.StreamSource;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
@@ -33,7 +35,7 @@ import java.util.stream.Collectors;
 @Slf4j
 public class BagFileConformsToXmlSchema implements BagValidatorRule {
     protected final Path file;
-    private final XmlReader xmlReader;
+    protected final FileService fileService;
     protected final String schema;
     private final XmlSchemaValidator xmlSchemaValidator;
 
@@ -44,13 +46,14 @@ public class BagFileConformsToXmlSchema implements BagValidatorRule {
             log.debug("Validating {} against schema {}", fileName, schema);
             var errors = validateXmlFile(fileName, schema);
 
-            if (errors.size() > 0) {
+            if (!errors.isEmpty()) {
                 var msg = String.format("%s does not conform to %s: \n%s",
-                        file, schema, String.join("\n", errors));
+                    file, schema, String.join("\n", errors));
 
                 return RuleResult.error(msg);
             }
-        } catch (SAXParseException e) {
+        }
+        catch (SAXException e) {
             return RuleResult.error(e.getMessage(), e);
         }
 
@@ -58,13 +61,13 @@ public class BagFileConformsToXmlSchema implements BagValidatorRule {
     }
 
     private List<String> validateXmlFile(Path file, String schema) throws ParserConfigurationException, IOException, SAXException {
-        var document = xmlReader.readXmlFile(file);
-        var results = xmlSchemaValidator.validateDocument(document, schema);
+        var xml = fileService.readFileContents(file);
+        var results = xmlSchemaValidator.validateDocument(new StreamSource(new ByteArrayInputStream(xml)), schema);
 
         return results.stream()
-                .map(Throwable::getLocalizedMessage)
-                .map(e -> String.format(" - %s", e))
-                .collect(Collectors.toList());
+            .map(Throwable::getLocalizedMessage)
+            .map(e -> String.format(" - %s", e))
+            .collect(Collectors.toList());
     }
 
 }

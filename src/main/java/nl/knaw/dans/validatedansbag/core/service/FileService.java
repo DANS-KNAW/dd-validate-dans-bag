@@ -42,8 +42,6 @@ public interface FileService {
 
     Path extractZipFile(InputStream inputStream) throws IOException;
 
-    void deleteDirectoryAndContents(Path path) throws IOException;
-
     Optional<Path> getFirstDirectory(Path path) throws IOException;
 
     Path getSecurePath(Path path) throws RuntimeException;

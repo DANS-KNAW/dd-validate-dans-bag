@@ -9,9 +9,23 @@
 /release.properties
 /dependency-reduced-pom.xml
 /buildNumber.properties
+/init-project.sh
+*~
+*.swp
+*.sc
 /*.iml
 /.idea/
+.DS_Store
+/site
+/etc/
+/data/
+/data-*/
+/.vagrant/
+/.yum-repo
+/.dans.knaw.nl-yum-repo
+/venv/
+/.venv-mkdocs
 /docs/swagger-ui/
 /docs/api.yml
-/.venv-mkdocs/
+
 

@@ -116,11 +116,6 @@ public class FileServiceImpl implements FileService {
     }
 
     @Override
-    public void deleteDirectoryAndContents(Path path) throws IOException {
-        FileUtils.deleteDirectory(path.toFile());
-    }
-
-    @Override
     public Optional<Path> getFirstDirectory(Path path) throws IOException {
         try (var s = Files.walk(path)) {
             return s.filter(this::isDirectory).skip(1).findFirst();

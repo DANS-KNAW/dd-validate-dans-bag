@@ -30,7 +30,7 @@ import java.util.List;
 public class ValidationConfig {
 
     @NotNull
-    Path baseFolder;
+    private Path baseFolder;
 
     @NotNull
     private List<String> otherIdPrefixes;

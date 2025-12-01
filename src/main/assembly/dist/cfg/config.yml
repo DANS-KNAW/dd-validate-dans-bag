@@ -86,6 +86,8 @@ validation:
       - schemeUri: 'https://data.cultureelerfgoed.nl/term/id/abr/554ca1ec-3ed8-42d3-ae4b-47bcb848b238'
         termsFile: 'verwervingswijzen-valid-terms.txt'
         codesFile: 'verwervingswijzen-valid-codes.txt'
+      - schemeUri: 'http://vocab.getty.edu/aat/'
+        termsFile: 'aatc-valid-terms.txt'
 
   xmlSchemas:
       dataset.xml:  "https://easy.dans.knaw.nl/schemas/md/ddm/ddm.xsd"
@@ -103,15 +105,6 @@ health:
       schedule:
         checkInterval: 5s
         downtimeInterval: 10s
-        failureAttempts: 1
-        successAttempts: 1
-    - name: xml-schemas
-      critical: true
-      initialState: false
-      schedule:
-        checkInterval: 60s
-        initialDelay: 1s
-        downtimeInterval: 30s
         failureAttempts: 1
         successAttempts: 1
     - name: dataverse

@@ -17,7 +17,8 @@ package nl.knaw.dans.validatedansbag.core.rules;
 
 import lombok.extern.slf4j.Slf4j;
 import nl.knaw.dans.lib.dataverse.model.dataset.PrimitiveSingleValueField;
-import nl.knaw.dans.validatedansbag.core.engine.RuleResult;
+import nl.knaw.dans.lib.util.ruleengine.BagValidatorRule;
+import nl.knaw.dans.lib.util.ruleengine.RuleResult;
 import nl.knaw.dans.validatedansbag.core.service.BagItMetadataReader;
 import nl.knaw.dans.validatedansbag.core.service.DataverseService;
 
@@ -47,34 +48,36 @@ public class BagInfoOrganizationalIdentifierExistsInDataset extends DataverseRul
         var orgIdentifier = bagItMetadataReader.getSingleField(path, "Has-Organizational-Identifier");
 
         var otherId = Optional.ofNullable(dataset.get().getLatestVersion().getMetadataBlocks())
-                .map(m -> m.get("dansDataVaultMetadata"))
-                .map(m -> m.getFields().stream()
-                        .filter(f -> f.getTypeName().equals("dansOtherId"))
-                        .filter(f -> f instanceof PrimitiveSingleValueField)
-                        .map(f -> (PrimitiveSingleValueField) f)
-                        .map(PrimitiveSingleValueField::getValue)
-                        .findFirst()
-                )
-                .flatMap(f -> f)
-                .orElse(null);
+            .map(m -> m.get("dansDataVaultMetadata"))
+            .map(m -> m.getFields().stream()
+                .filter(f -> f.getTypeName().equals("dansOtherId"))
+                .filter(f -> f instanceof PrimitiveSingleValueField)
+                .map(f -> (PrimitiveSingleValueField) f)
+                .map(PrimitiveSingleValueField::getValue)
+                .findFirst()
+            )
+            .flatMap(f -> f)
+            .orElse(null);
 
         if ("".equals(otherId) || "null".equals(otherId)) {
             otherId = null;
         }
 
         if (otherId == null && orgIdentifier == null) {
-            log.trace("Dataset does not have 'dansOtherId' set, nor is 'Has-Organizational-Identifier' set in the bag information, so this is a valid match");
+            log.debug("Dataset does not have 'dansOtherId' set, nor is 'Has-Organizational-Identifier' set in the bag information, so this is a valid match");
             return RuleResult.ok();
-        } else if (Objects.equals(otherId, orgIdentifier)) {
+        }
+        else if (Objects.equals(otherId, orgIdentifier)) {
             // this is also valid
-            log.trace("Dataset with dansOtherId {} and 'Has-Organizational-Identifier' {} match", otherId, orgIdentifier);
+            log.debug("Dataset with dansOtherId {} and 'Has-Organizational-Identifier' {} match", otherId, orgIdentifier);
             return RuleResult.ok();
-        } else {
+        }
+        else {
             // this is not valid
-            log.trace("Dataset with dansOtherId {} and 'Has-Organizational-Identifier' {} do not match", otherId, orgIdentifier);
+            log.debug("Dataset with dansOtherId {} and 'Has-Organizational-Identifier' {} do not match", otherId, orgIdentifier);
             return RuleResult.error(String.format(
-                    "Mismatch between 'dansOtherId' in dataverse and 'Has-Organizational-Identifier' in dataset: '%s' vs '%s'. They must either both be the same or both be absent",
-                    otherId, orgIdentifier
+                "Mismatch between 'dansOtherId' in dataverse and 'Has-Organizational-Identifier' in dataset: '%s' vs '%s'. They must either both be the same or both be absent",
+                otherId, orgIdentifier
             ));
         }
     }

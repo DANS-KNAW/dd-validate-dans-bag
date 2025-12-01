@@ -17,7 +17,8 @@ package nl.knaw.dans.validatedansbag.core.rules;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import nl.knaw.dans.validatedansbag.core.engine.RuleResult;
+import nl.knaw.dans.lib.util.ruleengine.BagValidatorRule;
+import nl.knaw.dans.lib.util.ruleengine.RuleResult;
 import nl.knaw.dans.validatedansbag.core.service.BagItMetadataReader;
 import org.joda.time.DateTime;
 import org.joda.time.format.ISODateTimeFormat;
@@ -37,9 +38,10 @@ public class BagInfoCreatedElementIsIso8601Date implements BagValidatorRule {
             log.debug("Trying to parse date {} to see if it is valid", created);
             DateTime.parse(created, ISODateTimeFormat.dateTime());
             return RuleResult.ok();
-        } catch (Throwable e) {
+        }
+        catch (Throwable e) {
             return RuleResult.error(String.format(
-                    "Date '%s' is not valid", created
+                "Date '%s' is not valid", created
             ), e);
         }
     }

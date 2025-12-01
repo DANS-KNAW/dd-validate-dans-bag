@@ -17,7 +17,8 @@ package nl.knaw.dans.validatedansbag.core.rules;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import nl.knaw.dans.validatedansbag.core.engine.RuleResult;
+import nl.knaw.dans.lib.util.ruleengine.BagValidatorRule;
+import nl.knaw.dans.lib.util.ruleengine.RuleResult;
 import nl.knaw.dans.validatedansbag.core.service.XmlReader;
 
 import java.nio.file.Path;
@@ -35,23 +36,24 @@ public class DatasetXmlGmlPolygonsInSameMultiSurfaceHaveSameSrsName implements B
         var expr = "//gml:MultiSurface";
         var nodes = xmlReader.xpathToStream(document, expr);
         var match = nodes.filter(node -> {
-                    try {
-                        var srsNames = xmlReader.xpathToStreamOfStrings(node, ".//gml:Polygon/@srsName")
-                                .filter(Objects::nonNull)
-                                .collect(Collectors.toSet());
+                try {
+                    var srsNames = xmlReader.xpathToStreamOfStrings(node, ".//gml:Polygon/@srsName")
+                        .filter(Objects::nonNull)
+                        .collect(Collectors.toSet());
 
-                        log.trace("Found unique srsName values: {}", srsNames);
-                        if (srsNames.size() > 1) {
-                            return true;
-                        }
-                    } catch (Throwable e) {
-                        log.error("Error checking srsNames attribute", e);
+                    log.debug("Found unique srsName values: {}", srsNames);
+                    if (srsNames.size() > 1) {
                         return true;
                     }
+                }
+                catch (Throwable e) {
+                    log.error("Error checking srsNames attribute", e);
+                    return true;
+                }
 
-                    return false;
-                })
-                .collect(Collectors.toList());
+                return false;
+            })
+            .collect(Collectors.toList());
 
         log.debug("Invalid MultiSurface elements that contain polygons with different srsNames: {}", match);
 

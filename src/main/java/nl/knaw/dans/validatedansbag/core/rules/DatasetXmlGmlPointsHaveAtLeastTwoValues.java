@@ -17,7 +17,8 @@ package nl.knaw.dans.validatedansbag.core.rules;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import nl.knaw.dans.validatedansbag.core.engine.RuleResult;
+import nl.knaw.dans.lib.util.ruleengine.BagValidatorRule;
+import nl.knaw.dans.lib.util.ruleengine.RuleResult;
 import nl.knaw.dans.validatedansbag.core.service.XmlReader;
 
 import java.nio.file.Path;
@@ -38,49 +39,51 @@ public class DatasetXmlGmlPointsHaveAtLeastTwoValues implements BagValidatorRule
         var expr = "//gml:Point/gml:pos | //gml:lowerCorner | //gml:upperCorner";
 
         var errors = xmlReader.xpathToStream(document, expr)
-                .map(value -> {
-                    var attr = value.getParentNode().getAttributes().getNamedItem("srsName");
-                    var text = value.getTextContent();
-                    var isRD = attr != null && "urn:ogc:def:crs:EPSG::28992".equals(attr.getTextContent());
+            .map(value -> {
+                var attr = value.getParentNode().getAttributes().getNamedItem("srsName");
+                var text = value.getTextContent();
+                var isRD = attr != null && "urn:ogc:def:crs:EPSG::28992".equals(attr.getTextContent());
 
-                    log.trace("Validating point {} (isRD: {})", text, isRD);
+                log.debug("Validating point {} (isRD: {})", text, isRD);
 
-                    try {
-                        var parts = Arrays.stream(text.split("\\s+"))
-                                .map(String::trim)
-                                .map(Float::parseFloat)
-                                .collect(Collectors.toList());
+                try {
+                    var parts = Arrays.stream(text.split("\\s+"))
+                        .map(String::trim)
+                        .map(Float::parseFloat)
+                        .toList();
 
-                        if (parts.size() < 2) {
-                            return String.format(
-                                    "%s has less than two coordinates: %s", value.getLocalName(), text
-                            );
-                        } else if (isRD) {
-                            var x = parts.get(0);
-                            var y = parts.get(1);
-
-                            var valid = x >= -7000 && x <= 300000 && y >= 289000 && y <= 629000;
-
-                            if (!valid) {
-                                return String.format(
-                                        "%s is outside RD bounds: %s", value.getLocalName(), text
-                                );
-                            }
-                        }
-                    } catch (NumberFormatException e) {
+                    if (parts.size() < 2) {
                         return String.format(
-                                "%s has non numeric coordinates: %s", value.getLocalName(), text
+                            "%s has less than two coordinates: %s", value.getLocalName(), text
                         );
                     }
+                    else if (isRD) {
+                        var x = parts.get(0);
+                        var y = parts.get(1);
 
-                    return null;
-                })
-                .filter(Objects::nonNull)
-                .collect(Collectors.toList());
+                        var valid = x >= -7000 && x <= 300000 && y >= 289000 && y <= 629000;
+
+                        if (!valid) {
+                            return String.format(
+                                "%s is outside RD bounds: %s", value.getLocalName(), text
+                            );
+                        }
+                    }
+                }
+                catch (NumberFormatException e) {
+                    return String.format(
+                        "%s has non numeric coordinates: %s", value.getLocalName(), text
+                    );
+                }
+
+                return null;
+            })
+            .filter(Objects::nonNull)
+            .collect(Collectors.toList());
 
         log.debug("Errors while validating points: {}", errors);
 
-        if (errors.size() > 0) {
+        if (!errors.isEmpty()) {
             return RuleResult.error(errors);
         }
 

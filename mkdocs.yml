@@ -22,9 +22,17 @@ repo_name: DANS-KNAW/dd-validate-dans-bag
 repo_url: https://github.com/DANS-KNAW/dd-validate-dans-bag
 
 nav:
-  - Manual: index.md
-  - API: to-api.md
-  - ⇒ DANS Data Station Architecture: arch.md
+  - Manual:
+      - Description: index.md
+      - Installation: installation.md
+      - Configuration: config.md
+      - API: to-api.md
+      - Context: context.md
+  - Development:
+      - Overview: dev.md
+
+extra:
+  dans_bagit_profile_url: https://doi.org/10.17026/dans-z52-ybfe
 
 plugins:
   - markdownextradata
