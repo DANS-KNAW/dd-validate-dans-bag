@@ -15,9 +15,9 @@
  */
 package nl.knaw.dans.validatedansbag.core.rules;
 
-import gov.loc.repository.bagit.domain.Bag;
-import gov.loc.repository.bagit.domain.Manifest;
-import gov.loc.repository.bagit.hash.StandardSupportedAlgorithms;
+import nl.knaw.dans.bagit.domain.Bag;
+import nl.knaw.dans.bagit.domain.Manifest;
+import nl.knaw.dans.bagit.hash.StandardSupportedAlgorithms;
 
 import nl.knaw.dans.lib.util.ruleengine.RuleResult;
 import org.junit.jupiter.api.Test;

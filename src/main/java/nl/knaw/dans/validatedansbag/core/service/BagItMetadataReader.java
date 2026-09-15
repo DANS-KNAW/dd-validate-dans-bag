@@ -15,18 +15,18 @@
  */
 package nl.knaw.dans.validatedansbag.core.service;
 
-import gov.loc.repository.bagit.domain.Bag;
-import gov.loc.repository.bagit.domain.Manifest;
-import gov.loc.repository.bagit.exceptions.CorruptChecksumException;
-import gov.loc.repository.bagit.exceptions.FileNotInPayloadDirectoryException;
-import gov.loc.repository.bagit.exceptions.InvalidBagitFileFormatException;
-import gov.loc.repository.bagit.exceptions.MaliciousPathException;
-import gov.loc.repository.bagit.exceptions.MissingBagitFileException;
-import gov.loc.repository.bagit.exceptions.MissingPayloadDirectoryException;
-import gov.loc.repository.bagit.exceptions.MissingPayloadManifestException;
-import gov.loc.repository.bagit.exceptions.UnparsableVersionException;
-import gov.loc.repository.bagit.exceptions.UnsupportedAlgorithmException;
-import gov.loc.repository.bagit.exceptions.VerificationException;
+import nl.knaw.dans.bagit.domain.Bag;
+import nl.knaw.dans.bagit.domain.Manifest;
+import nl.knaw.dans.bagit.exceptions.CorruptChecksumException;
+import nl.knaw.dans.bagit.exceptions.FileNotInPayloadDirectoryException;
+import nl.knaw.dans.bagit.exceptions.InvalidBagitFileFormatException;
+import nl.knaw.dans.bagit.exceptions.MaliciousPathException;
+import nl.knaw.dans.bagit.exceptions.MissingBagitFileException;
+import nl.knaw.dans.bagit.exceptions.MissingPayloadDirectoryException;
+import nl.knaw.dans.bagit.exceptions.MissingPayloadManifestException;
+import nl.knaw.dans.bagit.exceptions.UnparsableVersionException;
+import nl.knaw.dans.bagit.exceptions.UnsupportedAlgorithmException;
+import nl.knaw.dans.bagit.exceptions.VerificationException;
 
 import java.io.IOException;
 import java.nio.file.Path;

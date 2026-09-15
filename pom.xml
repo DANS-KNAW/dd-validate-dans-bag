@@ -22,27 +22,25 @@
     <parent>
         <groupId>nl.knaw.dans</groupId>
         <artifactId>dd-parent</artifactId>
-        <version>1.12.0</version>
+        <version>3.0.0-SNAPSHOT</version>
     </parent>
-
 
     <artifactId>dd-validate-dans-bag</artifactId>
     <version>4.2.1-SNAPSHOT</version>
 
     <name>DD Validate Dans Bag Service</name>
-    <url>https://github.com/DANS-KNAW/dd-validate-dans-bag</url>
     <description>Validates whether a given bag complies with the DANS BagIt Profile v1</description>
+    <url>https://github.com/DANS-KNAW/dd-validate-dans-bag</url>
     <inceptionYear>2022</inceptionYear>
-
-    <properties>
-        <main-class>nl.knaw.dans.validatedansbag.DdValidateDansBagApplication</main-class>
-        <dd-vault-catalog-api.version>1.2.0</dd-vault-catalog-api.version>
-    </properties>
 
     <scm>
         <developerConnection>scm:git:ssh://github.com/DANS-KNAW/${project.artifactId}</developerConnection>
         <tag>HEAD</tag>
     </scm>
+
+    <properties>
+        <main-class>nl.knaw.dans.validatedansbag.DdValidateDansBagApplication</main-class>
+    </properties>
 
     <dependencies>
         <dependency>
@@ -51,7 +49,7 @@
         </dependency>
 
         <dependency>
-            <groupId>nl.knaw.dans</groupId>
+            <groupId>nl.datastations</groupId>
             <artifactId>dans-validation-lib</artifactId>
         </dependency>
 
@@ -76,14 +74,8 @@
         </dependency>
 
         <dependency>
-            <groupId>nl.knaw.dans</groupId>
-            <artifactId>bagit</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>log4j</groupId>
-                    <artifactId>log4j</artifactId>
-                </exclusion>
-            </exclusions>
+            <groupId>nl.datastations</groupId>
+            <artifactId>dans-bagit-lib</artifactId>
         </dependency>
 
         <dependency>
@@ -92,7 +84,7 @@
         </dependency>
 
         <dependency>
-            <groupId>nl.knaw.dans</groupId>
+            <groupId>nl.datastations</groupId>
             <artifactId>dans-dataverse-client-lib</artifactId>
         </dependency>
 
@@ -152,7 +144,6 @@
             <artifactId>dd-validate-dans-bag-api</artifactId>
         </dependency>
 
-
     </dependencies>
 
     <build>
@@ -180,10 +171,10 @@
                 <executions>
                     <execution>
                         <id>compilation-dependencies</id>
-                        <phase>initialize</phase>
                         <goals>
                             <goal>unpack</goal>
                         </goals>
+                        <phase>initialize</phase>
                         <configuration>
                             <artifactItems>
                                 <artifactItem>
@@ -247,53 +238,6 @@
             </plugin>
         </plugins>
     </build>
-
-
-    <repositories>
-        <repository>
-            <id>dans-releases</id>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-            <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
-            <url>https://maven.dans.knaw.nl/releases/</url>
-        </repository>
-        <repository>
-            <id>dans-snapshots</id>
-            <releases>
-                <enabled>false</enabled>
-            </releases>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
-            <url>https://maven.dans.knaw.nl/snapshots/</url>
-        </repository>
-    </repositories>
-
-    <pluginRepositories>
-        <pluginRepository>
-            <id>dans-releases</id>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-            <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
-            <url>https://maven.dans.knaw.nl/releases/</url>
-        </pluginRepository>
-        <pluginRepository>
-            <id>dans-snapshots</id>
-            <releases>
-                <enabled>false</enabled>
-            </releases>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
-            <url>https://maven.dans.knaw.nl/snapshots/</url>
-        </pluginRepository>
-    </pluginRepositories>
 
     <profiles>
         <profile>

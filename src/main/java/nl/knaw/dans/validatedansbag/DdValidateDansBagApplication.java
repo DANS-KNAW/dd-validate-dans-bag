@@ -131,10 +131,10 @@ public class DdValidateDansBagApplication extends Application<DdValidateDansBagC
     private VaultCatalogClient getVaultCatalogClient(DdValidateDansBagConfiguration configuration) {
         if (configuration.getVaultCatalog() != null) {
             var vaultCatalogProxy = new ClientProxyBuilder<ApiClient, DefaultApi>()
-                .apiClient(new ApiClient())
+                .apiClientCtor(ApiClient::new)
                 .basePath(configuration.getVaultCatalog().getBaseUrl())
                 .httpClient(configuration.getVaultCatalog().getHttpClient())
-                .defaultApiCtor(DefaultApi::new)
+                .proxyCtor(DefaultApi::new)
                 .build();
 
             return new VaultCatalogClientImpl(vaultCatalogProxy);

@@ -15,7 +15,7 @@
  */
 package nl.knaw.dans.validatedansbag.core.rules;
 
-import gov.loc.repository.bagit.exceptions.InvalidBagitFileFormatException;
+import nl.knaw.dans.bagit.exceptions.InvalidBagitFileFormatException;
 
 import nl.knaw.dans.lib.util.ruleengine.RuleResult;
 import org.junit.jupiter.api.Test;
