@@ -31,7 +31,7 @@ import java.util.Set;
 @AllArgsConstructor
 public class DatasetXmlValueUrisAreValid implements BagValidatorRule {
     private static final String ABR_OLD_BASE_URL = "https://data.cultureelerfgoed.nl/term/id/rn/";
-    private static final String ABR_NEW_BASE_URL = "https://data.cultureelerfgoed.nl/term/id/abr/";
+    private static final String ABR_NEW_BASE_URL = "https://data.cultureelerfgoed.nl/term/id/abr/2/";
 
     private final XmlReader xmlReader;
     private final Map<URI, Set<URI>> schemeUriToValidTermUris;
