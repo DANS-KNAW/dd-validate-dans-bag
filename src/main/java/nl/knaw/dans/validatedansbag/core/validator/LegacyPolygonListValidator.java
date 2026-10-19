@@ -27,7 +27,7 @@ public class LegacyPolygonListValidator implements PolygonListValidator {
 
     @Override
     public PolygonValidationResult validatePolygonList(String polygons) {
-        var result = delegate.validatePolygonList(polygons);
+        var result = delegate.validatePolygonList(polygons.trim());
         if (!result.isValid()) {
             return result;
         }

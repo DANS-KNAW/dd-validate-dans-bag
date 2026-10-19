@@ -19,7 +19,6 @@ import lombok.AllArgsConstructor;
 import nl.knaw.dans.lib.util.ruleengine.BagValidatorRule;
 import nl.knaw.dans.lib.util.ruleengine.RuleResult;
 import nl.knaw.dans.validatedansbag.core.service.XmlReader;
-import org.w3c.dom.Element;
 
 import java.nio.file.Path;
 import java.util.Set;
@@ -66,14 +65,10 @@ public class DatasetXmlLegacyLicenseIsValid implements BagValidatorRule {
             return RuleResult.error("dataset.xml: at most one dcterms:license is permitted");
         }
         for (var node : licenses) {
-            var element = (Element) node;
-            var type = element.getAttributeNS(XmlReader.NAMESPACE_XSI, "type").split(":", 2);
-            var prefix = type.length == 2 ? type[0] : null;
-            var localName = type[type.length - 1];
-            if ("URI".equals(localName) && XmlReader.NAMESPACE_DCTERMS.equals(element.lookupNamespaceURI(prefix))) {
-                var license = element.getTextContent().trim().replaceFirst("^https:", "http:").replaceFirst("/$", "");
+            if (XmlReader.hasXsiType(node, XmlReader.NAMESPACE_DCTERMS, "URI")) {
+                var license = node.getTextContent().trim().replaceFirst("^https:", "http:").replaceFirst("/$", "");
                 if (!approvedLicenses.contains(license)) {
-                    return RuleResult.error("dataset.xml: license URI is not approved by the legacy profile: " + element.getTextContent());
+                    return RuleResult.error("dataset.xml: license URI is not approved by the legacy profile: " + node.getTextContent());
                 }
             }
         }

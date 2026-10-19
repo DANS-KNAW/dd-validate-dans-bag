@@ -31,6 +31,7 @@ public class DatasetXmlArchisIdentifiersHaveAtMost10CharactersTest extends RuleT
     void should_return_SUCCESS_if_all_ok() throws Exception {
         var xml = """
             <ddm:DDM xmlns:ddm="http://schemas.dans.knaw.nl/dataset/ddm-v2/"
+                     xmlns:id-type="http://easy.dans.knaw.nl/schemas/vocab/identifier-type/"
                      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
                      xmlns:dc="http://purl.org/dc/elements/1.1/"
                      xmlns:dct="http://purl.org/dc/terms/"
@@ -57,6 +58,7 @@ public class DatasetXmlArchisIdentifiersHaveAtMost10CharactersTest extends RuleT
     void should_return_ERROR_if_some_too_long() throws Exception {
         var xml = """
             <ddm:DDM xmlns:ddm="http://schemas.dans.knaw.nl/dataset/ddm-v2/"
+                     xmlns:id-type="http://easy.dans.knaw.nl/schemas/vocab/identifier-type/"
                      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
                      xmlns:dc="http://purl.org/dc/elements/1.1/"
                      xmlns:dct="http://purl.org/dc/terms/"

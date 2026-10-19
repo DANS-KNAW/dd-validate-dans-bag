@@ -181,7 +181,7 @@ class LegacyVaasRuleSetTest {
     @Test
     void validatesOriginalPathMappingsAndUtf8() throws Exception {
         var mapping = bag.resolve("original-filepaths.txt");
-        Files.writeString(mapping, "data/payload.txt\tdata/original name.txt\n");
+        Files.writeString(mapping, "data/payload.txt\tdata/original name.txt\r\n");
         writeFiles(file.replace("data/payload.txt", "data/original name.txt"));
         assertThat(failures()).isEmpty();
         Files.writeString(mapping, "data/payload.txt\tdata/original name.txt\ndata/payload.txt\tdata/original name.txt\n");
@@ -212,7 +212,7 @@ class LegacyVaasRuleSetTest {
             """);
         assertThat(failures()).contains("3.1.5");
         writeDataset(rights + """
-            <dcx-gml:spatial><gml:Polygon><gml:exterior><gml:LinearRing><gml:posList>0 0 1 1 2 0 0 0</gml:posList></gml:LinearRing></gml:exterior></gml:Polygon></dcx-gml:spatial>
+            <dcx-gml:spatial><gml:Polygon><gml:exterior><gml:LinearRing><gml:posList> 0 0 1 1 2 0 0 0 </gml:posList></gml:LinearRing></gml:exterior></gml:Polygon></dcx-gml:spatial>
             """);
         assertThat(failures()).isEmpty();
         for (var point : List.of("<gml:Point><gml:pos>1 2</gml:pos></gml:Point>",
@@ -221,9 +221,28 @@ class LegacyVaasRuleSetTest {
             assertThat(failures()).contains("3.1.7");
         }
         writeDataset(rights + """
-            <dcterms:spatial srsName="http://www.opengis.net/def/crs/EPSG/0/28992"><gml:Point><gml:pos>100000 450000</gml:pos></gml:Point></dcterms:spatial>
+            <dcterms:spatial srsName="http://www.opengis.net/def/crs/EPSG/0/28992"><gml:Point><gml:pos>
+              100000 450000
+            </gml:pos></gml:Point></dcterms:spatial>
             """);
         assertThat(failures()).isEmpty();
+    }
+
+    @Test
+    void supportsBothDatasetNamespacesAndLocallyDeclaredIdentifierTypePrefixes() throws Exception {
+        var rights = "<dcterms:rightsHolder>Depositor</dcterms:rightsHolder>";
+        assertThat(failures()).isEmpty();
+        var dataset = bag.resolve("metadata/dataset.xml");
+        Files.writeString(dataset, Files.readString(dataset).replace("http://easy.dans.knaw.nl/schemas/md/ddm/", "http://schemas.dans.knaw.nl/dataset/ddm-v2/"));
+        assertThat(failures()).isEmpty();
+        for (var identifier : List.of(
+            "<dc:identifier xmlns:ids=\"http://easy.dans.knaw.nl/schemas/vocab/identifier-type/\" xsi:type=\"ids:ARCHIS-ZAAK-IDENTIFICATIE\">12345678901</dc:identifier>",
+            "<dcterms:identifier xmlns:ids=\"http://easy.dans.knaw.nl/schemas/vocab/identifier-type/\" xsi:type=\"ids:ARCHIS-ZAAK-IDENTIFICATIE\">12345678901</dcterms:identifier>")) {
+            writeDataset(rights + identifier);
+            assertThat(failures()).contains("3.1.8");
+        }
+        writeDataset(rights + "<dcterms:identifier xmlns:ids=\"http://easy.dans.knaw.nl/schemas/vocab/identifier-type/\" xsi:type=\"ids:DOI\">bad-doi</dcterms:identifier>");
+        assertThat(failures()).contains("3.1.3(b)");
     }
 
     private List<String> failures() throws Exception {
@@ -237,7 +256,8 @@ class LegacyVaasRuleSetTest {
 
     private void writeDataset(String contents) throws Exception {
         Files.writeString(bag.resolve("metadata/dataset.xml"), """
-            <ddm:DDM xmlns:ddm="http://schemas.dans.knaw.nl/dataset/ddm-v2/"
+            <ddm:DDM xmlns:ddm="http://easy.dans.knaw.nl/schemas/md/ddm/"
+              xmlns:dc="http://purl.org/dc/elements/1.1/"
               xmlns:dcterms="http://purl.org/dc/terms/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
               xmlns:id-type="http://easy.dans.knaw.nl/schemas/vocab/identifier-type/"
               xmlns:gml="http://www.opengis.net/gml"

@@ -41,7 +41,7 @@ public class DatasetXmlGmlPointsHaveAtLeastTwoValues implements BagValidatorRule
         var errors = xmlReader.xpathToStream(document, expr)
             .map(value -> {
                 var attr = value.getParentNode().getAttributes().getNamedItem("srsName");
-                var text = value.getTextContent();
+                var text = value.getTextContent().trim();
                 var isRD = attr != null && "urn:ogc:def:crs:EPSG::28992".equals(attr.getTextContent());
 
                 log.debug("Validating point {} (isRD: {})", text, isRD);

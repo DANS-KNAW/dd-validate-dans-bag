@@ -31,12 +31,23 @@ public interface XmlReader {
     String NAMESPACE_DC = "http://purl.org/dc/elements/1.1/";
     String NAMESPACE_DCX_DAI = "http://easy.dans.knaw.nl/schemas/dcx/dai/";
     String NAMESPACE_DDM = "http://schemas.dans.knaw.nl/dataset/ddm-v2/";
+    String NAMESPACE_LEGACY_DDM = "http://easy.dans.knaw.nl/schemas/md/ddm/";
     String NAMESPACE_DCTERMS = "http://purl.org/dc/terms/";
     String NAMESPACE_XSI = "http://www.w3.org/2001/XMLSchema-instance";
     String NAMESPACE_ID_TYPE = "http://easy.dans.knaw.nl/schemas/vocab/identifier-type/";
     String NAMESPACE_DCX_GML = "http://easy.dans.knaw.nl/schemas/dcx/gml/";
     String NAMESPACE_FILES_XML = "http://easy.dans.knaw.nl/schemas/bag/metadata/files/";
     String NAMESPACE_OPEN_GIS = "http://www.opengis.net/gml";
+
+    static boolean hasXsiType(Node node, String namespace, String localName) {
+        var type = node.getAttributes().getNamedItemNS(NAMESPACE_XSI, "type");
+        if (type == null) {
+            return false;
+        }
+        var parts = type.getTextContent().trim().split(":", 2);
+        var prefix = parts.length == 2 ? parts[0] : null;
+        return localName.equals(parts[parts.length - 1]) && namespace.equals(node.lookupNamespaceURI(prefix));
+    }
 
     Document readXmlFile(Path path) throws ParserConfigurationException, IOException, SAXException;
 

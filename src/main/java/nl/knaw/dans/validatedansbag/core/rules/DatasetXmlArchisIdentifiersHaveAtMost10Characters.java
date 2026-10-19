@@ -20,9 +20,9 @@ import lombok.extern.slf4j.Slf4j;
 import nl.knaw.dans.lib.util.ruleengine.BagValidatorRule;
 import nl.knaw.dans.lib.util.ruleengine.RuleResult;
 import nl.knaw.dans.validatedansbag.core.service.XmlReader;
+import org.w3c.dom.Node;
 
 import java.nio.file.Path;
-import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -33,10 +33,10 @@ public class DatasetXmlArchisIdentifiersHaveAtMost10Characters implements BagVal
     public RuleResult validate(Path path) throws Exception {
         var document = xmlReader.readXmlFile(path.resolve("metadata/dataset.xml"));
 
-        // points
-        var expr = "/ddm:DDM/ddm:dcmiMetadata/dcterms:identifier[@xsi:type = 'id-type:ARCHIS-ZAAK-IDENTIFICATIE']";
-        var match = xmlReader.xpathToStreamOfStrings(document, expr)
-                .filter(Objects::nonNull)
+        var expr = "/ddm:DDM/ddm:dcmiMetadata/dc:identifier | /ddm:DDM/ddm:dcmiMetadata/dcterms:identifier";
+        var match = xmlReader.xpathToStream(document, expr)
+                .filter(node -> XmlReader.hasXsiType(node, XmlReader.NAMESPACE_ID_TYPE, "ARCHIS-ZAAK-IDENTIFICATIE"))
+                .map(Node::getTextContent)
                 .peek(text -> log.debug("Validating element text '{}' for maximum length", text))
                 .filter(text -> text.length() > 10)
                 .collect(Collectors.toList());

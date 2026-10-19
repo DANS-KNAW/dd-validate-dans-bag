@@ -43,16 +43,22 @@ import java.util.stream.Stream;
 public class XmlReaderImpl implements XmlReader {
 
     private final XPath xpath;
+    private final XPath legacyXpath;
 
     public XmlReaderImpl() {
-        this.xpath = XPathFactory
+        this.xpath = createXpath(NAMESPACE_DDM);
+        this.legacyXpath = createXpath(NAMESPACE_LEGACY_DDM);
+    }
+
+    private XPath createXpath(String datasetNamespace) {
+        var xpath = XPathFactory
             .newInstance()
             .newXPath();
 
         final var namespaceMap = Map.of(
             "dc", NAMESPACE_DC,
             "dcx-dai", NAMESPACE_DCX_DAI,
-            "ddm", NAMESPACE_DDM,
+            "ddm", datasetNamespace,
             "dcterms", NAMESPACE_DCTERMS,
             "xsi", NAMESPACE_XSI,
             "id-type", NAMESPACE_ID_TYPE,
@@ -78,7 +84,7 @@ public class XmlReaderImpl implements XmlReader {
                 return null;
             }
         });
-
+        return xpath;
     }
 
     @Override
@@ -99,7 +105,9 @@ public class XmlReaderImpl implements XmlReader {
     }
 
     private Object evaluateXpath(Node node, String expr, QName type) throws XPathExpressionException {
-        return xpath.compile(expr).evaluate(node, type);
+        var document = node instanceof Document ? (Document) node : node.getOwnerDocument();
+        var evaluator = NAMESPACE_LEGACY_DDM.equals(document.getDocumentElement().getNamespaceURI()) ? legacyXpath : xpath;
+        return evaluator.compile(expr).evaluate(node, type);
     }
 
     @Override

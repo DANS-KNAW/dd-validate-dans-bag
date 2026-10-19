@@ -20,7 +20,7 @@ import org.slf4j.LoggerFactory;
 
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
-import java.util.Arrays;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -43,10 +43,10 @@ public class OriginalFilepathsServiceImpl implements OriginalFilepathsService {
 
         try {
             var bytes = fileService.readFileContents(file);
-            var content = new String(bytes);
+            var content = new String(bytes, StandardCharsets.UTF_8);
 
             // the mapping between files on disk and what they used to be called
-            return Arrays.stream(content.split("\n"))
+            return content.lines()
                 .filter(s -> !s.isBlank())
                 .map(s -> s.split("\\s+", 2))
                 .filter(p -> p.length == 2)

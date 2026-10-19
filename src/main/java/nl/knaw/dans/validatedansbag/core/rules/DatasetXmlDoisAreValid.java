@@ -20,6 +20,7 @@ import lombok.extern.slf4j.Slf4j;
 import nl.knaw.dans.lib.util.ruleengine.BagValidatorRule;
 import nl.knaw.dans.lib.util.ruleengine.RuleResult;
 import nl.knaw.dans.validatedansbag.core.service.XmlReader;
+import org.w3c.dom.Node;
 
 import java.nio.file.Path;
 import java.util.regex.Pattern;
@@ -35,9 +36,10 @@ public class DatasetXmlDoisAreValid implements BagValidatorRule {
     @Override
     public RuleResult validate(Path path) throws Exception {
         var document = xmlReader.readXmlFile(path.resolve("metadata/dataset.xml"));
-        var idTypePrefix = document.lookupPrefix(XmlReader.NAMESPACE_ID_TYPE);
-        var expr = String.format("/ddm:DDM/ddm:dcmiMetadata/dcterms:identifier[@xsi:type=\"%s:DOI\"]", idTypePrefix);
-        var nodes = xmlReader.xpathToStreamOfStrings(document, expr);
+        var expr = "/ddm:DDM/ddm:dcmiMetadata/dcterms:identifier";
+        var nodes = xmlReader.xpathToStream(document, expr)
+            .filter(node -> XmlReader.hasXsiType(node, XmlReader.NAMESPACE_ID_TYPE, "DOI"))
+            .map(Node::getTextContent);
         var invalidDois = nodes
                 .peek(node -> log.debug("Validating if {} matches pattern {}", node, doiPattern))
                 .filter((text) -> !doiPattern.matcher(text).matches())
