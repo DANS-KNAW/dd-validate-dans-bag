@@ -119,9 +119,11 @@ public class DdValidateDansBagApplication extends Application<DdValidateDansBagC
             schemeUriToValidCodes
         );
 
-        log.info("Using rule set: {}", configuration.getDataverse() != null ? "DATA STATION" : "VAAS");
+        var legacyVaas = configuration.getDataverse() == null && configuration.getVaultCatalog() == null;
+        log.info("Using rule set: {}", configuration.getDataverse() != null ? "DATA STATION" : legacyVaas ? "LegacyVaas" : "VAAS");
         var ruleEngineService = new RuleEngineServiceImpl(ruleEngine, fileService,
-            configuration.getDataverse() != null ? ruleSets.getDataStationSet() : ruleSets.getVaasSet());
+            configuration.getDataverse() != null ? ruleSets.getDataStationSet() : legacyVaas ? ruleSets.getLegacyVaasSet() : ruleSets.getVaasSet(),
+            legacyVaas ? "0.0.0" : "1.2.0");
 
         environment.jersey().register(new IllegalArgumentExceptionMapper());
         environment.jersey().register(new ValidateZipApiResource(ruleEngineService, fileService));

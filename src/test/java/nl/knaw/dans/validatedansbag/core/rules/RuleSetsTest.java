@@ -34,6 +34,7 @@ import org.mockito.Mockito;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class RuleSetsTest {
 
@@ -83,6 +84,19 @@ public class RuleSetsTest {
             VAULT_CATALOG_CLIENT, Map.of(), Map.of());
         new RuleEngineImpl().validateRuleSet(ruleSets.getVaasSet());
         assertTrue(true); // if we get here, the rule set is consistent
+    }
+
+    @Test
+    public void legacyVaasRuleSet_should_be_consistent_and_exclude_modern_and_AIP_rules() throws Exception {
+        var ruleSets = new RuleSets(
+            dataverseService, fileService, filesXmlService, originalFilepathsService, xmlReader,
+            bagItMetadataReader, xmlSchemaValidator, licenseValidator, identifierValidator, polygonListValidator, organizationIdentifierPrefixValidator,
+            VAULT_CATALOG_CLIENT, Map.of(), Map.of());
+        var rules = ruleSets.getLegacyVaasSet();
+        new RuleEngineImpl().validateRuleSet(rules);
+        assertThat(rules).extracting(r -> r.getNumber())
+            .contains("1.2.2(b)", "1.2.3(b)", "1.2.4(b)", "2.5", "2.7.2", "3.1.3(b)", "3.1.10", "3.2.8")
+            .doesNotContain("1.2.6(a)", "1.3.1", "1.3.1(a)", "1.3.1(b)", "3.1.3(a)", "3.3.1", "3.3.2", "4.1(a)", "5.1", "5.2(a)");
     }
 
 }

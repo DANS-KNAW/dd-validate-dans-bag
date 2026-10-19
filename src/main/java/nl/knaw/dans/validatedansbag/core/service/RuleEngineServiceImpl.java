@@ -34,13 +34,22 @@ public class RuleEngineServiceImpl implements RuleEngineService {
     private final RuleEngine ruleEngine;
     private final FileService fileService;
     private final List<NumberedRule> ruleSet;
+    private final String profileVersion;
 
     public RuleEngineServiceImpl(RuleEngine ruleEngine,
         FileService fileService,
         List<NumberedRule> ruleSet) {
+        this(ruleEngine, fileService, ruleSet, "1.2.0");
+    }
+
+    public RuleEngineServiceImpl(RuleEngine ruleEngine,
+        FileService fileService,
+        List<NumberedRule> ruleSet,
+        String profileVersion) {
         this.ruleEngine = ruleEngine;
         this.fileService = fileService;
         this.ruleSet = ruleSet;
+        this.profileVersion = profileVersion;
         this.validateRuleConfiguration();
     }
 
@@ -60,7 +69,7 @@ public class RuleEngineServiceImpl implements RuleEngineService {
         result.setBagLocation(bagLocation);
         result.setIsCompliant(isValid);
         result.setName(path.getFileName().toString());
-        result.setProfileVersion("1.2.0");
+        result.setProfileVersion(profileVersion);
         result.setInformationPackageType(ValidateOkDto.InformationPackageTypeEnum.DEPOSIT);
         result.setRuleViolations(results.stream()
             .filter(r -> r.getStatus().equals(RuleValidationResult.RuleValidationResultStatus.FAILURE))

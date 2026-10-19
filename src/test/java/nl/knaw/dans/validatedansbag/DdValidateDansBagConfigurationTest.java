@@ -23,12 +23,21 @@ import io.dropwizard.configuration.ResourceConfigurationSourceProvider;
 import io.dropwizard.configuration.YamlConfigurationFactory;
 import io.dropwizard.jackson.Jackson;
 import io.dropwizard.jersey.validation.Validators;
+import io.dropwizard.core.setup.Environment;
+import nl.knaw.dans.validatedansbag.api.ValidateCommandDto;
+import nl.knaw.dans.validatedansbag.api.ValidateOkDto;
 import nl.knaw.dans.validatedansbag.config.DdValidateDansBagConfiguration;
+import nl.knaw.dans.validatedansbag.config.XmlSchemaConfig;
+import nl.knaw.dans.validatedansbag.resources.ValidateLocalDirApiResource;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Mockito;
 
 import java.io.IOException;
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -79,6 +88,28 @@ public class DdValidateDansBagConfigurationTest {
             .isInstanceOf(ConfigurationException.class);
         assertThatThrownBy(() -> readConfig("dataverse:\n  unknownSetting: true\n"))
             .isInstanceOf(ConfigurationException.class);
+    }
+
+    @Test
+    public void applicationUsesLegacyVaasWithoutBackend() throws Exception {
+        for (var backends : new String[] { "", "dataverse:\nvaultCatalog:\n", "dataverse: {}\nvaultCatalog: {}\n" }) {
+            var configuration = readConfig(backends);
+            var bag = Path.of(getClass().getClassLoader().getResource("bags/bag-with-incomplete-manifest").toURI());
+            configuration.getValidation().setBaseFolder(bag.getParent());
+            configuration.getValidation().getValidTerms().setValidTermsFiles(List.of());
+            configuration.getValidation().setXmlSchemas(Mockito.mock(XmlSchemaConfig.class));
+            var environment = Mockito.mock(Environment.class, Mockito.RETURNS_DEEP_STUBS);
+            new DdValidateDansBagApplication().run(configuration, environment);
+            var resource = ArgumentCaptor.forClass(ValidateLocalDirApiResource.class);
+            Mockito.verify(environment.jersey()).register(resource.capture());
+            var command = new ValidateCommandDto();
+            command.setBagLocation(bag.toString());
+            try (var response = resource.getValue().validateLocalDirPost(command)) {
+                assertThat(response.getStatus()).isEqualTo(200);
+                assertThat(((ValidateOkDto) response.getEntity()).getProfileVersion()).isEqualTo("0.0.0");
+            }
+            Mockito.verifyNoInteractions(environment.healthChecks());
+        }
     }
 
     private DdValidateDansBagConfiguration readConfig(String backends) throws Exception {

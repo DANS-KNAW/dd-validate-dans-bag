@@ -28,8 +28,9 @@ logging:
     'org.hibernate.engine.internal.StatisticalLoggingSessionEventListener': 'OFF'
 
 #
-# The following two sections determine whether the validation will be done for the Data Station context or the
-# Vault as a Service context. Only one of `dataverse` and `vaultCatalog` should be filled in.
+# The following two sections select Data Station (`dataverse`) or Vault as a Service (`vaultCatalog`) rules.
+# Only one may be filled in. If both are omitted, null, or empty objects ({}), LegacyVaas rules are used
+# (DANS BagIt Profile 0.0.0, excluding AIP-only rules and sections 3.3, 3.4, and 4).
 #
 dataverse:
   apiKey: ""

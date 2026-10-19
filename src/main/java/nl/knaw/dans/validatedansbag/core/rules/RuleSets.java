@@ -27,6 +27,7 @@ import nl.knaw.dans.validatedansbag.core.service.VaultCatalogClient;
 import nl.knaw.dans.validatedansbag.core.service.XmlReader;
 import nl.knaw.dans.validatedansbag.core.validator.IdentifierValidator;
 import nl.knaw.dans.validatedansbag.core.validator.LicenseValidator;
+import nl.knaw.dans.validatedansbag.core.validator.LegacyPolygonListValidator;
 import nl.knaw.dans.validatedansbag.core.validator.OrganizationIdentifierPrefixValidator;
 import nl.knaw.dans.validatedansbag.core.validator.PolygonListValidator;
 import org.apache.commons.collections4.ListUtils;
@@ -75,6 +76,56 @@ public class RuleSets {
 
     public List<NumberedRule> getVaasSet() {
         return ListUtils.union(getCommonRules(), getVaasOnlyRules());
+    }
+
+    public List<NumberedRule> getLegacyVaasSet() {
+        return List.of(
+            new NumberedRule("1.1.1", new BagIsValid(bagItMetadataReader)),
+            new NumberedRule("1.2.1", new BagInfoExistsAndIsWellformed(bagItMetadataReader, fileService)),
+            new NumberedRule("1.2.2(a)", new BagInfoContainsAtMostOneOf("BagIt-Profile-Version", bagItMetadataReader), List.of("1.2.1")),
+            new NumberedRule("1.2.2(b)", new BagInfoOptionalFieldHasValue("BagIt-Profile-Version", "0", bagItMetadataReader), List.of("1.2.2(a)")),
+            new NumberedRule("1.2.3(a)", new BagInfoContainsAtMostOneOf("BagIt-Profile-URI", bagItMetadataReader), List.of("1.2.1")),
+            new NumberedRule("1.2.3(b)", new BagInfoOptionalFieldHasValue("BagIt-Profile-URI", "doi:10.17026/dans-z52-ybfe", bagItMetadataReader), List.of("1.2.3(a)")),
+            new NumberedRule("1.2.4(a)", new BagInfoContainsExactlyOneOf("Created", bagItMetadataReader), List.of("1.2.1")),
+            new NumberedRule("1.2.4(b)", new BagInfoCreatedElementIsIso8601Date(bagItMetadataReader), List.of("1.2.4(a)")),
+            new NumberedRule("1.2.5(a)", new BagInfoContainsAtMostOneOf("Is-Version-Of", bagItMetadataReader), List.of("1.2.1")),
+            new NumberedRule("1.2.5(b)", new BagInfoIsVersionOfIsValidUrnUuid(bagItMetadataReader), List.of("1.2.5(a)")),
+
+            new NumberedRule("2.1", new BagContainsDir(metadataPath, fileService), List.of("1.1.1")),
+            new NumberedRule("2.2(a)", new BagContainsFile(datasetPath, fileService), List.of("2.1")),
+            new NumberedRule("2.2(b)", new BagContainsFile(metadataFilesPath, fileService), List.of("2.1")),
+            new NumberedRule("2.5", new BagDirContainsNothingElseThan(metadataPath, new String[] {
+                "dataset.xml", "files.xml", "amd.xml", "emd.xml", "license.txt", "provenance.xml",
+                "depositor-info", "depositor-info/agreements.xml", "depositor-info/depositor-agreement.pdf",
+                "depositor-info/depositor-agreement.txt", "depositor-info/message-from-depositor.txt",
+                "original", "original/dataset.xml", "original/files.xml"
+            }, fileService), List.of("2.1")),
+            new NumberedRule("2.6", new BagPayloadPathsHaveNoForbiddenCharacters(fileService), List.of("1.1.1")),
+            new NumberedRule("2.7.1", new OptionalBagFileIsUtf8Decodable(Path.of("original-filepaths.txt"), fileService, false), List.of("1.1.1")),
+            new NumberedRule("2.7.2", new LegacyOriginalFilePathsIsComplete(originalFilepathService, fileService, filesXmlService), List.of("2.7.1", "3.2.4(a)")),
+
+            new NumberedRule("3.1.1", new BagFileConformsToXmlSchema(datasetPath, fileService, "dataset.xml", xmlSchemaValidator), List.of("2.2(a)")),
+            new NumberedRule("3.1.2", new DatasetXmlLegacyLicenseIsValid(xmlReader), List.of("3.1.1")),
+            new NumberedRule("3.1.3(b)", new DatasetXmlDoisAreValid(xmlReader), List.of("3.1.1")),
+            new NumberedRule("3.1.4", new DatasetXmlDaisAreValid(xmlReader, identifierValidator), List.of("3.1.1")),
+            new NumberedRule("3.1.5", new DatasetXmlGmlPolygonPosListIsWellFormed(xmlReader, new LegacyPolygonListValidator(polygonListValidator)), List.of("3.1.1")),
+            new NumberedRule("3.1.6", new DatasetXmlGmlPolygonsInSameMultiSurfaceHaveSameSrsName(xmlReader), List.of("3.1.1")),
+            new NumberedRule("3.1.7", new DatasetXmlLegacyGmlPointsAreValid(xmlReader), List.of("3.1.1")),
+            new NumberedRule("3.1.8", new DatasetXmlArchisIdentifiersHaveAtMost10Characters(xmlReader), List.of("3.1.1")),
+            new NumberedRule("3.1.9", new DatasetXmlAllUrlsAreValid(xmlReader), List.of("3.1.1")),
+            new NumberedRule("3.1.10", new DatasetXmlHasRightsHolderInElementOrInAuthorRole(xmlReader), List.of("3.1.1")),
+
+            new NumberedRule("3.2.1", new LegacyFilesXmlConformsToXmlSchema(fileService, xmlSchemaValidator, xmlReader), List.of("2.2(b)")),
+            new NumberedRule("3.2.2", new LegacyFilesXmlRule(xmlReader, LegacyFilesXmlRule.Requirement.ROOT), List.of("3.2.1")),
+            new NumberedRule("3.2.3", new LegacyFilesXmlRule(xmlReader, LegacyFilesXmlRule.Requirement.FILE_ELEMENTS), List.of("3.2.2")),
+            new NumberedRule("3.2.4(a)", new LegacyFilesXmlRule(xmlReader, LegacyFilesXmlRule.Requirement.FILEPATH_ATTRIBUTES), List.of("3.2.3")),
+            new NumberedRule("3.2.4(b)", new FilesXmlFilePathAttributesContainLocalBagPathAndNonPayloadFilesAreNotDescribed(fileService, filesXmlService, originalFilepathService),
+                List.of("3.2.4(a)", "2.7.1")),
+            new NumberedRule("3.2.5", new FilesXmlNoDuplicateFilesAndEveryPayloadFileIsDescribed(filesXmlService, fileService, originalFilepathService), List.of("3.2.4(a)", "2.7.1")),
+            new NumberedRule("3.2.6", new LegacyFilesXmlRule(xmlReader, LegacyFilesXmlRule.Requirement.FORMAT), List.of("3.2.3")),
+            new NumberedRule("3.2.7", new LegacyFilesXmlRule(xmlReader, LegacyFilesXmlRule.Requirement.METADATA_NAMESPACES), List.of("3.2.3")),
+            new NumberedRule("3.2.8", new LegacyFilesXmlRule(xmlReader, LegacyFilesXmlRule.Requirement.ACCESS_RIGHTS), List.of("3.2.3"))
+        );
     }
 
     private List<NumberedRule> getCommonRules() {
@@ -160,4 +211,3 @@ public class RuleSets {
     }
 
 }
-

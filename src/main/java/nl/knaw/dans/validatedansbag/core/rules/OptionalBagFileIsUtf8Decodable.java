@@ -30,6 +30,11 @@ import java.nio.file.Path;
 public class OptionalBagFileIsUtf8Decodable implements BagValidatorRule {
     private final Path filename;
     private final FileService fileService;
+    private final boolean skipDependenciesWhenAbsent;
+
+    public OptionalBagFileIsUtf8Decodable(Path filename, FileService fileService) {
+        this(filename, fileService, true);
+    }
 
     @Override
     public RuleResult validate(Path path) throws Exception {
@@ -40,7 +45,7 @@ public class OptionalBagFileIsUtf8Decodable implements BagValidatorRule {
                 return RuleResult.ok();
             }
             else {
-                return RuleResult.skipDependencies();
+                return skipDependenciesWhenAbsent ? RuleResult.skipDependencies() : RuleResult.ok();
             }
         }
         catch (CharacterCodingException e) {
