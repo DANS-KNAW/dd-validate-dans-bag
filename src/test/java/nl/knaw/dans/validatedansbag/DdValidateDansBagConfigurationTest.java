@@ -27,6 +27,11 @@ import nl.knaw.dans.validatedansbag.config.DdValidateDansBagConfiguration;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
+import java.io.ByteArrayInputStream;
+import java.nio.charset.StandardCharsets;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 public class DdValidateDansBagConfigurationTest {
 
@@ -40,5 +45,49 @@ public class DdValidateDansBagConfigurationTest {
     @Test
     public void canReadTest() throws IOException, ConfigurationException {
         factory.build(new ResourceConfigurationSourceProvider(), "debug-etc/config.yml");
+    }
+
+    @Test
+    public void missingNullAndEmptyBackendsAreAccepted() throws Exception {
+        for (var backends : new String[] { "", "dataverse:\nvaultCatalog:\n", "dataverse: {}\nvaultCatalog: {}\n" }) {
+            var configuration = readConfig(backends);
+            assertThat(configuration.getDataverse()).isNull();
+            assertThat(configuration.getVaultCatalog()).isNull();
+        }
+    }
+
+    @Test
+    public void configuredBackendAndEmptyOtherBackendAreAccepted() throws Exception {
+        var dataverse = readConfig("dataverse:\n  baseUrl: http://localhost:8080\n  apiKey: test\nvaultCatalog: {}\n");
+        assertThat(dataverse.getDataverse().getBaseUrl().toString()).isEqualTo("http://localhost:8080");
+        assertThat(dataverse.getVaultCatalog()).isNull();
+
+        var vault = readConfig("dataverse: {}\nvaultCatalog:\n  baseUrl: http://localhost:20300\n");
+        assertThat(vault.getDataverse()).isNull();
+        assertThat(vault.getVaultCatalog().getBaseUrl().toString()).isEqualTo("http://localhost:20300");
+    }
+
+    @Test
+    public void bothConfiguredBackendsAreRejected() {
+        assertThatThrownBy(() -> readConfig("dataverse:\n  baseUrl: http://localhost:8080\n  apiKey: test\nvaultCatalog:\n  baseUrl: http://localhost:20300\n"))
+            .isInstanceOf(ConfigurationException.class);
+    }
+
+    @Test
+    public void incompleteAndUnknownBackendSettingsAreRejected() {
+        assertThatThrownBy(() -> readConfig("vaultCatalog:\n  httpClient: {}\n"))
+            .isInstanceOf(ConfigurationException.class);
+        assertThatThrownBy(() -> readConfig("dataverse:\n  unknownSetting: true\n"))
+            .isInstanceOf(ConfigurationException.class);
+    }
+
+    private DdValidateDansBagConfiguration readConfig(String backends) throws Exception {
+        String validation;
+        try (var stream = getClass().getClassLoader().getResourceAsStream("debug-etc/config.yml")) {
+            var yaml = new String(stream.readAllBytes(), StandardCharsets.UTF_8);
+            validation = yaml.substring(yaml.indexOf("validation:"));
+        }
+        var yaml = (backends + validation).getBytes(StandardCharsets.UTF_8);
+        return factory.build(path -> new ByteArrayInputStream(yaml), "config.yml");
     }
 }
