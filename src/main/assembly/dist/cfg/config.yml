@@ -27,10 +27,15 @@ logging:
   loggers:
     'org.hibernate.engine.internal.StatisticalLoggingSessionEventListener': 'OFF'
 
+# Set to true to use LegacyVaas rules (DANS BagIt Profile 0.0.0, excluding AIP-only rules
+# and sections 3.3, 3.4, and 4). Both dataverse and vaultCatalog are ignored in this mode.
+# Optional; defaults to false.
+easyLegacyMode: false
+
 #
 # The following two sections select Data Station (`dataverse`) or Vault as a Service (`vaultCatalog`) rules.
-# Only one may be filled in. If both are omitted, null, or empty objects ({}), LegacyVaas rules are used
-# (DANS BagIt Profile 0.0.0, excluding AIP-only rules and sections 3.3, 3.4, and 4).
+# Unless easyLegacyMode is true, exactly one must be filled in.
+# Omitted, null, or empty objects ({}) count as unconfigured.
 #
 dataverse:
   apiKey: ""

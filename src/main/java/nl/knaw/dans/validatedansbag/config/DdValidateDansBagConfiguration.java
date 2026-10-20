@@ -16,28 +16,44 @@
 
 package nl.knaw.dans.validatedansbag.config;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import io.dropwizard.core.Configuration;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import nl.knaw.dans.lib.util.DataverseClientFactory;
-import nl.knaw.dans.validation.MutuallyExclusive;
 
 import javax.validation.Valid;
+import javax.validation.constraints.AssertTrue;
 import javax.validation.constraints.NotNull;
 
 @Data 
-@MutuallyExclusive(fields = {"dataverse", "vaultCatalog"})
 @EqualsAndHashCode(callSuper = true)
 public class DdValidateDansBagConfiguration extends Configuration {
 
-    @Valid
+    private boolean easyLegacyMode;
+
     @JsonDeserialize(using = EmptyObjectAsNullDeserializer.class)
     private DataverseClientFactory dataverse;
 
-    @Valid
     @JsonDeserialize(using = EmptyObjectAsNullDeserializer.class)
     private VaultCatalogConfig vaultCatalog;
+
+    @Valid
+    public DataverseClientFactory getDataverse() {
+        return easyLegacyMode ? null : dataverse;
+    }
+
+    @Valid
+    public VaultCatalogConfig getVaultCatalog() {
+        return easyLegacyMode ? null : vaultCatalog;
+    }
+
+    @JsonIgnore
+    @AssertTrue(message = "Exactly one of dataverse and vaultCatalog must be specified unless easyLegacyMode is true")
+    public boolean isBackendConfigurationValid() {
+        return easyLegacyMode || (dataverse != null) != (vaultCatalog != null);
+    }
 
 
     @Valid

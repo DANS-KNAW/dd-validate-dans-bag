@@ -57,29 +57,37 @@ public class DdValidateDansBagConfigurationTest {
     }
 
     @Test
-    public void missingNullAndEmptyBackendsAreAccepted() throws Exception {
-        for (var backends : new String[] { "", "dataverse:\nvaultCatalog:\n", "dataverse: {}\nvaultCatalog: {}\n" }) {
-            var configuration = readConfig(backends);
-            assertThat(configuration.getDataverse()).isNull();
-            assertThat(configuration.getVaultCatalog()).isNull();
+    public void missingNullAndEmptyBackendsRequireLegacyMode() {
+        for (var mode : new String[] { "", "easyLegacyMode: false\n" }) {
+            for (var backends : new String[] { "", "dataverse:\nvaultCatalog:\n", "dataverse: {}\nvaultCatalog: {}\n" }) {
+                assertThatThrownBy(() -> readConfig(mode + backends))
+                    .isInstanceOf(ConfigurationException.class)
+                    .hasMessageContaining("Exactly one of dataverse and vaultCatalog");
+            }
         }
     }
 
     @Test
     public void configuredBackendAndEmptyOtherBackendAreAccepted() throws Exception {
-        var dataverse = readConfig("dataverse:\n  baseUrl: http://localhost:8080\n  apiKey: test\nvaultCatalog: {}\n");
-        assertThat(dataverse.getDataverse().getBaseUrl().toString()).isEqualTo("http://localhost:8080");
-        assertThat(dataverse.getVaultCatalog()).isNull();
+        for (var mode : new String[] { "", "easyLegacyMode: false\n" }) {
+            var dataverse = readConfig(mode + "dataverse:\n  baseUrl: http://localhost:8080\n  apiKey: test\nvaultCatalog: {}\n");
+            assertThat(dataverse.isEasyLegacyMode()).isFalse();
+            assertThat(dataverse.getDataverse().getBaseUrl().toString()).isEqualTo("http://localhost:8080");
+            assertThat(dataverse.getVaultCatalog()).isNull();
 
-        var vault = readConfig("dataverse: {}\nvaultCatalog:\n  baseUrl: http://localhost:20300\n");
-        assertThat(vault.getDataverse()).isNull();
-        assertThat(vault.getVaultCatalog().getBaseUrl().toString()).isEqualTo("http://localhost:20300");
+            var vault = readConfig(mode + "dataverse: {}\nvaultCatalog:\n  baseUrl: http://localhost:20300\n");
+            assertThat(vault.isEasyLegacyMode()).isFalse();
+            assertThat(vault.getDataverse()).isNull();
+            assertThat(vault.getVaultCatalog().getBaseUrl().toString()).isEqualTo("http://localhost:20300");
+        }
     }
 
     @Test
     public void bothConfiguredBackendsAreRejected() {
-        assertThatThrownBy(() -> readConfig("dataverse:\n  baseUrl: http://localhost:8080\n  apiKey: test\nvaultCatalog:\n  baseUrl: http://localhost:20300\n"))
-            .isInstanceOf(ConfigurationException.class);
+        for (var mode : new String[] { "", "easyLegacyMode: false\n" }) {
+            assertThatThrownBy(() -> readConfig(mode + "dataverse:\n  baseUrl: http://localhost:8080\n  apiKey: test\nvaultCatalog:\n  baseUrl: http://localhost:20300\n"))
+                .isInstanceOf(ConfigurationException.class);
+        }
     }
 
     @Test
@@ -91,9 +99,18 @@ public class DdValidateDansBagConfigurationTest {
     }
 
     @Test
-    public void applicationUsesLegacyVaasWithoutBackend() throws Exception {
-        for (var backends : new String[] { "", "dataverse:\nvaultCatalog:\n", "dataverse: {}\nvaultCatalog: {}\n" }) {
-            var configuration = readConfig(backends);
+    public void applicationUsesExplicitLegacyModeAndIgnoresBackends() throws Exception {
+        for (var backends : new String[] {
+            "", "dataverse:\nvaultCatalog:\n", "dataverse: {}\nvaultCatalog: {}\n",
+            "dataverse:\n  baseUrl: http://localhost:8080\n  apiKey: test\n",
+            "vaultCatalog:\n  baseUrl: http://localhost:20300\n",
+            "dataverse:\n  baseUrl: http://localhost:8080\n  apiKey: test\nvaultCatalog:\n  baseUrl: http://localhost:20300\n",
+            "dataverse:\n  httpClient: {}\nvaultCatalog:\n  httpClient: {}\n"
+        }) {
+            var configuration = readConfig("easyLegacyMode: true\n" + backends);
+            assertThat(configuration.isEasyLegacyMode()).isTrue();
+            assertThat(configuration.getDataverse()).isNull();
+            assertThat(configuration.getVaultCatalog()).isNull();
             var bag = Path.of(getClass().getClassLoader().getResource("bags/bag-with-incomplete-manifest").toURI());
             configuration.getValidation().setBaseFolder(bag.getParent());
             configuration.getValidation().getValidTerms().setValidTermsFiles(List.of());

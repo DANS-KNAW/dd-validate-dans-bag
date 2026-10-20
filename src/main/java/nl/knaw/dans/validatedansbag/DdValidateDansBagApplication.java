@@ -119,7 +119,7 @@ public class DdValidateDansBagApplication extends Application<DdValidateDansBagC
             schemeUriToValidCodes
         );
 
-        var legacyVaas = configuration.getDataverse() == null && configuration.getVaultCatalog() == null;
+        var legacyVaas = configuration.isEasyLegacyMode();
         log.info("Using rule set: {}", configuration.getDataverse() != null ? "DATA STATION" : legacyVaas ? "LegacyVaas" : "VAAS");
         var ruleEngineService = new RuleEngineServiceImpl(ruleEngine, fileService,
             configuration.getDataverse() != null ? ruleSets.getDataStationSet() : legacyVaas ? ruleSets.getLegacyVaasSet() : ruleSets.getVaasSet(),
